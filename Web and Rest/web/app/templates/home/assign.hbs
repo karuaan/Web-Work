@@ -1,0 +1,154 @@
+<div class="content-box">
+
+
+<div class="assignment-view">
+  <div class="section-assignment-container">
+
+    <div style="position: relative">
+      <select class="group-select" onchange={{action 'onGroupSelect' value='target.value'}}>
+        {{#each groups as |group|}}
+          <option value={{group.id}}>
+            {{group.name}}
+          </option>
+        {{/each}}
+      </select>
+
+      <div class="group-add" {{action 'createGroup'}}>+</div>
+    </div>
+
+    <div class="section-assignment" id="create-assignment" {{action 'addAssignment'}}>
+      <div class="section-assignment-title">
+        Create New Assignment
+      </div>
+    </div>
+    {{#each assignments as |assignment index|}}
+      <div class="section-assignment" {{action 'selectAssignment' index}}>
+        <div class="section-assignment-title">
+          {{assignment.name}}
+        </div>
+        <div class="section-assignment-date">
+          {{assignment.date}}
+        </div>
+      </div>
+    {{/each}}
+  </div>
+
+  <div class="section-table-container">
+
+    <div class="assignment-title">
+      <p class="assignment-section-title">Assigned Reading:</p>
+      {{#if selectedBook}}
+        <p class="book-title">{{selectedBook.name}}</p>
+      {{else}}
+        <p class="book-title">No Books Uploaded Yet</p>
+      {{/if}}
+      <!--
+      <p class="book-title">Safety Manual</p>
+      -->
+      <!--<div class="assignment-change" {{action 'changeBook'}}>Change Book</div>-->
+    </div>
+	<!--
+    <div class="summary-container">
+      <div class="summary-pair">
+        <div class="summary-title">Assignment Completion Rate:</div>
+        <div class="summary-value">{{view.totalCompletion}}%</div>
+      </div>
+    </div>
+	-->
+    <div class="employee-add-container">
+      <div class="employee-count">
+        Employees ({{employees.length}})
+      </div>
+      <div class="employee-add" {{action 'addDialog'}}>+</div>
+      <div class="assignment-action">
+        <p class="assignment-action-button" {{action 'groupMail'}}>Email All In Group</p>
+        <p class="assignment-action-button" {{action 'overdueMail'}}>Email All Overdue</p>
+      </div>
+    </div>
+    <div class="employee-list">
+      {{#each employees as |employee|}}
+        <div class="employee-list-item">
+          <div class="employee-list-name">
+            {{employee.name}}
+          </div>
+          <div class="employee-list-email" {{action 'individualMail' employee.mail}}>
+            {{employee.mail}}
+          </div>
+          {{#if (eq employee.status 'completed')}}
+            <div class="employee-list-status employee-list-completed">
+              <div class="completed"></div>
+            </div>
+          {{/if}}
+          {{#if (eq employee.status 'pending')}}
+            <div class="employee-list-status employee-list-pending">
+              <div class="pending"></div>
+            </div>
+          {{/if}}
+          {{#if (eq employee.status 'overdue')}}
+            <div class="employee-list-status employee-list-overdue">
+              <div class="overdue"></div>
+            </div>
+          {{/if}}
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</div>
+
+<div class="cs-dialog-fog" id="cs-fog"></div>
+<div class="cs-dialog" id="add-member">
+  <div class="cs-dialog-cap">
+    <div class="cs-dialog-cap-label">ADD NEW EMPLOYEE</div>
+    <div class="cs-dialog-cap-close">
+      <div class="icomoon tranz_norm icon-close"></div>
+    </div>
+  </div>
+  <div class="cs-dialog-content">
+    <form {{action "addConfirm" on="submit"}}>
+      <!--
+      {{input type="text" id="add-name" value=name placeholder="Enter Name" class="modal-add"}}
+      -->
+      {{input type="text" id="add-mail" value=mail placeholder="Enter E-Mail" class="modal-add"}}
+      <div class="cs-dialog-buttons">
+        <div class="button-cancel" {{action 'addCancel'}}>Cancel</div>
+        <div class="button-cancel" {{action 'addConfirm'}}>Add</div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="cs-dialog" id="add-assignment">
+  <div class="cs-dialog-cap">
+    <div class="cs-dialog-cap-label">ADD NEW ASSIGNMENT</div>
+    <div class="cs-dialog-cap-close">
+      <div class="icomoon tranz_norm icon-close"></div>
+    </div>
+  </div>
+  <div class="cs-dialog-content">
+    <form {{action "addConfirm" on="submit"}}>
+      <div class="cs-dialog-buttons">
+        <div class="button-cancel" {{action 'cancelAssignment'}}>Cancel</div>
+        <div class="button-cancel" {{action 'confirmAssignment'}}>Add</div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="cs-dialog" id="send-mail">
+  <div class="cs-dialog-cap">
+    <div class="cs-dialog-cap-label">SEND MAIL</div>
+    <div class="cs-dialog-cap-close">
+      <div class="icomoon tranz_norm icon-close"></div>
+    </div>
+  </div>
+  <div class="cs-dialog-content">
+    <p>To:</p>
+    <textarea class="send-to" value={{mailString}}></textarea>
+    <textarea class="send-text" placeholder="Write A Message To This Group"></textarea>
+    <div class="cs-dialog-buttons">
+      <div class="button-cancel" {{action 'sendMailCancel'}}>Cancel</div>
+      <div class="button-cancel" {{action 'sendMailConfirm'}}>Send</div>
+    </div>
+  </div>
+</div>
+</div>

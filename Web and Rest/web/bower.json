@@ -1,0 +1,7 @@
+{
+  "name": "mock-reader",
+  "dependencies": {},
+  "devDependencies": {
+    "jspdf": "^1.3.5"
+  }
+}

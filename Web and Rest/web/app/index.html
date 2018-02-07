@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>MockReader</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{rootURL}}assets/images/logo.png">
+
+    {{content-for "head"}}
+
+    <link rel="stylesheet" href="{{rootURL}}assets/vendor.css">
+    <link rel="stylesheet" href="{{rootURL}}assets/mock-reader.css">
+
+    <script src="{{rootURL}}assets/pdf.js/build/generic/build/pdf.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.debug.js"></script>
+
+    <script src="{{rootURL}}assets/canvas/pdfkit.js"></script>
+    <script src="{{rootURL}}assets/canvas/blob-stream.js"></script>
+    <script src="{{rootURL}}assets/canvas/canvas2pdf.js"></script>
+    <script src="{{rootURL}}assets/canvas/codemirror.js"></script>
+
+    {{content-for "head-footer"}}
+  </head>
+  <body class="loadingInProgress" style="height: 80%">
+    {{content-for "body"}}
+
+    <script src="{{rootURL}}assets/vendor.js"></script>
+    <script src="{{rootURL}}assets/mock-reader.js"></script>
+
+    <script type="text/javascript" src="{{rootURL}}assets/datepicker/moment.js"></script>
+    <script type="text/javascript" src="{{rootURL}}assets/datepicker/bootstrap-material-datetimepicker.js"></script>
+
+    {{content-for "body-footer"}}
+  </body>
+</html>

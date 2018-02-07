@@ -1,0 +1,95 @@
+<div class="content-box">
+<div class="add-group-title">Add Group</div>
+
+<form class="add-group-form">
+
+  <div class="group-form-pair">
+    <div class="group-form-title">Group Name : </div>
+    {{input type="text" class="group-form-input" value=group_name}}
+  </div>
+
+  <br/>
+
+  <div class="group-form-submit" {{action 'createGroup'}}>Create Group</div>
+
+</form>
+
+  <br/>
+
+  <p class="group-form-section">Add Members To Group</p>
+
+  <div class="group-form-entry">
+
+    <form class="group-form-entry-add" {{action "addGroup" on="submit"}}>
+      <div class="group-form-entry-info">
+        <!--
+        <div class="group-form-pair">
+          <div class="group-form-title">Name : </div>
+          {{input type="text" id="group-form-name" value=name class="group-form-input"}}
+        </div>
+        -->
+
+        <div class="group-form-pair">
+          <div class="group-form-title">E-Mail : </div>
+          {{input type="text" id="group-form-mail" value=mail class="group-form-input"}}
+        </div>
+      </div>
+
+      <button type="submit" class="group-form-entry-add-button">Submit</button>
+
+    </form>
+
+  </div>
+
+  <div id="added-table">
+    <p class="group-form-section">Currently Added Members</p>
+
+    <table class="cs-table" id="cs-added-table">
+      <thead>
+        <tr>
+          <!--
+          <th class="essential">NAME</th>
+          -->
+          <th class="essential">E-MAIL</th>
+          <!--
+          <th class="essential"></th>
+          -->
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        {{#each members as |individual index|}}
+        <tr id={{index}}>
+          <!--
+          <td>
+            {{individual.name}}
+          </td>
+          -->
+          <td>
+            {{individual.mail}}
+          </td>
+          <!--
+          <td {{action 'removeMember' index}}>
+            <div class="table-close"></div>
+          </td>
+          -->
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  <!--
+    <div class="group-form-pair">
+      <div class="group-form-title">Safety Book</div>
+      {{#draggable-dropzone class="group-form-input"}}
+        <input type="file" id="file-chooser" accept="application/pdf" title="Add PDF Book">
+      {{/draggable-dropzone}}
+    </div>
+  -->
+
+  <!--
+    <div class="group-form-pair">
+      <div class="group-form-title">Book Name</div>
+      {{input type="text" class="group-form-input"}}
+    </div>
+  -->
+</div>

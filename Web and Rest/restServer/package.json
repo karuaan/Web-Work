@@ -1,0 +1,26 @@
+{
+  "name": "restserver",
+  "version": "1.0.0",
+  "description": "A basic restful server",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Gregory Goldshteyn",
+  "license": "ISC",
+  "dependencies": {
+    "@okta/oidc-middleware": "0.0.15",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "express": "^4.16.2",
+    "express-busboy": "^6.0.1",
+    "express-fileupload": "^0.3.0",
+    "express-session": "^1.15.6",
+    "fs": "0.0.1-security",
+    "mysql": "^2.15.0",
+    "nodemailer": "^4.4.1",
+    "passport": "^0.4.0",
+    "path": "^0.12.7",
+    "request": "^2.83.0"
+  }
+}

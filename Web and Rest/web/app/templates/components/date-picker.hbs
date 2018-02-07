@@ -1,0 +1,26 @@
+{{#if range}}
+  <div class="cs-input-container-date">
+    <div class="cs-input-container">
+      <input type="text" class="date-input" id="date-start" placeholder="Start"/>
+      <span class="bar"></span>
+    </div>
+    <i class="date-input-icon icon-calendar"></i>
+  </div>
+
+ <div class="cs-input-container-date">
+    <div class="cs-input-container">
+      <input type="text" class="date-input" id="date-end" placeholder="End"/>
+      <span class="bar"></span>
+    </div>
+    <i class="date-input-icon icon-calendar"></i>
+  </div>
+{{else}}
+  <div class="cs-input-container-date">
+    <div class="cs-input-container">
+      <input type="text" class="date-input" id="date" placeholder="Date" />
+      <span class="bar"></span>
+    </div>
+    <i class="date-input-icon icon-calendar"></i>
+  </div>
+{{/if}}
+{{yield}}
