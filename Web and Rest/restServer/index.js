@@ -829,7 +829,7 @@ function addUserRecursive(f_name, l_name, email_arr, user_ids, count, callback){
 				callback(err, null)
 			}
 			else{
-				user_ids.push(Number(ro.insertId));
+				user_ids.push(Number(rows.insertId));
 				callback(null, rows);
 			}
 		});
@@ -840,7 +840,7 @@ function addUserRecursive(f_name, l_name, email_arr, user_ids, count, callback){
 					callback(err, null);
 			}
 			else{
-				user_ids.push(Number(ro.insertId));
+				user_ids.push(Number(rows.insertId));
 				addUserRecursive(f_name, l_name, email_arr, user_ids, count - 1, callback);
 			}
 		});
