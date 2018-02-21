@@ -109,6 +109,7 @@ app.get('/test/getallusers', function(req, res){
 	})
 })
 
+
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
@@ -784,9 +785,43 @@ function addToGroup(group_id, user_ids, callback){
 	})
 }
 
+function updateGroupStatus(group_id, user_ids, callback){
+	var retList = []
+	con.query("SELECT DISTINCT ASSIGNMENT_ID FROM STATUS WHERE STATUS.GROUP_ID=" + mysql.escape(group_id), function(err3, rows3){
+	
+		rows3.forEach(function(value, index, arr){
+			for(var i = 0; i < user_ids.length; ++i){
+				retList.push([Number(group_id), Number(user_ids[i][2]), Number(value.ASSIGNMENT_ID), Number(0)]);
+			}
+		});
+		
+		
+		con.query("INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?", [retList], function(err2, rows2){
+			console.log(rows2);
+			callback(null, rows2);
+		})
+		/*
+		user_ids.forEach(function(value2, index2, arr2){
+			
+			
+			
+		});*/
+		
+
+	});
+	
+}
+
+app.get('/test/groupStatus', function(req, res){
+	updateGroupStatus(1, [[1, 1, 1, 1],[2, 2, 2, 2],[3, 3, 3, 3]], function(err, result){
+		res.json(result);
+	})
+})
+
 function addToGroupByEmail(group_id, user_emails, callback){
 	//console.log('^^^');
-	console.log(user_emails);
+	console.log(user_emails)
+	var promise1 = undefined;
 	//console.log('^^^');
 	con.query("SELECT ADMIN_ID as admin_id, NAME as group_name FROM GROUPS WHERE ID=" + mysql.escape(group_id), function(err, rows){
 		console.log(rows)
@@ -796,29 +831,99 @@ function addToGroupByEmail(group_id, user_emails, callback){
 				callback({'error' : 'group does not exist'}, null)
 			}
 			else{
-				con.query("SELECT ID FROM USERS WHERE USERS.EMAIL=" + mysql.escape(user_emails), function(err1, rows1){
+				con.query("SELECT ID, EMAIL FROM USERS WHERE USERS.EMAIL=" + mysql.escape(user_emails), function(err1, rows1){
 					
 					if(err1){
 						callback(err1, null)
 					}
 					else{
+						let user_ids = rows1.map(x => [x.ID]);
+						if(user_emails.length != rows1.length){
+							let mails = rows1.map(x => [x.EMAIL]);
+							let new_users = user_emails.filter(function(el){
+								return mails.indexOf( el ) < 0;
+							});
+							console.log(new_users)
+							
+							promise1 = new Promise(function(){
+								
+								for(var j = 0; j < new_users.length; ++j){
+									addUser("", "", new_users[j], function(er, ro){
+										console.log('33333');
+										console.log(Number(ro.insertId));
+										user_ids.push(Number(ro.insertId));
+									})
+								}
+								
+							})
+						}
 						
-					let user_ids = rows1.map(x => [x.ID]);
+						if(promise1 === undefined){
+						
+					console.log('22222');
 					console.log(user_ids);
 				
 				//TODO - get ids from emails
 				
 				user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
 				console.log(user_ids);
-				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, result){
+				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
 					if(!err2){
-						con.commit(function(err3){
-							if(err3){con.rollback(function(){callback(err3, null)})}
-							else{callback(null, result)}
-						})
+						console.log('11111');
+						console.log(user_ids);
+						updateGroupStatus(group_id, user_ids, function(err3, result){
+						
+							con.commit(function(err4){
+								if(err4){con.rollback(function(){callback(err4, null)})}
+								else{
+									
+									
+									console.log(result);
+									callback(null, result)
+									
+									}
+							});
+						
+						});
 					}
 					else{callback(err2,null)}
 				});
+				
+						}
+						else{
+							
+							promise1.then(function(){
+								console.log('22222');
+					console.log(user_ids);
+				
+				//TODO - get ids from emails
+				
+				user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
+				console.log(user_ids);
+				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
+					if(!err2){
+						console.log('11111');
+						console.log(user_ids);
+						updateGroupStatus(group_id, user_ids, function(err3, result){
+						
+							con.commit(function(err4){
+								if(err4){con.rollback(function(){callback(err4, null)})}
+								else{
+									
+									
+									console.log(result);
+									callback(null, result)
+									
+									}
+							});
+						
+						});
+					}
+					else{callback(err2,null)}
+				});
+							})
+							
+						}
 				
 				}
 					
@@ -1766,6 +1871,55 @@ app.post('/getGroupsUser', function(req, res){
 		}
 	})
 })
+
+function emailToList(emailList, text, callback){
+	
+	var mailOptions = {
+		from: 'libertyelevatorreader@gmail.com',
+		to: emailList,
+		subject: 'Update from Liberty Reader!',
+		'text': text
+	};
+	
+	if(emailList === undefined){
+		callback({'error': 'emails undefined'}, null);
+	}
+	else{
+		if(emailList[0] === undefined){
+			callback({'error': 'emails undefined'}, null);
+		}
+		else{
+			if(text === undefined){
+				text = " ";
+			}
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					callback(error, null);
+				}
+				else{
+					callback(null, info);
+				}
+			});
+		}
+	}
+	
+	
+	
+	
+	
+}
+
+app.post('/emailToList', function(req, res){
+	emailToList(req.body.emailList, req.body.text, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+})
+
 
 //admin_oidc.on('ready', () => {
 //	user_oidc.on('ready', () => {
