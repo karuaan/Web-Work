@@ -818,6 +818,36 @@ app.get('/test/groupStatus', function(req, res){
 	})
 })
 
+function addUserRecursive(f_name, l_name, email_arr, user_ids, count, callback){
+	
+	if(count < 1){
+		callback({'error' : 'number of new users = 0'}, null)
+	}
+	if(count === 1){
+		addUser(f_name, l_name, email_arr[0], function(err, rows){
+			if(err){
+				callback(err, null)
+			}
+			else{
+				user_ids.push(Number(ro.insertId));
+				callback(null, rows);
+			}
+		});
+	}
+	else{
+		addUser(f_name, l_name, email_arr[count - 1], function(err, rows){
+			if(err){
+					callback(err, null);
+			}
+			else{
+				user_ids.push(Number(ro.insertId));
+				addUserRecursive(f_name, l_name, email_arr, user_ids, count - 1, callback);
+			}
+		});
+	}
+	
+}
+
 function addToGroupByEmail(group_id, user_emails, callback){
 	//console.log('^^^');
 	console.log(user_emails)
@@ -845,7 +875,47 @@ function addToGroupByEmail(group_id, user_emails, callback){
 							});
 							console.log(new_users)
 							
-							promise1 = new Promise(function(){
+							addUserRecursive("", "", new_users, user_ids, new_users.length, function(errA, rowsA){
+								
+								if(errA){
+									callback(errA, null);
+								}
+								else{
+									console.log('2EEEE');
+									console.log(user_ids);
+								
+								//TODO - get ids from emails
+								
+								user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
+								
+								console.log(user_ids);
+								
+								con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
+									if(!err2){
+										console.log('11111');
+										console.log(user_ids);
+										updateGroupStatus(group_id, user_ids, function(err3, result){
+										
+											con.commit(function(err4){
+												if(err4){con.rollback(function(){callback(err4, null)})}
+												else{
+													
+													
+													console.log(result);
+													callback(null, result)
+													
+													}
+											});
+										
+										});
+									}
+									else{callback(err2,null)}
+								});
+								}
+								
+							})
+							
+							/* promise1 = new Promise(function(){
 								
 								for(var j = 0; j < new_users.length; ++j){
 									addUser("", "", new_users[j], function(er, ro){
@@ -855,10 +925,10 @@ function addToGroupByEmail(group_id, user_emails, callback){
 									})
 								}
 								
-							})
+							}) */
 						}
+						else{
 						
-						if(promise1 === undefined){
 						
 					console.log('22222');
 					console.log(user_ids);
@@ -866,7 +936,9 @@ function addToGroupByEmail(group_id, user_emails, callback){
 				//TODO - get ids from emails
 				
 				user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
+				
 				console.log(user_ids);
+				
 				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
 					if(!err2){
 						console.log('11111');
@@ -889,40 +961,6 @@ function addToGroupByEmail(group_id, user_emails, callback){
 					else{callback(err2,null)}
 				});
 				
-						}
-						else{
-							
-							promise1.then(function(){
-								console.log('22222');
-					console.log(user_ids);
-				
-				//TODO - get ids from emails
-				
-				user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
-				console.log(user_ids);
-				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
-					if(!err2){
-						console.log('11111');
-						console.log(user_ids);
-						updateGroupStatus(group_id, user_ids, function(err3, result){
-						
-							con.commit(function(err4){
-								if(err4){con.rollback(function(){callback(err4, null)})}
-								else{
-									
-									
-									console.log(result);
-									callback(null, result)
-									
-									}
-							});
-						
-						});
-					}
-					else{callback(err2,null)}
-				});
-							})
-							
 						}
 				
 				}
