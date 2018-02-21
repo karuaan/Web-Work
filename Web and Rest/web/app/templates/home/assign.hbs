@@ -27,7 +27,10 @@
           {{assignment.name}}
         </div>
         <div class="section-assignment-date">
-          {{assignment.date}}
+          Available From: {{assignment.startDate}}
+        </div>
+        <div class="section-assignment-date">
+          Due Date: {{assignment.dueDate}}
         </div>
       </div>
     {{/each}}
@@ -61,8 +64,9 @@
       </div>
       <div class="employee-add" {{action 'addDialog'}}>+</div>
       <div class="assignment-action">
-        <p class="assignment-action-button" {{action 'groupMail'}}>Email All In Group</p>
-        <p class="assignment-action-button" {{action 'overdueMail'}}>Email All Overdue</p>
+        <p style="float: right" class="assignment-action-button" {{action 'groupMail'}}>Email All In Group<div class="cs-email"></div></p>
+
+        <!--<p class="assignment-action-button" {{action 'overdueMail'}}>Email All Overdue</p>-->
       </div>
     </div>
     <div class="employee-list">

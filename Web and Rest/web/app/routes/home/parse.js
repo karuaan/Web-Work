@@ -153,6 +153,12 @@ export default Ember.Route.extend({
       }
     });
   },
+  model: function() {
+    let parent = this;
+    Ember.run.scheduleOnce('afterRender', function() {
+      parent.send('createLesson');
+    });
+  },
   actions: {
     select: function() {
       let zoom = document.getElementById('scaleSelect').value;
@@ -220,8 +226,23 @@ export default Ember.Route.extend({
       data.appendChild(input);
       row.appendChild(data);
 
+      let parent = this;
+      data = document.createElement('td');
+      data.className += "lesson-close-td";
+      input = document.createElement('div');
+      input.className += "lesson-close";
+      data.appendChild(input);
+      data.addEventListener('click', function() {
+        parent.send('deleteLesson', data);
+      });
+      row.appendChild(data);
+
       table.appendChild(row);
       ref.focus();
+    },
+    deleteLesson: function(element) {
+      element = element.parentNode;
+      element.parentNode.removeChild(element);
     },
     chooseFiles: function() {
       document.getElementById('file-chooser').click();
@@ -305,7 +326,7 @@ export default Ember.Route.extend({
 	  formData.append('book_name', 'TEST_BOOK1');
 	  formData.append('book_file', this.get('pdf'));
 	  var xhr = new XMLHttpRequest();
-	  
+
 	  xhr.open('POST', 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/new/book', true);
 	  xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
 	  xhr.onload = function(){

@@ -225,8 +225,8 @@ button.change-book {
 }
 
 .modal-add {
-  width: 100%;
-  margin: 1em 0em;
+  width: 80%;
+  margin: 1em 10%;
 }
 
 .assignment-header {
@@ -342,6 +342,8 @@ button.change-book {
 .employee-add-container {
   border: 2px solid #71a899;
   font-weight: bold;
+  overflow: hidden;
+  position: relative;
 }
 .employee-count {
   display: inline-block;
@@ -358,6 +360,11 @@ button.change-book {
   color: #FFFFFF;
   background: #71a899;
   transition: all ease 0.3s;
+
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
 }
 .employee-add:hover {
   background: #285451;
@@ -673,6 +680,7 @@ button.change-book {
 .assignment-action {
   float: right;
   margin: 0.4em 1em;
+  margin-right: 3em;
 }
 .assignment-action-button {
   cursor: pointer;
@@ -685,11 +693,9 @@ button.change-book {
 }
 .send-to,
 .send-text {
-  margin: 1em 0em;
+  margin: 1em 10%;
+  width: 80%;
   padding: 1em;
-  width: 100%;
-  max-width: 100%;
-  min-width: 100%;
   min-height: 5em;
   border-width: 0.05em;
 }
@@ -891,18 +897,19 @@ input[type="submit"]:hover {
 }
 .group-form-pair {
   width: 100%;
-  padding: 1em;
+  padding: 1em 2em;
 }
 
 .group-form-pair .group-form-title {
   display: inline-block;
-  width: 20%;
+  /*width: 20%;*/
   text-align: right;
+  margin: 1em 0em;
 }
 
 .group-form-input-date {
   display: inline-block;
-  width: 75%;
+  /*width: 75%;*/
   height: 1em;
 }
 
@@ -3586,4 +3593,27 @@ html[dir='rtl'] #documentPropertiesOverlay .row > * {
 .content-box {
   margin-left: 5%;
   width: 90%;
+}
+
+
+.lesson-close-td {
+  width: 1em;
+}
+.lesson-close {
+  background-image: url("images/close.png");
+  background-size: cover;
+  background-position: center;
+  width: 1em;
+  height: 1em;
+
+}
+/* SVG Icons */
+.cs-email {
+  background: url("images/cs-email.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 2em;
+  width: 3.5em;
+  display: inline-block;
+  float: right;
 }

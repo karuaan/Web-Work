@@ -85,7 +85,7 @@ export default Ember.Controller.extend({
 			  }
 			  self.setEmps(employees);
 			  if ((self.get('session').get('userData')) === undefined){
-				  admin_id = 1;
+				  admin_id = 3;
 			  }
 			  else{
 				  admin_id = self.get('session').get('userData');

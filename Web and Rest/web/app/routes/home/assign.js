@@ -25,6 +25,7 @@ export default Ember.Route.extend({
     var groups = [];
     var self = this;
 	var admin_id = 3;
+	var groupId = 1;
 	if (this.get('session').get('userData') === undefined){
 		admin_id = 3
 	}
@@ -54,6 +55,7 @@ export default Ember.Route.extend({
 	  console.log(groups)
       controller.set('groups', groups);
 		controller.set('groupId', groups[0]["id"]);
+		groupId = groups[0]["id"];
     }).then(function(reject){
     });
 
@@ -179,8 +181,8 @@ export default Ember.Route.extend({
 				  "crossDomain":true,
 				  "dataType": 'json', // type of data expected from the API response
 				  "data": { // Begin data payload
-					"assignment_id" : this.assignments[0]["id"], // nilesh commnet - change this id with user ud
-					"group_id" : controller.get('groupId')
+					"assignment_id" : assignments[0]["id"], // nilesh commnet - change this id with user ud
+					"group_id" : groupId
 				  }
 				}).then(function(resolve) {
 				  //window.console.log(resolve.length);
@@ -370,6 +372,7 @@ export default Ember.Route.extend({
       document.getElementById('cs-fog').style.display = 'none';
     },
     addConfirm: function() {
+		var restServerURL = 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000';
       var progress = [];
       for(let i = 0; i < this.get('assignments').length; i++) {
         Ember.Logger.log(this.get('assignments')[i].id);
@@ -383,6 +386,9 @@ export default Ember.Route.extend({
 	  window.console.log(document.getElementById("add-mail").value);
 		console.log("&&&&");
 		console.log(this.controller.get('groupId'));
+		console.log(this.get('assignments'));
+		console.log(this.controller.get('assignments'));
+		let myController = this.controller;
 	  Ember.$.ajax('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/addToGroupEmail', {
        "type": 'POST', // HTTP method
        "crossDomain":true,
@@ -396,8 +402,8 @@ export default Ember.Route.extend({
 				  "crossDomain":true,
 				  "dataType": 'json', // type of data expected from the API response
 				  "data": { // Begin data payload
-					"assignment_id" : assignments[0]["id"], // nilesh commnet - change this id with user ud
-					"group_id" : this.controller.get('groupId')
+					"assignment_id" : myController.get('assignments')[0]["id"], // nilesh commnet - change this id with user ud
+					"group_id" : myController.get('groupId')
 				  }
 				}).then(function(resolve) {
 				  //window.console.log(resolve.length);
@@ -509,6 +515,25 @@ export default Ember.Route.extend({
       let to = document.getElementsByClassName('send-to')[0].value;
       var array = to.split(',');
       Ember.Logger.log(array);
+	  
+	  ///emailToList
+	  
+	  Ember.$.ajax('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/emailToList', {
+       "type": 'POST', // HTTP method
+       "crossDomain":true,
+       "dataType": 'json', // type of data expected from the API response
+       "data": {'emailList': to,
+				'text' : message
+				}
+     }).then(function(resolve) {
+		 
+		 
+		 
+	 }).then(function(reject){
+
+       });
+	  
+	  
       document.getElementById('send-mail').style.display = 'none';
       document.getElementById('cs-fog').style.display = 'none';
     },
