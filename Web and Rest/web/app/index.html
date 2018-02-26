@@ -37,7 +37,7 @@ rel="stylesheet"/>
   </head>
   <body class="loadingInProgress" style="height: 80%">
   
-	<div id="okta-login-container">
+	<div id="okta-login-container"></div>
   
     {{content-for "body"}}
 
@@ -48,7 +48,7 @@ rel="stylesheet"/>
     <script type="text/javascript" src="{{rootURL}}assets/datepicker/bootstrap-material-datetimepicker.js"></script>
 
     {{content-for "body-footer"}}
-	</div>
+	
 	<script type="text/javascript">
   var oktaSignIn = new OktaSignIn({
     baseUrl: "https://dev-682006.oktapreview.com",
@@ -72,7 +72,7 @@ rel="stylesheet"/>
         // Save the tokens for later use, e.g. if the page gets refreshed:
         oktaSignIn.tokenManager.add('accessToken', accessToken);
         oktaSignIn.tokenManager.add('idToken', idToken);
-
+		res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
         // Remove the tokens from the window location hash
         window.location.hash='';
       },
@@ -98,7 +98,6 @@ rel="stylesheet"/>
         },
         function error(err) {
           // handle errors as needed
-		  res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/')
           console.error(err);
         }
       );
