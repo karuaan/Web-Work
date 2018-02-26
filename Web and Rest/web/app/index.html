@@ -60,9 +60,9 @@ rel="stylesheet"/>
     }
   });
   if (oktaSignIn.token.hasTokensInUrl()) {
-  if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign"){
+  if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/"){
   console.log(window.location.href)
-  window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign";
+  window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/";
    }
 	oktaSignIn.token.parseTokensFromUrl(
       function success(res) {
@@ -76,7 +76,7 @@ rel="stylesheet"/>
         // Save the tokens for later use, e.g. if the page gets refreshed:
         oktaSignIn.tokenManager.add('accessToken', accessToken);
         oktaSignIn.tokenManager.add('idToken', idToken);
-		res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
+		//res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
         // Remove the tokens from the window location hash
         window.location.hash='';
       },
@@ -104,7 +104,7 @@ rel="stylesheet"/>
         function success(res) {
           // Nothing to do in this case, the widget will automatically redirect
           // the user to Okta for authentication, then back to this page if successful
-		  res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
+		  //res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
         },
         function error(err) {
           // handle errors as needed
