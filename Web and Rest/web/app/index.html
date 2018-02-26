@@ -89,7 +89,6 @@ rel="stylesheet"/>
         return;
       }
       // No session, show the login form
-	  res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/')
       oktaSignIn.renderEl(
         { el: '#okta-login-container' },
         function success(res) {
