@@ -359,17 +359,7 @@ export default Ember.Route.extend({
       for(let i = 0; i < employees.length; i++) {
         for(let j = 0; j < employees[i].progress.length; j++) {
           if(employees[i].progress[j].id === assignment.id) {
-			  if(index == 0){
             Ember.set(employees[i], 'status', employees[i].progress[j].status);
-			  }
-			  if(index == 1){
-				  console.log(index)
-				  console.log(i)
-				  Ember.set(employees[i], 'status', 1);
-			  }
-			  else{
-				  Ember.set(employees[i], 'status', employees[i].progress[j].status);
-			  }
           }
         }
       }

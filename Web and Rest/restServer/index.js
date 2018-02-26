@@ -1590,7 +1590,7 @@ app.post('/getassignments', function(req, res){
 });
 
 app.get('/getassignments', function(req, res){
-	getAssignments(1, 1, function(err, result){
+	getAssignments(1, function(err, result){
 		if(err){
 			res.json(err);
 		}
