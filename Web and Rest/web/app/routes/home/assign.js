@@ -363,6 +363,8 @@ export default Ember.Route.extend({
             Ember.set(employees[i], 'status', employees[i].progress[j].status);
 			  }
 			  if(index == 1){
+				  console.log(index)
+				  console.log(i)
 				  Ember.set(employees[i], 'status', 1);
 			  }
 			  else{
