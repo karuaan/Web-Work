@@ -350,7 +350,7 @@ export default Ember.Route.extend({
     },
     selectAssignment: function(index) {
 		console.log(index);
-		console.log(assignments[index]);
+		console.log(this.assignments[index]);
       var employees = this.get('employees');
       var assignment = this.get('assignments')[index];
       this.set('selected', index);
