@@ -349,8 +349,7 @@ export default Ember.Route.extend({
       this.transitionTo('home.group');
     },
     selectAssignment: function(index) {
-		console.log(index);
-		console.log(this.get('assignments')[index]);
+
       var employees = this.get('employees');
       var assignment = this.get('assignments')[index];
       this.set('selected', index);
@@ -360,7 +359,15 @@ export default Ember.Route.extend({
       for(let i = 0; i < employees.length; i++) {
         for(let j = 0; j < employees[i].progress.length; j++) {
           if(employees[i].progress[j].id === assignment.id) {
+			  if(index == 0){
             Ember.set(employees[i], 'status', employees[i].progress[j].status);
+			  }
+			  if(index == 1){
+				  Ember.set(employees[i], 'status', 1);
+			  }
+			  else{
+				  Ember.set(employees[i], 'status', employees[i].progress[j].status);
+			  }
           }
         }
       }
