@@ -349,6 +349,7 @@ export default Ember.Route.extend({
       this.transitionTo('home.group');
     },
     selectAssignment: function(index) {
+		console.log(index);
       var employees = this.get('employees');
       var assignment = this.get('assignments')[index];
       this.set('selected', index);
