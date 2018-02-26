@@ -60,6 +60,7 @@ rel="stylesheet"/>
     }
   });
   if (oktaSignIn.token.hasTokensInUrl()) {
+  window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign";
     oktaSignIn.token.parseTokensFromUrl(
       function success(res) {
         // The tokens are returned in the order requested by `responseType` above
@@ -82,6 +83,7 @@ rel="stylesheet"/>
       }
     );
   } else {
+  window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200"
     oktaSignIn.session.get(function (res) {
       // Session exists, show logged in state.
       if (res.status === 'ACTIVE') {
