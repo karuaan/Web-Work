@@ -61,6 +61,7 @@ rel="stylesheet"/>
   });
   if (oktaSignIn.token.hasTokensInUrl()) {
   if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign"){
+  console.log(window.location.href)
   window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign";
    }
 	oktaSignIn.token.parseTokensFromUrl(
@@ -86,6 +87,7 @@ rel="stylesheet"/>
     );
   } else {
   if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200"){
+	console.log(window.location.href)
 	window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200"
   }
     oktaSignIn.session.get(function (res) {
