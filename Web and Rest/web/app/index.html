@@ -89,14 +89,17 @@ rel="stylesheet"/>
         return;
       }
       // No session, show the login form
+	  res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/')
       oktaSignIn.renderEl(
         { el: '#okta-login-container' },
         function success(res) {
           // Nothing to do in this case, the widget will automatically redirect
           // the user to Okta for authentication, then back to this page if successful
+		  res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
         },
         function error(err) {
           // handle errors as needed
+		  res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/')
           console.error(err);
         }
       );
