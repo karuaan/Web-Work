@@ -92,6 +92,12 @@ rel="stylesheet"/>
 	console.log(window.location.href !=="http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/")
 	window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/"
   }
+  else{
+	if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/"){
+	  console.log(window.location.href)
+	  window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/";
+	   }
+  }
     oktaSignIn.session.get(function (res) {
       // Session exists, show logged in state.
       if (res.status === 'ACTIVE') {
