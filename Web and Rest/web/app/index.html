@@ -37,7 +37,7 @@ rel="stylesheet"/>
   </head>
   <body class="loadingInProgress" style="height: 80%">
   
-	<div id="okta-login-container"></div>
+	<div id="okta-login-container">
   
     {{content-for "body"}}
 
@@ -48,6 +48,7 @@ rel="stylesheet"/>
     <script type="text/javascript" src="{{rootURL}}assets/datepicker/bootstrap-material-datetimepicker.js"></script>
 
     {{content-for "body-footer"}}
+	</div>
 	<script type="text/javascript">
   var oktaSignIn = new OktaSignIn({
     baseUrl: "https://dev-682006.oktapreview.com",
