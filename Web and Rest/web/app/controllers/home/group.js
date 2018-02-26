@@ -25,7 +25,7 @@ export default Ember.Controller.extend({
   },
   onCreateGroup(){
 	  return {
-		admin_id: 1,
+		admin_id: 3,
 		user_ids: this.get('members'),
 		group_name: this.get('group_name')
 	  };
