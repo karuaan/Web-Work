@@ -113,7 +113,7 @@ app.get('/test/getallusers', function(req, res){
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200
+    res.setHeader('Access-Control-Allow-Origin', '*');
 	res.headers.delete('Content-Type');
 
     // Request methods you wish to allow
