@@ -331,7 +331,19 @@ export default Ember.Route.extend({
 	  var formData = new FormData();
 	  formData.append('book_name', 'TEST_BOOK1');
 	  formData.append('book_blob', this.get('rawFile'), 'book.pdf');
-	  var xhr = new XMLHttpRequest();
+	  
+	  Ember.$.ajax('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/new/book',
+	  {
+		  type: 'POST',
+			data: formData,
+		processData: false,
+		contentType: false
+	  }).done(function(data){
+		  console.log(data);
+	  })
+	  )
+	  
+	  /* var xhr = new XMLHttpRequest();
 
 	  xhr.open('POST', 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/new/book', true);
 	  xhr.setRequestHeader('Content-Type','multipart/form-data');
