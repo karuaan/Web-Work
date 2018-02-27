@@ -249,13 +249,17 @@ export default Ember.Route.extend({
       document.getElementById('file-chooser').click();
     },
     selectFile: function() {
+
       let parent = this;
       var file = document.getElementById('file-chooser').files[0];
-      this.set('rawFile', file);
+      //this.set('rawFile', file);
       var fileReader = new FileReader();
-      fileReader.onload = function() {
-        var arraybuffer = this.result;
+      fileReader.onload = function(e) {
+        var arraybuffer = e.target.result;
         var uint8array = new Uint8Array(arraybuffer);
+        parent.set('rawFile', new Blob([uint8array]));
+        console.log('file:'):
+        console.log(parent.get('rawFile'));
         PDFJS.getDocument(uint8array).then(function(pdf) {
           document.getElementById('table-toggle').style.display = 'block';
           document.getElementById('table-view-head-title').value = file.name;
