@@ -341,7 +341,6 @@ export default Ember.Route.extend({
 	  }).done(function(data){
 		  console.log(data);
 	  })
-	  )
 	  
 	  /* var xhr = new XMLHttpRequest();
 
