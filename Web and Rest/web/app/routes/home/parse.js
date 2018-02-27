@@ -8,6 +8,7 @@ export default Ember.Route.extend({
   pageCount: 0,
   pdf: null,
   lessons: null,
+  rawFile: null,
   renderPage: function(page, index) {
     var scale = this.get('scale');
     var hdpi = this.get('hdpi');
@@ -250,6 +251,7 @@ export default Ember.Route.extend({
     selectFile: function() {
       let parent = this;
       var file = document.getElementById('file-chooser').files[0];
+      this.set('rawFile', file);
       var fileReader = new FileReader();
       fileReader.onload = function() {
         var arraybuffer = this.result;
