@@ -321,7 +321,7 @@ export default Ember.Route.extend({
           /* Page PRoxy is Pages, lesson is object */
           lessons.push(lesson);
         }
-        self.set('lessons', lessons);
+        this.set('lessons', lessons);
 		//console.log(lessons);
       }
 	  var formData = new FormData();
