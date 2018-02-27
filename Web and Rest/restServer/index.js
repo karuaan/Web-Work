@@ -1355,7 +1355,7 @@ app.get('/books', /*user_oidc.ensureAuthenticated(),*/ function(req, res) {
 //Done
 app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	console.log(req.body);
-	console.log(req.file);
+	console.log(req.files);
 	/*
 	let bookfile = req.files.book_file
 	addBook(req.body.book_name, bookfile.file, function(err, result){
