@@ -1590,7 +1590,7 @@ app.post('/getassignments', function(req, res){
 });
 
 app.get('/getassignments', function(req, res){
-	getAssignments(1, 1, function(err, result){
+	getAssignments(1, function(err, result){
 		if(err){
 			res.json(err);
 		}
@@ -1791,6 +1791,31 @@ app.post('/getAssignmentsUser', function(req, res){
 		}
 	})
 
+});
+
+app.delete('/logout', function(req, res){
+	
+	var options = {
+				url: 'https://dev-383846.oktapreview.com/api/v1/sessions/' + req.body.sessionId,
+				method: 'delete',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json',
+					'Authorization': 'SSWS 00Sf_mZYUteEpe-evfHB0U9Wqi1bag9rLSZirF9qU4'
+				}
+			};
+
+			request(options, function(err, httpr, body){
+				console.log(err)
+				console.log(body)
+				if(err){
+					res.json(err)
+				}
+				else{
+
+				}
+			});
+	
 });
 
 // added new group call to get the list of groups created by that admin id

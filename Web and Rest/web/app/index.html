@@ -20,10 +20,25 @@
     <script src="{{rootURL}}assets/canvas/blob-stream.js"></script>
     <script src="{{rootURL}}assets/canvas/canvas2pdf.js"></script>
     <script src="{{rootURL}}assets/canvas/codemirror.js"></script>
+	
+	<script
+src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.6.0/js/okta-sign-in.min.js"
+type="text/javascript"></script>
+<link
+href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.6.0/css/okta-sign-in.min.css"
+type="text/css"
+rel="stylesheet"/>
+<link
+href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.6.0/css/okta-theme.css"
+type="text/css"
+rel="stylesheet"/>
 
     {{content-for "head-footer"}}
   </head>
   <body class="loadingInProgress" style="height: 80%">
+  
+	<div id="okta-login-container"></div>
+  
     {{content-for "body"}}
 
     <script src="{{rootURL}}assets/vendor.js"></script>
@@ -33,5 +48,79 @@
     <script type="text/javascript" src="{{rootURL}}assets/datepicker/bootstrap-material-datetimepicker.js"></script>
 
     {{content-for "body-footer"}}
+	
+	<script type="text/javascript">
+  var oktaSignIn = new OktaSignIn({
+    baseUrl: "https://dev-682006.oktapreview.com",
+    clientId: "0oae33mmzlqga74c30h7",
+    authParams: {
+      issuer: "https://dev-682006.oktapreview.com/oauth2/default",
+      responseType: ['token', 'id_token'],
+      display: 'page'
+    }
+  });
+  if (oktaSignIn.token.hasTokensInUrl()) {
+  if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/"){
+  console.log(window.location.href)
+  window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/";
+   }
+	oktaSignIn.token.parseTokensFromUrl(
+      function success(res) {
+        // The tokens are returned in the order requested by `responseType` above
+        var accessToken = res[0];
+        var idToken = res[1]
+
+        // Say hello to the person who just signed in:
+        console.log('Hello, ' + idToken.claims.email);
+
+        // Save the tokens for later use, e.g. if the page gets refreshed:
+        oktaSignIn.tokenManager.add('accessToken', accessToken);
+        oktaSignIn.tokenManager.add('idToken', idToken);
+		//res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
+        // Remove the tokens from the window location hash
+        window.location.hash='';
+      },
+      function error(err) {
+        // handle errors as needed
+        console.error(err);
+      }
+    );
+  } else {
+  /*
+  if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/"){
+	console.log(window.location.href)
+	console.log(window.location.href != "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/")
+	console.log(window.location.href !=="http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/")
+	window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/"
+  }
+  else{
+	if(window.location.href !== "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/"){
+	  console.log(window.location.href)
+	  window.location.href = "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign/";
+	   }
+  }
+  */
+    oktaSignIn.session.get(function (res) {
+      // Session exists, show logged in state.
+      if (res.status === 'ACTIVE') {
+        console.log('Welcome back, ' + res.login);
+        return;
+      }
+      // No session, show the login form
+      oktaSignIn.renderEl(
+        { el: '#okta-login-container' },
+        function success(res) {
+          // Nothing to do in this case, the widget will automatically redirect
+          // the user to Okta for authentication, then back to this page if successful
+		  //res.session.setCookieAndRedirect('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:4200/home/assign')
+        },
+        function error(err) {
+          // handle errors as needed
+          console.error(err);
+        }
+      );
+    });
+  }
+</script>
   </body>
 </html>
