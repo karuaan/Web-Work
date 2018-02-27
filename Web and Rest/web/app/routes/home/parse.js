@@ -258,7 +258,7 @@ export default Ember.Route.extend({
         var arraybuffer = e.target.result;
         var uint8array = new Uint8Array(arraybuffer);
         parent.set('rawFile', new Blob([uint8array]));
-        console.log('file:'):
+        console.log('file:');
         console.log(parent.get('rawFile'));
         PDFJS.getDocument(uint8array).then(function(pdf) {
           document.getElementById('table-toggle').style.display = 'block';
