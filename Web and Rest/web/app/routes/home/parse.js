@@ -334,7 +334,7 @@ export default Ember.Route.extend({
 	  var xhr = new XMLHttpRequest();
 
 	  xhr.open('POST', 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/new/book', true);
-	  xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+	  xhr.setRequestHeader('Content-Type','multipart/form-data');
 	  xhr.onload = function(){
 		  if(xhr.status === 200){
 			  console.log('success!!!');
