@@ -339,7 +339,7 @@ export default Ember.Route.extend({
 			  console.log('errrrrrr');
 		  }
 	  }
-	  xhr.send(this.get('pdf'));
+	  xhr.send(this.get('rawFile'));
 		/*
       Ember.$.ajax('http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/postbook', {
         "type": 'POST', // HTTP method
