@@ -1984,6 +1984,40 @@ app.post('/emailToList', function(req, res){
 	})
 })
 
+function getLatestVersion(callback)
+{
+	con.query
+	{
+		"select versionURI, versionNumber FROM androidVersionTable order by versionNumber", function (err, rows)
+		{
+			if (err)
+			{
+				callback(err, null);
+			}
+			else 
+			{
+				callback(null, rows);
+			}
+		}
+	
+	}
+}
+
+app.get('/androidVersionTable', function(req, res)
+{
+	getLatestVersion(function(err, rows)
+	{
+		if (err)
+		{
+			res.json(err);
+		}
+
+		else 
+		{
+			res.json(rows);
+		}
+	})
+})
 
 //admin_oidc.on('ready', () => {
 //	user_oidc.on('ready', () => {
