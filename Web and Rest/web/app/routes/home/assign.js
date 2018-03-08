@@ -55,8 +55,8 @@ export default Ember.Route.extend({
 	  console.log("^^^^")
 	  console.log(groups)
       controller.set('groups', groups);
-		controller.set('groupId', groups[0]["id"]);
-		groupId = groups[0]["id"];
+		controller.set('groupId', -1);
+		//groupId = groups[0]["id"];
     }).then(function(reject){
     });
 
