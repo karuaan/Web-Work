@@ -1987,8 +1987,8 @@ app.post('/emailToList', function(req, res){
 function getLatestVersion(callback)
 {
 	con.query
-	{
-		"select versionURI, versionNumber FROM androidVersionTable order by versionNumber", function (err, rows)
+	(
+		"select version_url FROM ANDROID_VERSION WHERE version_number IN (SELECT MAX(version_number) FROM ANDROID_VERSION)", function (err, rows)
 		{
 			if (err)
 			{
@@ -2000,7 +2000,7 @@ function getLatestVersion(callback)
 			}
 		}
 	
-	}
+	)
 }
 
 app.get('/androidVersionTable', function(req, res)
