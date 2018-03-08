@@ -43,6 +43,7 @@ export default Ember.Route.extend({
       window.console.log(resolve.length);
       //window.console.log(controller.get("groups"));
       //groups = self.get("groups");
+	  groups.push({"name": "SELECT GROUP", "ID": "-1"})
       for(var i=0;i<resolve.length;i++) {
         var group={};
         group["name"] = resolve[i]["NAME"];
