@@ -25,7 +25,7 @@ export default Ember.Route.extend({
     var groups = [];
     var self = this;
 	var admin_id = 3;
-	var groupId = 1;
+	var groupId = -1;
 	if (this.get('session').get('userData') === undefined){
 		admin_id = 3
 	}
