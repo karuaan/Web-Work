@@ -18,7 +18,7 @@ export default Ember.Controller.extend({
 	},
 	selectedBook: null,
 	employees: [],
-	groupId: 2,
+	groupId: -1,
 	  session: Ember.inject.service('session'),
 
 	actions:{

@@ -113,7 +113,7 @@ app.get('/test/getallusers', function(req, res){
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -1355,6 +1355,7 @@ app.get('/books', /*user_oidc.ensureAuthenticated(),*/ function(req, res) {
 //Done
 app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	console.log(req.body);
+	console.log(req.files);
 	/*
 	let bookfile = req.files.book_file
 	addBook(req.body.book_name, bookfile.file, function(err, result){
@@ -1983,6 +1984,40 @@ app.post('/emailToList', function(req, res){
 	})
 })
 
+function getLatestVersion(callback)
+{
+	con.query
+	(
+		"select version_url FROM ANDROID_VERSION WHERE version_number IN (SELECT MAX(version_number) FROM ANDROID_VERSION)", function (err, rows)
+		{
+			if (err)
+			{
+				callback(err, null);
+			}
+			else 
+			{
+				callback(null, rows);
+			}
+		}
+	
+	)
+}
+
+app.get('/androidVersionTable', function(req, res)
+{
+	getLatestVersion(function(err, rows)
+	{
+		if (err)
+		{
+			res.json(err);
+		}
+
+		else 
+		{
+			res.json(rows);
+		}
+	})
+})
 
 //admin_oidc.on('ready', () => {
 //	user_oidc.on('ready', () => {

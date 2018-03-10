@@ -25,7 +25,7 @@ export default Ember.Route.extend({
     var groups = [];
     var self = this;
 	var admin_id = 3;
-	var groupId = 1;
+	var groupId = -1;
 	if (this.get('session').get('userData') === undefined){
 		admin_id = 3
 	}
@@ -43,6 +43,7 @@ export default Ember.Route.extend({
       window.console.log(resolve.length);
       //window.console.log(controller.get("groups"));
       //groups = self.get("groups");
+	  groups.push({"name": "SELECT GROUP", "ID": "-1"})
       for(var i=0;i<resolve.length;i++) {
         var group={};
         group["name"] = resolve[i]["NAME"];
@@ -54,8 +55,8 @@ export default Ember.Route.extend({
 	  console.log("^^^^")
 	  console.log(groups)
       controller.set('groups', groups);
-		controller.set('groupId', groups[0]["id"]);
-		groupId = groups[0]["id"];
+		controller.set('groupId', -1);
+		//groupId = groups[0]["id"];
     }).then(function(reject){
     });
 
