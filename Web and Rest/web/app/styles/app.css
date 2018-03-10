@@ -34,8 +34,8 @@ body {
 .login-icon {
   display: block;
   margin: 0 auto;
-  height: 4em;
-  width: 4em;
+  height: 10em;
+  width: 10em;
   background-image: url("images/logo.png");
   background-size: cover;
   background-position: center;
