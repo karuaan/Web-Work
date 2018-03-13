@@ -307,6 +307,10 @@ export default Ember.Route.extend({
           lesson.start = inputs[i].value;
           i++;
           lesson.end = inputs[i].value;
+		  
+		  console.log(lesson.title);
+		  console.log(lesson.start);
+		  console.log(lesson.end);
 
           var pages = this.get('pages');
           var pageProxy = [];
