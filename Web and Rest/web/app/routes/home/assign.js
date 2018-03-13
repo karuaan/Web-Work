@@ -30,7 +30,8 @@ export default Ember.Route.extend({
 		admin_id = 3
 	}
 	else{
-		admin_id = this.get('session').get('userData');
+		//admin_id = this.get('session').get('userData');
+		admin_id = 3
 	}
     Ember.$.ajax(restServerURL + '/getgroups', {
     	"type": 'POST', // HTTP method
