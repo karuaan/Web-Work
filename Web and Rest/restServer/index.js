@@ -2019,6 +2019,49 @@ app.get('/androidVersionTable', function(req, res)
 	})
 })
 
+function getMasterTable(admin_id, callback){
+	
+	con.query(
+		"SELECT " +
+		  "GROUP_USER_TABLE.USER_ID AS USER_ID, " +
+		  "GROUP_USER_TABLE.GROUP_ID AS GROUP_ID, "  +
+		  "GROUP_USER_TABLE.USER_NAME AS USER_NAME, " +
+		  "GROUP_USER_TABLE.GROUP_NAME AS GROUP_NAME, " +
+		  "STATUS.ASSIGNMENT_ID as ASSIGNMENT_ID, " +
+		  "STATUS.IS_COMPLETE as IS_COMPLETE, " +
+		  "ASSIGNMENTS.NAME as ASSIGNMENT_NAME " +
+		"FROM " +
+		"(SELECT " +
+		  "GROUPS.ID as GROUP_ID, " +
+		  "GROUPS.NAME as GROUP_NAME, " +
+		  "USERS.ID as USER_ID, " +
+		  "USERS.NAME as USER_NAME " +
+		 "FROM GROUPS JOIN USERS ON USERS.ID=GROUPS.USER_ID " +
+		 "WHERE GROUPS.ADMIN_ID=" + mysql.escape(admin_id) + ") as GROUP_USER_TABLE " +
+		 "LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=GROUP_USER_TABLE.USER_ID " +
+		 "LEFT JOIN ASSIGNMENTS ON STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID ",
+		function(err, rows){
+			if(err){
+				callback(err, null);
+			}
+			else{
+				callback(null, rows);
+			}
+		}
+	);
+}
+
+app.get('/test/getMasterTable', function(req, res){
+	getMasterTable(3, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+})
+
 //admin_oidc.on('ready', () => {
 //	user_oidc.on('ready', () => {
 		app.listen(3000, () => console.log('server running on 3000'))
