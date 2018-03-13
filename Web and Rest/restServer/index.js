@@ -2037,8 +2037,8 @@ function getMasterTable(admin_id, callback){
 		  "GROUPS.ID as GROUP_ID, " +
 		  "GROUPS.NAME as GROUP_NAME, " +
 		  "USERS.ID as USER_ID, " +
-		  "USERS.FIRST_NAME as USER_FIRST_NAME " +
-		  "USERS.LAST_NAME as USER_FIRST_NAME " +
+		  "USERS.FIRST_NAME as USER_FIRST_NAME, " +
+		  "USERS.LAST_NAME as USER_LAST_NAME, " +
 		  "USERS.EMAIL as USER_EMAIL " +
 		 "FROM GROUPS JOIN USERS ON USERS.ID=GROUPS.USER_ID " +
 		 "WHERE GROUPS.ADMIN_ID=" + mysql.escape(admin_id) + ") as GROUP_USER_TABLE " +
