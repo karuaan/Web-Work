@@ -90,9 +90,13 @@ export class EmployeesComponent implements OnInit {
 			  }
 			}
 			else{
-				this.assignments = [];
-				this.selectedAssignment = null;
-				this.employees = [];
+				this.assignments = [{"assignment_id": -1, "NAME": "No assignments for this group"}];
+				this.selectedAssignment = this.assignments[0];
+				this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
+						this.employees = data3;
+						console.log(data3[0]);
+					
+				});
 			}
 		});
   }

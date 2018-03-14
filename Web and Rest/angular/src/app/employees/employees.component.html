@@ -1,31 +1,41 @@
-<aside>
-	<ul>
-		<li *ngFor="let assignment of assignments" [class.selectedGroup]="assignment === selectedAssignment" (click)="assignmentSelect(assignment)" value={{assignment.ID}}>{{assignment.NAME}}</li>
-	</ul>
-</aside>
-<main>
-	<ul>
-		<li *ngFor="let group of groups" [class.selectedGroup]="group === selectedGroup"  class="group" (click)="groupSelect(group)" value={{group.ID}}>{{group.NAME}}</li>
-	</ul>
+<div class="container">
+	<div class="row">
+		<div class="col-xl-2">
+			<ul>
+				<li *ngFor="let assignment of assignments" [class.selectedGroup]="assignment === selectedAssignment" (click)="assignmentSelect(assignment)" value={{assignment.ID}}>{{assignment.NAME}}</li>
+			</ul>
+		</div>
+		<div class="col-xl-10">
+			<ul>
+				<li *ngFor="let group of groups" [class.selectedGroup]="group === selectedGroup"  class="group" (click)="groupSelect(group)" value={{group.ID}}>{{group.NAME}}</li>
+			</ul>
 
-	<table>
-		<th>First Name</th>
-		<th>Last Name</th>
-		<th>Email</th>
-		<th>Status</th>
-		<tr *ngFor="let employee of employees">
-			<td>{{employee.FIRST_NAME}}</td>
-			<td>{{employee.LAST_NAME}}</td>
-			<td>{{employee.EMAIL}}</td>
-			<td>{{employee.IS_COMPLETE.data[0]}}</td>
-		</tr>
-	</table>
-	<!-- TODO - implement email buttons 
-	<ul>
-		<li><button class="email" (click)="emailGroup()">Email all in this group</button></li>
-		<li><button class="email" (click)="emailGroupIncomplete()">Email all incomplete in this group</button></li>
-		<li><button class="email" (click)="emailGroupLate()">Email all late in this group</button></li>
-	</ul>
+			<table>
+				<th>First Name</th>
+				<th>Last Name</th>
+				<th>Email</th>
+				<th *ngIf="selectedAssignment.assignment_id > 0">Status</th>
+				<tr *ngFor="let employee of employees">
+					<td>{{employee.FIRST_NAME}}</td>
+					<td>{{employee.LAST_NAME}}</td>
+					<td>{{employee.EMAIL}}</td>
+					<td *ngIf="selectedAssignment.assignment_id > 0">{{employee.IS_COMPLETE.data[0]}}</td>
+				</tr>
+			</table>
+			<!-- TODO - implement email buttons --> 
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xl-4"><button class="email" (click)="emailGroup()">Email all in this group</button></div>
+		<div class="col-xl-4"><button class="email" (click)="emailGroupIncomplete()">Email all incomplete in this group</button></div>
+		<div class="col-xl-4"><button class="email" (click)="emailGroupLate()">Email all late in this group</button></div>
+	</div>
+	<div class="row">
 	<textarea ng-model="emailContents"></textarea>
-	<!-- -->
-</main>
+	</div>
+	<div class="row">
+		<div class="col-sm-4"><button>Add new book</button></div>
+		<div class="col-sm-4"><button>Add new lesson</button></div>
+		<div class="col-sm-4"><button>Add new assignment</button></div>
+	</div>
+</div>

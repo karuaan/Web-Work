@@ -1,54 +1,4 @@
-*{
-	font-family: Sans-serif;	
-}
-aside{
-	float: left;
-	width: 20%;
-	height: 100%;
-	background-color: #EEEEEE;
-	text-align: center;
-}
-main{
-	float: right;
-	width: 80%;
-}
-table{
-	background-color: #669999;
-	width:98%;
-	margin: 1%;
-}
-th{
-	color: #EEEEEE;
-	font-family: Sans-serif;
-	text-align: left;
-}
-tr{
-	background-color: #EEEEEE;
-	margin: 5%;
-	padding: 10%;
-}
-form{
-	margin: 1%;
-	background-color: #E6E6E6;	
-}
-h2{
-	background-color: #669999;
-	color: #EEEEEE;
-	padding: 0.1%;
-}
-label{
-	padding: 0.1%;
-}
-td{
-	font-weight: bold;
-	padding: 0.15%;
-}
-button{
-	margin-left: auto;
-  margin-right: auto;
-  background-color: #669999;
-  color: #EEEEEE;
-}
+
 
 ul{
 	list-style-type: none;
@@ -57,19 +7,12 @@ ul{
 li.email{
 	display: inline;
 }
-li.email:hover{
-
-}
 li.group{
 	padding: 1%;
 	display: inline;
 }
 li.assignment{
 	padding: 1%;
-}
-li:hover{
-	color: #555555;
-	background-color: #BBBBBB;
 }
 
 .selectedGroup{
