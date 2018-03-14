@@ -1634,7 +1634,7 @@ app.post('/getemployees', function(req, res){
 });
 
 function getEmployeesStatus(group_id, assignment_id, callback){
-	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, STATUS.IS_COMPLETE FROM USERS JOIN GROUPS ON USERS.ID=GROUPS.USER_ID JOIN STATUS ON STATUS.EMPLOYEE_ID=USERS.ID AND STATUS.ASSIGNMENT_ID=" + mysql.escape(assignment_id) + " WHERE GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
+	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, STATUS.IS_COMPLETE FROM USERS JOIN GROUPS ON USERS.ID=GROUPS.USER_ID LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=USERS.ID AND STATUS.ASSIGNMENT_ID=" + mysql.escape(assignment_id) + " WHERE GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
 		if(err){
 			console.log(err);
 			callback(err, null);

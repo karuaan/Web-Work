@@ -4,7 +4,6 @@ import { EmployeesService } from '../employees.service';
 import { Employee } from '../employee';
 import { Assignment } from '../assignment';
 import { Group } from '../group';
-import { MasterEntry } from '../master-entry';
 
 @Component({
   selector: 'app-employees',
@@ -18,10 +17,10 @@ export class EmployeesComponent implements OnInit {
 	employees: Employee[];
 	groups: Group[];
 	assignments: Assignment[];
-	masterEntryTable: MasterEntry[];
 	selectedAssignment: Assignment;
 	selectedGroup: Group;
 	admin_id = 3;
+	assignment_id: 1;
 	employeesService: EmployeesService;
 	emailContents: string;
 	
@@ -30,10 +29,6 @@ export class EmployeesComponent implements OnInit {
 	  this.groups = [];
 	this.assignments = [];
 	this.employeesService = employeesService;
-	
-	employeesService.getMasterTable(this.admin_id).subscribe(data => {
-		console.log(data);
-	});
 	
 	employeesService.getGroups(this.admin_id).subscribe(data1 => {
 		this.groups = data1;
@@ -78,20 +73,27 @@ export class EmployeesComponent implements OnInit {
 	  this.selectedGroup = group;
 	  this.employeesService.getAssignments(group.ID).subscribe(data2 => {
 		  console.log(data2);
-		  if(typeof(data2[0]) === undefined){
-			  this.assignments = [];
-			  this.selectedAssignment = null;
-			  this.employees = [];
-		  }
-		  else{
-			this.assignments = data2;
-			this.selectedAssignment = data2[0];
-			this.employeesService.getEmployees(group.ID, data2[0].assignment_id).subscribe(data3 => {
-					this.employees = data3;
-					console.log(data3[0]);
-				
-			});
-		  }
+			if(!data2.err){
+			  if(typeof(data2[0]) === undefined){
+				  this.assignments = [];
+				  this.selectedAssignment = null;
+				  this.employees = [];
+			  }
+			  else{
+				this.assignments = data2;
+				this.selectedAssignment = data2[0];
+				this.employeesService.getEmployees(group.ID, data2[0].assignment_id).subscribe(data3 => {
+						this.employees = data3;
+						console.log(data3[0]);
+					
+				});
+			  }
+			}
+			else{
+				this.assignments = [];
+				this.selectedAssignment = null;
+				this.employees = [];
+			}
 		});
   }
   
