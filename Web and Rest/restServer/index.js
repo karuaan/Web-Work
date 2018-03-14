@@ -1377,7 +1377,7 @@ app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res)
 			lessonData.start_page, 
 			lessonData.end_page, 
 			lessonData.name, 
-			req.files.lesson_file.file, 
+			"", 
 			function(err, result){
 		if(err){
 			console.log(err);
@@ -2057,6 +2057,17 @@ function getMasterTable(admin_id, callback){
 
 app.get('/test/getMasterTable', function(req, res){
 	getMasterTable(3, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+})
+
+app.post('/getMasterTable', function(req, res){
+	getMasterTable(req.body.admin_id, function(err, result){
 		if(err){
 			res.json(err);
 		}

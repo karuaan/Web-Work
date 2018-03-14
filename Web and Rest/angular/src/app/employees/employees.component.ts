@@ -4,6 +4,7 @@ import { EmployeesService } from '../employees.service';
 import { Employee } from '../employee';
 import { Assignment } from '../assignment';
 import { Group } from '../group';
+import { MasterEntry } from '../master-entry';
 
 @Component({
   selector: 'app-employees',
@@ -17,10 +18,10 @@ export class EmployeesComponent implements OnInit {
 	employees: Employee[];
 	groups: Group[];
 	assignments: Assignment[];
+	masterEntryTable: MasterEntry[];
 	selectedAssignment: Assignment;
 	selectedGroup: Group;
 	admin_id = 3;
-	assignment_id: 1;
 	employeesService: EmployeesService;
 	emailContents: string;
 	
@@ -29,6 +30,10 @@ export class EmployeesComponent implements OnInit {
 	  this.groups = [];
 	this.assignments = [];
 	this.employeesService = employeesService;
+	
+	employeesService.getMasterTable(this.admin_id).subscribe(data => {
+		console.log(data);
+	});
 	
 	employeesService.getGroups(this.admin_id).subscribe(data1 => {
 		this.groups = data1;

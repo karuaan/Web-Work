@@ -293,9 +293,11 @@ export default Ember.Route.extend({
       console.log(data);
     },
     saveLessons: function() {
+		var restServerURL = 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000';
       var book;
       var lessons = [];
       var inputs = document.getElementsByClassName('input-table');
+	  console.log(inputs);
       if(inputs.length <= 1) {
         console.log('no lessons added');
       } else {
@@ -307,10 +309,6 @@ export default Ember.Route.extend({
           lesson.start = inputs[i].value;
           i++;
           lesson.end = inputs[i].value;
-		  
-		  console.log(lesson.title);
-		  console.log(lesson.start);
-		  console.log(lesson.end);
 
           var pages = this.get('pages');
           var pageProxy = [];
