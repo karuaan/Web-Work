@@ -90,7 +90,7 @@ export class EmployeesComponent implements OnInit {
 			  }
 			}
 			else{
-				this.assignments = [{"assignment_id": -1, "NAME": "No assignments for this group"}];
+				this.assignments = [{"assignment_id": -1, "NAME": "No assignments"}];
 				this.selectedAssignment = this.assignments[0];
 				this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
 						this.employees = data3;
@@ -99,6 +99,14 @@ export class EmployeesComponent implements OnInit {
 				});
 			}
 		});
+  }
+  
+  addAssignment(){
+	  console.log("Add assignment works")
+  }
+  
+  addGroup(){
+	  console.log("Add group works")
   }
   
   assignmentSelect(assignment){

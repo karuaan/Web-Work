@@ -1,20 +1,30 @@
 <div class="container">
 	<div class="row">
 		<div class="col-xl-2">
-			<ul>
-				<li *ngFor="let assignment of assignments" [class.selectedGroup]="assignment === selectedAssignment" (click)="assignmentSelect(assignment)" value={{assignment.ID}}>{{assignment.NAME}}</li>
-			</ul>
+			<div class="btn-group-vertical btn-group-toggle" data-toggle="buttons">
+				<label class="btn btn-primary" *ngFor="let assignment of assignments" (click)="assignmentSelect(assignment)">
+				<input type="radio" name="assignments" id={{assignment.assignment_id}} autocomplete="off"  value={{assignment.ID}}>{{assignment.NAME}}
+				</label>
+				<button type="button" class="btn btn-info" (click)="addAssignment()">Add Assignment</button>
+			</div>
 		</div>
 		<div class="col-xl-10">
-			<ul>
-				<li *ngFor="let group of groups" [class.selectedGroup]="group === selectedGroup"  class="group" (click)="groupSelect(group)" value={{group.ID}}>{{group.NAME}}</li>
+			<ul class="nav nav-pills">
+				<li class="nav-item" *ngFor="let group of groups" (click)="groupSelect(group)" value={{group.ID}}>
+				<a class="nav-link" data-target="#group">{{group.NAME}}</a>
+				</li>
+				<li class="nav-item" (click)="addGroup()">
+				<a class="nav-link">Add Group</a>
+				</li>
 			</ul>
 
-			<table>
-				<th>First Name</th>
-				<th>Last Name</th>
-				<th>Email</th>
-				<th *ngIf="selectedAssignment.assignment_id > 0">Status</th>
+			<table class="table table-hover">
+				<thead>
+					<th scope="col">First Name</th>
+					<th scope="col">Last Name</th>
+					<th scope="col">Email</th>
+					<th scope="col" *ngIf="selectedAssignment.assignment_id > 0">Status</th>
+				</thead>
 				<tr *ngFor="let employee of employees">
 					<td>{{employee.FIRST_NAME}}</td>
 					<td>{{employee.LAST_NAME}}</td>
@@ -25,17 +35,22 @@
 			<!-- TODO - implement email buttons --> 
 		</div>
 	</div>
+	<br />
+	<div class="row"><button class="btn btn-info" (click)="emailGroup()">Email all in this group</button></div>
+	<div class="row"><button class="btn btn-danger" (click)="emailGroupIncomplete()">Email all incomplete in this group</button></div>
+	<div class="row"><button class="btn btn-danger" (click)="emailGroupLate()">Email all late in this group</button></div>
+	<br />
 	<div class="row">
-		<div class="col-xl-4"><button class="email" (click)="emailGroup()">Email all in this group</button></div>
-		<div class="col-xl-4"><button class="email" (click)="emailGroupIncomplete()">Email all incomplete in this group</button></div>
-		<div class="col-xl-4"><button class="email" (click)="emailGroupLate()">Email all late in this group</button></div>
-	</div>
-	<div class="row">
-	<textarea ng-model="emailContents"></textarea>
-	</div>
-	<div class="row">
-		<div class="col-sm-4"><button>Add new book</button></div>
-		<div class="col-sm-4"><button>Add new lesson</button></div>
-		<div class="col-sm-4"><button>Add new assignment</button></div>
+		<ul class="nav nav-tabs">
+				<li class="nav-item active">
+				<a class="nav-link active" data-toggle="tab" href="#X">X</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#new-book">New book</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#new-lesson">New lesson</a>
+				</li>
+			</ul>
 	</div>
 </div>
