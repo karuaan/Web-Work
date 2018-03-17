@@ -74,7 +74,7 @@ export class EmployeesComponent implements OnInit {
 	  this.selectedGroup = group;
 	  this.employeesService.getAssignments(group.ID).subscribe(data2 => {
 		  console.log(data2);
-			if(!data2.err){
+			if(!data2['err']){
 			  if(typeof(data2[0]) === undefined){
 				  this.assignments = [];
 				  this.selectedAssignment = null;

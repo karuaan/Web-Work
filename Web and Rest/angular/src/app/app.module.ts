@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule, HttpClient, HttpHandler } from '@angular/common/http';
 
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 import { AppComponent } from './app.component';
 import { EmployeesComponent } from './employees/employees.component';
@@ -15,7 +16,8 @@ import { EmployeesService } from './employees.service';
   ],
   imports: [
     BrowserModule,
-	HttpClientModule
+	HttpClientModule,
+	PdfViewerModule
   ],
   providers: [EmployeesService],
   bootstrap: [AppComponent]
