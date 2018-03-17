@@ -3,21 +3,18 @@
 		<div class="col-xl-2">
 			<div class="btn-group-vertical btn-group-toggle" data-toggle="buttons">
 				<label class="btn btn-primary" *ngFor="let assignment of assignments" (click)="assignmentSelect(assignment)">
-				<input type="radio" name="assignments" id={{assignment.assignment_id}} autocomplete="off"  value={{assignment.ID}}>{{assignment.NAME}}
+					<input type="radio" name="assignments" id={{assignment.assignment_id}} autocomplete="off"  value={{assignment.ID}}>{{assignment.NAME}}
 				</label>
 				<button type="button" class="btn btn-info" (click)="addAssignment()">Add Assignment</button>
 			</div>
 		</div>
 		<div class="col-xl-10">
-			<ul class="nav nav-pills">
-				<li class="nav-item" *ngFor="let group of groups" (click)="groupSelect(group)" value={{group.ID}}>
-				<a class="nav-link" data-target="#group">{{group.NAME}}</a>
-				</li>
-				<li class="nav-item" (click)="addGroup()">
-				<a class="nav-link">Add Group</a>
-				</li>
-			</ul>
-
+			<div class="btn-group btn-group-toggle" data-toggle="buttons">
+				<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
+					<input type="radio" name="groups" id={{group.ID}} autocomplete="off"  value={{group.ID}}>{{group.NAME}}
+				</label>
+				<button type="button" class="btn btn-info" (click)="addGroup()">Add Group</button>
+			</div>
 			<table class="table table-hover">
 				<thead>
 					<th scope="col">First Name</th>
@@ -29,7 +26,7 @@
 					<td>{{employee.FIRST_NAME}}</td>
 					<td>{{employee.LAST_NAME}}</td>
 					<td>{{employee.EMAIL}}</td>
-					<td *ngIf="selectedAssignment.assignment_id > 0">{{employee.IS_COMPLETE.data[0]}}</td>
+					<td *ngIf="selectedAssignment.assignment_id > 0" >{{employee.IS_COMPLETE.data[0]}}</td>
 				</tr>
 			</table>
 			<!-- TODO - implement email buttons --> 
@@ -52,5 +49,58 @@
 					<a class="nav-link" data-toggle="tab" href="#new-lesson">New lesson</a>
 				</li>
 			</ul>
+	</div>
+	<div class="row">
+	<div id="myTabContent" class="tab-content">
+		<div class="tab-pane fade show active" id="X">
+		</div>
+	  <div class="tab-pane fade" id="new-book">
+	  <form>
+		<fieldset>
+		<div class="form-group">
+		  <label for="bookTitleInput">Book Title</label>
+		  <input type="text" class="form-control" id="bookTitleInput" aria-describedby="bookTitleHelp" placeholder="Enter title">
+		  <small id="bookTitleHelp" class="form-text text-muted">Used to select book on new lesson screen</small>
+		</div>
+		<div class="form-group">
+		  <label for="bookFile">Upload book PDF</label>
+		  <input type="file" class="form-control-file" id="bookFile" aria-describedby="fileHelp">
+		  <small id="fileHelp" class="form-text text-muted">Maximum filesize is 30 MB; Must be PDF</small>
+		</div>
+		</fieldset>
+		</form>
+	  </div>
+	  <div class="tab-pane fade" id="new-lesson">
+		<form>
+		<fieldset>
+		<div class="form-group">
+		  <label for="selectBook">Select Book</label>
+		  <select class="form-control" id="selectBook">
+			<option>Book 1</option>
+			<option>Book 2</option>
+			<option>Book 3</option>
+			<option>Book 4</option>
+			<option>Book 5</option>
+		  </select>
+		</div>
+		<div class="form-group">
+		  <label for="lessonTitleInput">Lesson Title</label>
+		  <input type="text" class="form-control" id="lessonTitleInput" aria-describedby="lessonTitleHelp" placeholder="Enter title">
+		  <small id="lessonTitleHelp" class="form-text text-muted">Used to select lesson on new assignment screen</small>
+		</div>
+		<div class="form-group">
+		  <label for="lessonStart">Lesson Page Start</label>
+		  <input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title">
+		  <small id="lessonStartHelp" class="form-text text-muted"></small>
+		</div>
+		<div class="form-group">
+		  <label for="lessonEnd">Lesson Page End</label>
+		  <input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title">
+		  <small id="lessonEndHelp" class="form-text text-muted"></small>
+		</div>
+		</fieldset>
+		</form>
+	  </div>
+	</div>
 	</div>
 </div>
