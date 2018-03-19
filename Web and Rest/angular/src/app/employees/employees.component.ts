@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { NgClass } from '@angular/common';
+import { NgModel } from '@angular/forms';
 import { EmployeesService } from '../employees.service';
 import { Employee } from '../employee';
 import { Assignment } from '../assignment';
@@ -29,8 +30,12 @@ export class EmployeesComponent implements OnInit {
 	selectedGroup: Group;
 	admin_id = 3;
 	assignment_id: 1;
+	pdfCurrentPage: Number;
+	pdfStartPage: Number;
+	pdfEndPage: Number;
 	employeesService: EmployeesService;
 	emailContents: string;
+	testPdf: Object;
 	
   constructor(employeesService: EmployeesService){
 	  this.employees = [];
@@ -39,6 +44,12 @@ export class EmployeesComponent implements OnInit {
 	this.books = [];
 	this.potentialAssignments = [];
 	this.employeesService = employeesService;
+	this.pdfCurrentPage = 2;
+	this.testPdf = {
+		//url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
+		url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
+		withCredentials: false
+	};
 	
 	employeesService.getBooks().subscribe(data => {
 		this.books = data;
@@ -78,6 +89,33 @@ export class EmployeesComponent implements OnInit {
 	});
 	
 	
+  }
+  
+  incrementPage(){
+	  console.log(this.pdfCurrentPage)
+	  this.pdfCurrentPage += 1;
+	  console.log(this.pdfCurrentPage)
+  }
+  decrementPage(){
+	  console.log(this.pdfCurrentPage)
+	 if(this.pdfCurrentPage > 1){
+		 this.pdfCurrentPage -= 1;
+	 }
+	 console.log(this.pdfCurrentPage)
+  }
+  
+  setStartPage(){
+	  this.pdfStartPage = this.pdfCurrentPage;
+	  if(this.pdfStartPage > this.pdfEndPage){
+		  this.pdfEndPage = this.pdfStartPage;
+	  }
+  }
+  
+  setEndPage(){
+	  this.pdfEndPage = this.pdfCurrentPage;
+	  if(this.pdfEndPage < this.pdfStartPage){
+		  this.pdfStartPage = this.pdfEndPage;
+	  }
   }
   
   emailGroup(text){

@@ -2,22 +2,22 @@
 	<div class="row">
 		<div class="col-xl-2">
 			<div class="row">
-				<div class="btn-group-vertical btn-group-toggle" data-toggle="buttons">
-					<label class="btn btn-primary disabled">Running Assignments</label>
-					<label class="btn btn-primary" *ngFor="let assignment of assignments" (click)="assignmentSelect(assignment)">
+				<div class="btn-group-vertical btn-group-toggle btn-block" data-toggle="buttons">
+					<label class="btn btn-primary btn-block disabled">Running Assignments</label>
+					<label class="btn btn-primary btn-block" *ngFor="let assignment of assignments" (click)="assignmentSelect(assignment)">
 						<input type="radio" name="assignments" id={{assignment.assignment_id}} autocomplete="off"  value={{assignment.ID}}>{{assignment.NAME}}
 					</label>
 				</div>
 			</div>
 			<div class="row">
-				<div class="btn-group-vertical btn-group">
-					<button class="btn btn-info disabled">Lessons yet to be assigned</button>
-					<button *ngFor="let lesson of potentialAssignments" type="button" class="btn btn-info" (click)="lessonSelect(lesson)" data-toggle="modal" data-target="#newAssignmentModal">
+				<div class="btn-group-vertical btn-group btn-block">
+					<button class="btn btn-info disabled btn-block">Lessons yet to be assigned</button>
+					<button *ngFor="let lesson of potentialAssignments" type="button" class="btn btn-info btn-block" (click)="lessonSelect(lesson)" data-toggle="modal" data-target="#newAssignmentModal">
 						{{lesson.NAME}}
 					</button>
+					<button class="btn btn-success btn-block" data-toggle="modal" data-target="#newLessonModal">New Lesson</button>
 				</div>
 			</div>
-			
 			
 		</div>
 		<div class="col-xl-10">
@@ -120,20 +120,89 @@
 	  </div>
 	</div>
 	</div>
-	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-	  Launch demo modal
-	</button>
 	<div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
 		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+			<h5 class="modal-title" id="exampleModalLabel">New Assignment</h5>
 			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 			  <span aria-hidden="true">&times;</span>
 			</button>
 		  </div>
 		  <div class="modal-body">
 			<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="exampleModalLabel">Send Email</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal fade" id="newLessonModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="exampleModalLabel">Add Lesson</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<form>
+				<fieldset>
+				<div class="form-group">
+				  <label for="selectBook">Select Book</label>
+				  <select class="form-control" id="selectBook">
+					<option>Book 1</option>
+					<option>Book 2</option>
+					<option>Book 3</option>
+					<option>Book 4</option>
+					<option>Book 5</option>
+				  </select>
+				</div>
+				<div class="form-group">
+				  <label for="lessonTitleInput">Lesson Title</label>
+				  <input type="text" class="form-control" id="lessonTitleInput" aria-describedby="lessonTitleHelp" placeholder="Enter title">
+				  <small id="lessonTitleHelp" class="form-text text-muted">Used to select lesson on new assignment screen</small>
+				</div>
+				<div class="form-group">
+				  <label for="lessonStart">Lesson Page Start</label>
+				  <input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title" [(ngModel)]="pdfStartPage" [ngModelOptions]="{standalone: true}">
+				  <label class="btn btn-primary" id="startPageButton" (click)="setStartPage()">Use Current Page</label>
+				  <small id="lessonStartHelp" class="form-text text-muted"></small>
+				</div>
+				<div class="form-group">
+				  <label for="lessonEnd">Lesson Page End</label>
+				  <input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title" [(ngModel)]="pdfEndPage" [ngModelOptions]="{standalone: true}">
+				  <label class="btn btn-primary" id="endPageButton" (click)="setEndPage()">Use Current Page</label>
+				  <small id="lessonEndHelp" class="form-text text-muted"></small>
+				</div>
+				</fieldset>
+			</form>
+			<button class="btn btn-primary" (click)="decrementPage()">Prev</button>
+			<input type="number" [(ngModel)]="pdfCurrentPage">
+			<button class="btn btn-primary" (click)="incrementPage()">Next</button>
+			<pdf-viewer [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
