@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
+import { NgClass } from '@angular/common';
 import { EmployeesService } from '../employees.service';
 import { Employee } from '../employee';
 import { Assignment } from '../assignment';
@@ -22,7 +23,9 @@ export class EmployeesComponent implements OnInit {
 	books: Book[];
 	assignments: Assignment[];
 	lessons: Lesson[];
+	potentialAssignments: Lesson[];
 	selectedAssignment: Assignment;
+	selectedLesson: Lesson;
 	selectedGroup: Group;
 	admin_id = 3;
 	assignment_id: 1;
@@ -34,11 +37,16 @@ export class EmployeesComponent implements OnInit {
 	  this.groups = [];
 	this.assignments = [];
 	this.books = [];
+	this.potentialAssignments = [];
 	this.employeesService = employeesService;
 	
 	employeesService.getBooks().subscribe(data => {
 		this.books = data;
 		console.log(this.books);
+	});
+	employeesService.getLessons().subscribe(data => {
+		this.lessons = data;
+		console.log(this.lessons);
 	});
 	
 	employeesService.getGroups(this.admin_id).subscribe(data1 => {
@@ -50,6 +58,14 @@ export class EmployeesComponent implements OnInit {
 			this.assignments = data2;
 			this.selectedAssignment = data2[0];
 			console.log(data2[0]);
+			
+			this.potentialAssignments = this.lessons.filter( lesson => 
+				for(var i = 0; i < this.assignments.length; ++i){
+					if(this.assignments[i].lesson_id == lesson.ID){
+						return false;
+					}
+				}; return true;
+			);
 			
 			employeesService.getEmployees(data1[0].ID, data2[0].assignment_id).subscribe(data3 => {
 					this.employees = data3;
@@ -109,6 +125,14 @@ export class EmployeesComponent implements OnInit {
 					
 				});
 			}
+			this.potentialAssignments = this.lessons.filter( lesson => 
+				for(var i = 0; i < this.assignments.length; ++i){
+					if(this.assignments[i].lesson_id == lesson.ID){
+						return false;
+					}
+				}; return true;
+			);
+			console.log(this.potentialAssignments);
 		});
   }
   
@@ -128,6 +152,10 @@ export class EmployeesComponent implements OnInit {
 			//console.log(data3[0]);
 		
 	});
+  }
+  
+  lessonSelect(lesson){
+	  this.selectedLesson = lesson;
   }
 
   ngOnInit() {

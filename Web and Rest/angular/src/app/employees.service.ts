@@ -3,6 +3,8 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Employee } from './employee';
 import { Assignment } from './assignment';
 import { Group } from './group';
+import { Book } from './book';
+import { Lesson } from './lesson';
 import { MasterEntry } from './master-entry';
 import { Observable } from 'rxjs';
 
@@ -12,7 +14,7 @@ export class EmployeesService {
 	restURL: string;
 
   constructor(private http: HttpClient) { 
-	  var debug = true;
+	  var debug = false;
 	  if(!debug){
 		this.restURL =  'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000';
 	  }
@@ -36,6 +38,11 @@ export class EmployeesService {
   
   getBooks(): Observable<Book[]>{
 	  var response = this.http.get<Book[]>(this.restURL + '/books');
+	  return response;
+  }
+  
+  getLessons(): Observable<Lesson[]>{
+	  var response = this.http.get<Lesson[]>(this.restURL + '/getlessons');
 	  return response;
   }
   

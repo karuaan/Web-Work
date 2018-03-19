@@ -1,5 +1,5 @@
 export class Book {
 	NAME: string;
-	URL: string;
+	PDF_FILE: string;
 	ID: Number;
 }
