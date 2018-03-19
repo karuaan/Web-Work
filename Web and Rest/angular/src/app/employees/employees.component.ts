@@ -35,6 +35,7 @@ export class EmployeesComponent implements OnInit {
 	pdfEndPage: Number;
 	employeesService: EmployeesService;
 	emailContents: string;
+	modalEmails: string;
 	testPdf: Object;
 	
   constructor(employeesService: EmployeesService){
@@ -45,6 +46,7 @@ export class EmployeesComponent implements OnInit {
 	this.potentialAssignments = [];
 	this.employeesService = employeesService;
 	this.pdfCurrentPage = 2;
+	this.modalEmails = ""
 	this.testPdf = {
 		//url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
 		url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
@@ -119,8 +121,7 @@ export class EmployeesComponent implements OnInit {
   }
   
   emailGroup(text){
-	  console.log(text);
-	  console.log(this.emailContents);
+	  this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function(total, next){return total + ", " + next}));
   }
   
   emailGroupIncomplete(text){

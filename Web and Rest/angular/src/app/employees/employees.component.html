@@ -9,6 +9,7 @@
 					</label>
 				</div>
 			</div>
+			<br />
 			<div class="row">
 				<div class="btn-group-vertical btn-group btn-block">
 					<button class="btn btn-info disabled btn-block">Lessons yet to be assigned</button>
@@ -25,7 +26,7 @@
 				<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
 					<input type="radio" name="groups" id={{group.ID}} autocomplete="off"  value={{group.ID}}>{{group.NAME}}
 				</label>
-				<button type="button" class="btn btn-info" (click)="addGroup()">Add Group</button>
+				<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
 			</div>
 			<table class="table table-hover">
 				<thead>
@@ -49,77 +50,9 @@
 		</div>
 	</div>
 	<br />
-	<div class="row"><button class="btn btn-info" (click)="emailGroup()">Email all in this group</button></div>
-	<div class="row"><button class="btn btn-danger" (click)="emailGroupIncomplete()">Email all incomplete in this group</button></div>
-	<div class="row"><button class="btn btn-danger" (click)="emailGroupLate()">Email all late in this group</button></div>
-	<br />
-	<div class="row">
-		<ul class="nav nav-tabs">
-				<li class="nav-item active">
-				<a class="nav-link active" data-toggle="tab" href="#X">X</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#new-book">New book</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#new-lesson">New lesson</a>
-				</li>
-			</ul>
-	</div>
-	<div class="row">
-	<div id="myTabContent" class="tab-content">
-		<div class="tab-pane fade show active" id="X">
-		</div>
-	  <div class="tab-pane fade" id="new-book">
-	  <form>
-		<fieldset>
-		<div class="form-group">
-		  <label for="bookTitleInput">Book Title</label>
-		  <input type="text" class="form-control" id="bookTitleInput" aria-describedby="bookTitleHelp" placeholder="Enter title">
-		  <small id="bookTitleHelp" class="form-text text-muted">Used to select book on new lesson screen</small>
-		</div>
-		<div class="form-group">
-		  <label for="bookFile">Upload book PDF</label>
-		  <input type="file" class="form-control-file" id="bookFile" aria-describedby="fileHelp">
-		  <small id="fileHelp" class="form-text text-muted">Maximum filesize is 30 MB; Must be PDF</small>
-		</div>
-		</fieldset>
-		</form>
-	  </div>
-	  <div class="tab-pane fade" id="new-lesson">
-		<form>
-		<fieldset>
-		<div class="form-group">
-		  <label for="selectBook">Select Book</label>
-		  <select class="form-control" id="selectBook">
-			<option>Book 1</option>
-			<option>Book 2</option>
-			<option>Book 3</option>
-			<option>Book 4</option>
-			<option>Book 5</option>
-		  </select>
-		</div>
-		<div class="form-group">
-		  <label for="lessonTitleInput">Lesson Title</label>
-		  <input type="text" class="form-control" id="lessonTitleInput" aria-describedby="lessonTitleHelp" placeholder="Enter title">
-		  <small id="lessonTitleHelp" class="form-text text-muted">Used to select lesson on new assignment screen</small>
-		</div>
-		<div class="form-group">
-		  <label for="lessonStart">Lesson Page Start</label>
-		  <input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title">
-		  <small id="lessonStartHelp" class="form-text text-muted"></small>
-		</div>
-		<div class="form-group">
-		  <label for="lessonEnd">Lesson Page End</label>
-		  <input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title">
-		  <small id="lessonEndHelp" class="form-text text-muted"></small>
-		</div>
-		</fieldset>
-		</form>
-		<pdf-viewer [src]="'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/0773d618-d236-442d-92bc-e30ea9b143ed/book_file/kant-first-critique-cambridge.pdf'" [render-text]="false" style="display: block;"></pdf-viewer>
-	  </div>
-	</div>
-	</div>
+	<div class="row"><button class="btn btn-info" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">Email all in this group</button></div>
+	<div class="row"><button class="btn btn-danger" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">Email all incomplete in this group</button></div>
+	<div class="row"><button class="btn btn-danger" (click)="emailGroupLate()" data-toggle="modal" data-target="#emailModal">Email all late in this group</button></div>
 	<div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -131,10 +64,20 @@
 		  </div>
 		  <div class="modal-body">
 			<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
+			<form>
+				<fieldset>
+					<label>Start date</label>
+					<input type="date" id="startDate">
+					<label>Due date</label>
+					<input type="date" id="dueDate">
+					<label>End date</label>
+					<input type="date" id="endDate">
+				</fieldset>
+			</form>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Save changes</button>
+			<button type="button" class="btn btn-primary">Start Assignment</button>
 		  </div>
 		</div>
 	  </div>
@@ -149,11 +92,14 @@
 			</button>
 		  </div>
 		  <div class="modal-body">
-			<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
+			<label>Recipients</label>
+			<input type="text" class="form-control form-control-sm" [(ngModel)]="modalEmails">
+			<label>Message</label>
+			<textarea class="form-control" rows="3"></textarea>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Save changes</button>
+			<button type="button" class="btn btn-primary">Send Email</button>
 		  </div>
 		</div>
 	  </div>
@@ -206,7 +152,26 @@
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Save changes</button>
+			<button type="button" class="btn btn-primary">Submit Lesson</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal fade" id="addGroupModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="exampleModalLabel">Add Group</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Add Group</button>
 		  </div>
 		</div>
 	  </div>
