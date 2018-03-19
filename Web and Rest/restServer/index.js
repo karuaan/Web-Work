@@ -318,6 +318,28 @@ app.get('/testgroupthing', function(req, res){
 
 //app.post('/get')
 
+function getLessons(callback){
+	con.query("SELECT * FROM LESSONS", function(err, rows){
+		if(err){
+			callback(err, null)
+		}
+		else{
+			callback(null, rows)
+		}
+	})
+}
+
+app.get('/getlessons', function(req, res){
+	getLessons(function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result)
+		}
+	})
+})
+
 function getLessonPlan(group_id, book_id, callback){
 	con.query("SELECT NAME, PAGE_START, PAGE_END, PDF_FILE FROM LESSONS JOIN ASSIGNMENTS WHERE LESSONS.ID=ASSIGNMENTS.LESSON_ID WHERE BOOK_ID="+ mysql.escape(book_id)+" AND GROUP_ID=" + mysql.escape(group_id), function(err, rows){
 		if(err){

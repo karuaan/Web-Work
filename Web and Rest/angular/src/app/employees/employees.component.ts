@@ -5,6 +5,8 @@ import { EmployeesService } from '../employees.service';
 import { Employee } from '../employee';
 import { Assignment } from '../assignment';
 import { Group } from '../group';
+import { Book } from '../book';
+import { Lesson } from '../lesson';
 
 @Component({
   selector: 'app-employees',
@@ -17,7 +19,9 @@ export class EmployeesComponent implements OnInit {
 	testEmployee: Employee;
 	employees: Employee[];
 	groups: Group[];
+	books: Book[];
 	assignments: Assignment[];
+	lessons: Lesson[];
 	selectedAssignment: Assignment;
 	selectedGroup: Group;
 	admin_id = 3;
@@ -29,7 +33,13 @@ export class EmployeesComponent implements OnInit {
 	  this.employees = [];
 	  this.groups = [];
 	this.assignments = [];
+	this.books = [];
 	this.employeesService = employeesService;
+	
+	employeesService.getBooks().subscribe(data => {
+		this.books = data;
+		console.log(this.books);
+	});
 	
 	employeesService.getGroups(this.admin_id).subscribe(data1 => {
 		this.groups = data1;
@@ -91,7 +101,7 @@ export class EmployeesComponent implements OnInit {
 			  }
 			}
 			else{
-				this.assignments = [{"assignment_id": -1, "NAME": "No assignments"}];
+				this.assignments = [{"assignment_id": -1, "NAME": "No assignments", "START_DATE": null, "DUE_DATE": null}];
 				this.selectedAssignment = this.assignments[0];
 				this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
 						this.employees = data3;

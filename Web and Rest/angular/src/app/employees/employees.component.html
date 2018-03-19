@@ -4,6 +4,9 @@
 			<div class="btn-group-vertical btn-group-toggle" data-toggle="buttons">
 				<label class="btn btn-primary" *ngFor="let assignment of assignments" (click)="assignmentSelect(assignment)">
 					<input type="radio" name="assignments" id={{assignment.assignment_id}} autocomplete="off"  value={{assignment.ID}}>{{assignment.NAME}}
+					<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+					  Launch demo modal
+					</button>
 				</label>
 				<button type="button" class="btn btn-info" (click)="addAssignment()">Add Assignment</button>
 			</div>
@@ -103,5 +106,27 @@
 		<pdf-viewer [src]="'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/0773d618-d236-442d-92bc-e30ea9b143ed/book_file/kant-first-critique-cambridge.pdf'" [render-text]="false" style="display: block;"></pdf-viewer>
 	  </div>
 	</div>
+	</div>
+	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+	  Launch demo modal
+	</button>
+	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<p>{{selectedAssignment.NAME}}</p>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		  </div>
+		</div>
+	  </div>
 	</div>
 </div>
