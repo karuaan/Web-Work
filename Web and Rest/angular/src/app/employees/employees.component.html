@@ -28,6 +28,9 @@
 				</label>
 				<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
 			</div>
+			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Name: {{selectedAssignment.NAME}}</h3>
+			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Start: {{selectedAssignment.START_DATE | date}}</h3>
+			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Due: {{selectedAssignment.DUE_DATE | date}}</h3>
 			<table class="table table-hover">
 				<thead>
 					<th scope="col">First Name</th>
@@ -38,8 +41,8 @@
 					</div>
 				</thead>
 				<tr *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
-					<td>{{employee.FIRST_NAME}}</td>
-					<td>{{employee.LAST_NAME}}</td>
+					<td>{{employee.FIRST_NAME | pending}}</td>
+					<td>{{employee.LAST_NAME | pending}}</td>
 					<td>{{employee.EMAIL}}</td>
 					<div *ngIf="selectedAssignment !== undefined && employee.IS_COMPLETE !== null">
 					<td *ngIf="selectedAssignment.assignment_id > 0" >{{employee.IS_COMPLETE.data[0]}}</td>

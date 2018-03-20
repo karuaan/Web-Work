@@ -30,7 +30,7 @@ export class EmployeesComponent implements OnInit {
 	selectedGroup: Group;
 	admin_id = 3;
 	assignment_id: 1;
-	pdfCurrentPage: Number;
+	pdfCurrentPage: string;
 	pdfStartPage: Number;
 	pdfEndPage: Number;
 	employeesService: EmployeesService;
@@ -45,7 +45,7 @@ export class EmployeesComponent implements OnInit {
 	this.books = [];
 	this.potentialAssignments = [];
 	this.employeesService = employeesService;
-	this.pdfCurrentPage = 2;
+	this.pdfCurrentPage = "2";
 	this.modalEmails = ""
 	this.testPdf = {
 		//url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
@@ -72,13 +72,15 @@ export class EmployeesComponent implements OnInit {
 			this.selectedAssignment = data2[0];
 			console.log(data2[0]);
 			
-			this.potentialAssignments = this.lessons.filter( lesson => 
-				for(var i = 0; i < this.assignments.length; ++i){
-					if(this.assignments[i].lesson_id == lesson.ID){
+			_this = this; //needed for filter function
+			
+			this.potentialAssignments = this.lessons.filter( function(lesson){ 
+				for(var i = 0; i < _this.assignments.length; ++i){
+					if(_this.assignments[i].lesson_id == lesson.ID){
 						return false;
 					}
 				}; return true;
-			);
+			});
 			
 			employeesService.getEmployees(data1[0].ID, data2[0].assignment_id).subscribe(data3 => {
 					this.employees = data3;
@@ -95,33 +97,31 @@ export class EmployeesComponent implements OnInit {
   
   incrementPage(){
 	  console.log(this.pdfCurrentPage)
-	  this.pdfCurrentPage += 1;
+	  this.pdfCurrentPage = String(Number(this.pdfCurrentPage) + 1);
 	  console.log(this.pdfCurrentPage)
   }
   decrementPage(){
-	  console.log(this.pdfCurrentPage)
-	 if(this.pdfCurrentPage > 1){
-		 this.pdfCurrentPage -= 1;
-	 }
-	 console.log(this.pdfCurrentPage)
+	console.log(this.pdfCurrentPage)
+	this.pdfCurrentPage = String(Number(this.pdfCurrentPage) - 1);
+	console.log(this.pdfCurrentPage)
   }
   
   setStartPage(){
-	  this.pdfStartPage = this.pdfCurrentPage;
+	  this.pdfStartPage = Number(this.pdfCurrentPage);
 	  if(this.pdfStartPage > this.pdfEndPage){
 		  this.pdfEndPage = this.pdfStartPage;
 	  }
   }
   
   setEndPage(){
-	  this.pdfEndPage = this.pdfCurrentPage;
+	  this.pdfEndPage = Number(this.pdfCurrentPage);
 	  if(this.pdfEndPage < this.pdfStartPage){
 		  this.pdfStartPage = this.pdfEndPage;
 	  }
   }
   
   emailGroup(text){
-	  this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function(total, next){return total + ", " + next}));
+	  this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function(total, next){return total + ", " + next});
   }
   
   emailGroupIncomplete(text){
@@ -156,7 +156,7 @@ export class EmployeesComponent implements OnInit {
 			  }
 			}
 			else{
-				this.assignments = [{"assignment_id": -1, "NAME": "No assignments", "START_DATE": null, "DUE_DATE": null}];
+				this.assignments = [{"assignment_id": -1, "NAME": "No assignments", "START_DATE": null, "DUE_DATE": null, "book_id": -1, "lesson_id": -1}];
 				this.selectedAssignment = this.assignments[0];
 				this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
 						this.employees = data3;
@@ -164,13 +164,16 @@ export class EmployeesComponent implements OnInit {
 					
 				});
 			}
-			this.potentialAssignments = this.lessons.filter( lesson => 
-				for(var i = 0; i < this.assignments.length; ++i){
-					if(this.assignments[i].lesson_id == lesson.ID){
+			
+			_this = this; //needed for filter function
+			
+			this.potentialAssignments = this.lessons.filter( function(lesson){ 
+				for(var i = 0; i < _this.assignments.length; ++i){
+					if(_this.assignments[i].lesson_id == lesson.ID){
 						return false;
 					}
 				}; return true;
-			);
+			});
 			console.log(this.potentialAssignments);
 		});
   }

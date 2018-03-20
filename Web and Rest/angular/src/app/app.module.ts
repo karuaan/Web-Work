@@ -8,12 +8,14 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { AppComponent } from './app.component';
 import { EmployeesComponent } from './employees/employees.component';
 import { EmployeesService } from './employees.service';
+import { PendingPipe } from './pending.pipe';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    EmployeesComponent
+    EmployeesComponent,
+    PendingPipe
   ],
   imports: [
     BrowserModule,
