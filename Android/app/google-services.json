@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "808960293079",
+    "firebase_url": "https://safetybooknotifications.firebaseio.com",
+    "project_id": "safetybooknotifications",
+    "storage_bucket": "safetybooknotifications.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808960293079:android:ea26c356d5057ec1",
+        "android_client_info": {
+          "package_name": "com.novoholdings.safetybook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "808960293079-csudr1f3m2u4tfgn4vqke1deo924jb9s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.novohodings.safetybook",
+            "certificate_hash": "516783f3536de12743c8d378b6eab48ae85eff94"
+          }
+        },
+        {
+          "client_id": "808960293079-jhufdfl78bdla0q7dnu6u33iv054p30o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSs3asGnXgUAaYUmLXsoom5QQr5oQ5Ab4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "808960293079-jhufdfl78bdla0q7dnu6u33iv054p30o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

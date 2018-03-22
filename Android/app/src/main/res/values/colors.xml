@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#B8514B</color>
+    <color name="colorPrimaryDark">#804040</color>
+    <color name="colorAccent">#E8A9A5</color>
+    <color name="blue">#00F</color>
+
+    <color name="skyBlue">#60B9E5</color>
+
+    <color name="lightGray">#D3D3D3</color>
+    //Colors for top of Group Card
+    <color name="navyBlue">#00263A</color>
+
+    <color name="oceanBlue">#004B87</color>
+
+    <color name="fijiGreen">#6d6d1f </color>
+
+    <color name="darkGray">#A9A9A9</color>
+
+    <color name="darkSlateGray">#2F4F4F</color>
+
+    <color name="chiliPowder">#C73F17</color>
+    //Color around email Icon
+    <color name="lightYellow">#ffd11a</color>
+
+    <color name="purpleLuis">#4C4184</color>
+
+    <color name="silver">#C0C0C0</color>
+</resources>
