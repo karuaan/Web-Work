@@ -1,0 +1,10 @@
+Web Only Tests:
+Create a new assignment
+Create a new group
+Add member to group
+Email group members
+Email individual
+
+Web and Android Tests:
+User can see new assignments
+Admins can see how much each user has read

@@ -1,0 +1,14 @@
+- The symbols that describe whether someone is done with an assignment look
+  awkward and should explain what they mean when the mouse hovers over them
+
+- I am unable to add a new group no matter what I do (with or without including
+  emails as well)
+
+- Why is a name not included when adding an employee to a group?
+
+- Should you be able to delete an employee from a group on the main menu?
+
+- New users in groups are deleted after changing page which probably occurs
+  because the website does not use the rest API
+
+- Should be able to delete user when creating a new group
