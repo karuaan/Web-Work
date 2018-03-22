@@ -72,11 +72,11 @@ export class EmployeesComponent implements OnInit {
 			this.selectedAssignment = data2[0];
 			console.log(data2[0]);
 			
-			_this = this; //needed for filter function
+			const my_this = this; //needed for filter function
 			
 			this.potentialAssignments = this.lessons.filter( function(lesson){ 
-				for(var i = 0; i < _this.assignments.length; ++i){
-					if(_this.assignments[i].lesson_id == lesson.ID){
+				for(var i = 0; i < my_this.assignments.length; ++i){
+					if(my_this.assignments[i].lesson_id == lesson.ID){
 						return false;
 					}
 				}; return true;
@@ -165,11 +165,11 @@ export class EmployeesComponent implements OnInit {
 				});
 			}
 			
-			_this = this; //needed for filter function
+			const my_this = this; //needed for filter function
 			
 			this.potentialAssignments = this.lessons.filter( function(lesson){ 
-				for(var i = 0; i < _this.assignments.length; ++i){
-					if(_this.assignments[i].lesson_id == lesson.ID){
+				for(var i = 0; i < my_this.assignments.length; ++i){
+					if(my_this.assignments[i].lesson_id == lesson.ID){
 						return false;
 					}
 				}; return true;
