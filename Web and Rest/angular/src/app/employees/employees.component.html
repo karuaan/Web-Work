@@ -1,6 +1,34 @@
 <div class="container">
+	<ul class="nav nav-tabs">
+		<li class="nav-item" *ngFor="let group of groups">
+			<a class="nav-link" (click)="groupSelect(group)" [class.active]="selectedGroup==group">{{group.NAME}}</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link">+</a>
+		</li>
+	</ul>
 	<div class="row">
-		<div class="col-xl-2">
+		<div class="card xl-2">
+		
+			<div class="card-header">
+				<h3>{{selectedGroup.NAME}}</h3>
+				<p>{{employees.length}} employees</p>
+				<p>SELECTED BOOK TITLE</p>
+			</div>
+			
+			<ul class="list-group list-group-flush nav nav-tabs">
+				<li class="list-group-item nav-item" data-toggle="tab">
+					<a class="nav-link" href="#assignmentsPane" data-toggle="tab">Assignments</a>
+				</li>
+				<li class="list-group-item nav-item" data-toggle="tab">
+					<a class="nav-link" href="#lessonsPane" data-toggle="tab">Lesson Plan</a>
+				</li>
+			</ul>
+		
+			<!-- keep for middle pane contents -->
+			
+			<!--
+			
 			<div class="row">
 				<div class="btn-group-vertical btn-group-toggle btn-block" data-toggle="buttons">
 					<label class="btn btn-primary btn-block disabled">Running Assignments</label>
@@ -20,42 +48,57 @@
 				</div>
 			</div>
 			
+			-->
+			
 		</div>
-		<div class="col-xl-10">
-			<div class="btn-group btn-group-toggle" data-toggle="buttons">
-				<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
-					<input type="radio" name="groups" id={{group.ID}} autocomplete="off"  value={{group.ID}}>{{group.NAME}}
-				</label>
-				<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
+		<div class="tab-content col-xl-10">
+			<div id="assignmentsPane" class="tab-pane active show ">
+				<div class="btn-group btn-group-toggle" data-toggle="buttons">
+					<label class="btn btn-primary" *ngFor="let assignment of assignments" (click)="assignmentSelect(assignment)">
+						<input type="radio" name="assignments" id={{assignment.assignment_id}} autocomplete="off"  value={{assignment.ID}}>{{assignment.NAME}}
+					</label>
+					<label class="btn btn-success">
+						<input type="radio" name="assignments">+
+					</label>
+				</div>
+				<div class="card-header">
+					<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Name: {{selectedAssignment.NAME}}</h3>
+					<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Start: {{selectedAssignment.START_DATE | date}}</h3>
+					<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Due: {{selectedAssignment.DUE_DATE | date}}</h3>
+				</div>
+				<table class="table table-hover">
+					<thead>
+						<th scope="col">First Name</th>
+						<th scope="col">Last Name</th>
+						<th scope="col">Email</th>
+						<div *ngIf="selectedAssignment !== undefined">
+						<th scope="col" *ngIf="selectedAssignment.assignment_id > 0">Status</th>
+						</div>
+					</thead>
+					<tr *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
+						<td>{{employee.FIRST_NAME | pending}}</td>
+						<td>{{employee.LAST_NAME | pending}}</td>
+						<td>{{employee.EMAIL}}</td>
+						<div *ngIf="selectedAssignment !== undefined && employee.IS_COMPLETE !== null">
+						<td *ngIf="selectedAssignment.assignment_id > 0" >{{employee.IS_COMPLETE.data[0]}}</td>
+						</div>
+					</tr>
+				</table>
 			</div>
-			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Name: {{selectedAssignment.NAME}}</h3>
-			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Start: {{selectedAssignment.START_DATE | date}}</h3>
-			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Due: {{selectedAssignment.DUE_DATE | date}}</h3>
-			<table class="table table-hover">
-				<thead>
-					<th scope="col">First Name</th>
-					<th scope="col">Last Name</th>
-					<th scope="col">Email</th>
-					<div *ngIf="selectedAssignment !== undefined">
-					<th scope="col" *ngIf="selectedAssignment.assignment_id > 0">Status</th>
-					</div>
-				</thead>
-				<tr *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
-					<td>{{employee.FIRST_NAME | pending}}</td>
-					<td>{{employee.LAST_NAME | pending}}</td>
-					<td>{{employee.EMAIL}}</td>
-					<div *ngIf="selectedAssignment !== undefined && employee.IS_COMPLETE !== null">
-					<td *ngIf="selectedAssignment.assignment_id > 0" >{{employee.IS_COMPLETE.data[0]}}</td>
-					</div>
-				</tr>
-			</table>
-			<!-- TODO - implement email buttons --> 
+			<div id="lessonsPane" class="tab-pane">
+				<p>Hello</p>
+			</div>
 		</div>
+		<!-- End of right pane -->
 	</div>
+	<!-- End of main section -->
 	<br />
 	<div class="row"><button class="btn btn-info" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">Email all in this group</button></div>
 	<div class="row"><button class="btn btn-danger" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">Email all incomplete in this group</button></div>
 	<div class="row"><button class="btn btn-danger" (click)="emailGroupLate()" data-toggle="modal" data-target="#emailModal">Email all late in this group</button></div>
+	
+	<!-- Begin Modal Definitions -->
+	
 	<div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">

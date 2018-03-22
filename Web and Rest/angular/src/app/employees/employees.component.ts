@@ -37,6 +37,7 @@ export class EmployeesComponent implements OnInit {
 	emailContents: string;
 	modalEmails: string;
 	testPdf: Object;
+	lookAtAssignments = true;
 	
   constructor(employeesService: EmployeesService){
 	  this.employees = [];
@@ -52,6 +53,7 @@ export class EmployeesComponent implements OnInit {
 		url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
 		withCredentials: false
 	};
+	this.lookAtAssignments = true;
 	
 	employeesService.getBooks().subscribe(data => {
 		this.books = data;
@@ -65,12 +67,10 @@ export class EmployeesComponent implements OnInit {
 	employeesService.getGroups(this.admin_id).subscribe(data1 => {
 		this.groups = data1;
 		this.selectedGroup = data1[0];
-		console.log(data1[0]);
 		
 		employeesService.getAssignments(data1[0].ID).subscribe(data2 => {
 			this.assignments = data2;
 			this.selectedAssignment = data2[0];
-			console.log(data2[0]);
 			
 			const my_this = this; //needed for filter function
 			
@@ -84,8 +84,6 @@ export class EmployeesComponent implements OnInit {
 			
 			employeesService.getEmployees(data1[0].ID, data2[0].assignment_id).subscribe(data3 => {
 					this.employees = data3;
-					console.log(data3[0]);
-				
 			});
 		
 		});
@@ -176,6 +174,14 @@ export class EmployeesComponent implements OnInit {
 			});
 			console.log(this.potentialAssignments);
 		});
+  }
+  
+  setAssignmentsActive(){
+	this.lookAtAssignments = true;
+  }
+  
+  setLessonsActive(){
+	this.lookAtAssignments = false;
   }
   
   addAssignment(){
