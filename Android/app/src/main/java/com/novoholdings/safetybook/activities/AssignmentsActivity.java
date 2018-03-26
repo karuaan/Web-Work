@@ -690,6 +690,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         });*/
     }
     public void startReading(String fileName, int timeToRead){
+        findViewById(R.id.parentPanel).setVisibility(View.INVISIBLE);
         readingFinished = false;
 
         final AssignmentBean assignmentBean = new AssignmentBean();
