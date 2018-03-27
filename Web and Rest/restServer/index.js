@@ -1,15 +1,25 @@
 const express = require('express')
 const bb = require('express-busboy')
+const uuid = require('uuid');
+var Busboy = require('busboy');
+var mkdirp = require('mkdirp');
 const mysql = require('mysql')
+const fs = require('fs');
 const path = require('path')
 const fileupload = require('express-fileupload')
 const admin_functions = require('./functions/admin_functions')
+const hummus = require('hummus')
+var validator = require('express-validator');
+global.__basedir = __dirname;
+
+
 //const filesys = require('fs')
 ///*
-const debug = false;
+const debug = true;
 var con;
 
 if(!debug){
+    console.log('production')
 	con = mysql.createConnection(
 		{host: "mysql.cgkepgzez06k.us-east-2.rds.amazonaws.com",
 		user: "admin", password: "Stevens2018#MVPHWB",
@@ -19,10 +29,11 @@ if(!debug){
 }
 else{
 	con = mysql.createConnection(
-		{host: "localhost", 
-		user: "root", //password: "greg1234", 
+		{host: "localhost",
+        multipleStatements: true,
+		user: "root", password: "root",
 		port: "3306", 
-		database: "test_db"}
+		database: "node_webworkers"}
 	)
 }
 const nodemailer = require('nodemailer');
@@ -95,8 +106,10 @@ con.connect(function(err) {
 const app = express()
 bb.extend(app, {
 	upload: true,
-	path: /*path.join(__dirname, 'public')*/ 'public/'
+	path: 'public/'
 });
+
+// app.use(fileupload());
 
 app.get('/test/getallusers', function(req, res){
 	con.query('SELECT * FROM USERS', function(err, rows){
@@ -108,7 +121,6 @@ app.get('/test/getallusers', function(req, res){
 		}
 	})
 })
-
 
 app.use(function (req, res, next) {
 
@@ -269,6 +281,7 @@ const user_oidc = new ExpressOIDC({
 
 //Added the cors to avoid cross origin issue
 app.use(cors());
+app.use(validator());
 
 //Example of sending mail with the nodemailer library
 /*
@@ -319,7 +332,7 @@ app.get('/testgroupthing', function(req, res){
 //app.post('/get')
 
 function getLessons(callback){
-	con.query("SELECT * FROM LESSONS", function(err, rows){
+    con.query("SELECT * FROM LESSONS", function(err, rows){
 		if(err){
 			callback(err, null)
 		}
@@ -327,6 +340,18 @@ function getLessons(callback){
 			callback(null, rows)
 		}
 	})
+}
+
+function getLessonsByBookId(book_id,callback){
+    con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
+        " LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS WHERE BOOK_ID = ?",[book_id], function(err, rows){
+		if(err){
+			callback(err, null)
+		}
+		else{
+			callback(null, rows)
+		}
+	});
 }
 
 app.get('/getlessons', function(req, res){
@@ -670,6 +695,35 @@ function addLesson(book_id, start_page, end_page, name, filepath, callback){
 		}
 	});
 }
+
+
+function insertLessonAssignment(id,assignment){
+  return new Promise(function (resolve, reject) {
+      var insertQuery = "INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, START_DATE,TIME_TO_COMPLETE)" +
+          " VALUES (?,?,?,?,?,?)";
+          con.query(insertQuery,[
+            assignment.NAME,
+            assignment.LESSON_ID,
+            assignment.GROUP_ID,
+            assignment.DUE_DATE,
+            assignment.START_DATE,
+            assignment.TIME_TO_COMPLETE
+         ],function (err,results,fields) {
+             if (!err){
+                 resolve({
+                     status : true,
+                     data : results
+                 });
+             }else{
+                 resolve({
+                     status : false,
+                     data : null
+                 });
+             }
+         });
+  });
+}
+
 //Dpme
 function addAssignment(lesson_id, group_id, due_date, time_to_complete){
 	con.query("SELECT * FROM ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID=" + mysql.escape(lesson_id) + " AND ASSIGNMENT.GROUP_ID=" + mysql.escape(group_id), function(err, rows){
@@ -1367,6 +1421,8 @@ app.get('/test/getgroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, re
 //Echo
 app.post('/', (req, res) => res.json(req.body));
 
+const BookService = require('./services/book.service')(app,con,fs,hummus,Busboy,uuid);
+
 app.get('/books', /*user_oidc.ensureAuthenticated(),*/ function(req, res) {
 	getBooksQuery(function(err, result){
 		if(err){
@@ -1374,24 +1430,55 @@ app.get('/books', /*user_oidc.ensureAuthenticated(),*/ function(req, res) {
 		}
 		res.json({books: result});
 	});
-
 });
+
 //Done
 app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	console.log(req.body);
-	console.log(req.files);
-	/*
-	let bookfile = req.files.book_file
-	addBook(req.body.book_name, bookfile.file, function(err, result){
-		if(err){
-			console.log(err);
-			res.json(err);
-		}
-		else{
-			if(!res.headersSent){res.json(result)}else{};
-		}
-	
-	*/
+    if(req.body.book_name =='' || req.body.book_name == null){
+           res.status(200).json({
+              status : 'fail',
+              message : 'name required',
+              data : null
+          });
+           return;
+       }
+
+    var busboy = new Busboy({ headers: req.headers });
+
+       // Listen for event when Busboy finds a file to stream.
+        busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
+            // We are streaming! Handle chunks
+            file.on('data', function(data) {
+                // Here we can act on the data chunks streamed.
+            });
+            // Completed streaming the file.
+            file.on('end', function() {
+                console.log('Finished with ' + fieldname);
+            });
+        });
+
+        busboy.on('finish', function() {
+            try{
+				var book = {
+					NAME : req.body.book_name,
+					PDF_FILE : req.files.book_file.file,
+					TOTAL_PAGES : 0,
+				};
+
+				BookService.newBook(book).then(function(result){
+					res.json(result);
+				});
+
+               
+            }catch (e){
+                res.status(200).json({
+                      status : 'fail',
+                      message : 'File not valid or not found!',
+                      data : null
+                  });
+            }
+        });
+        req.pipe(busboy);
 });
 
 app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
@@ -1411,6 +1498,43 @@ app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res)
 			if(!res.headersSent){res.json(result)}else{};
 		}
 	})
+})
+
+app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+    if (req.body.lessons && req.body.lessons.length > 0){
+
+		BookService.saveLesssons(req.body.lessons).then(function(results){
+			// console.log('results',results);
+			res.json({
+				results: results,
+				message : 'All Good'
+            });
+		}).catch(function(error){
+			console.log('error',error);
+		});
+    }else{
+        res.json({
+           results: null,
+           message : 'Please provide lessons'
+       });
+    }
+})
+
+app.get('/books/:id/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+    getLessonsByBookId(req.param('id'),function(err, result){
+        if(err){
+            res.json(err);
+        }
+        else{
+            res.json(result)
+        }
+    });
+})
+
+app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+    insertLessonAssignment(req.param('id'),req.body).then(function (result) {
+        res.json(result);
+    });
 })
 
 app.post('/get/group', /*user_oidc.ensureAuthenticated(),*/ function(req, res){

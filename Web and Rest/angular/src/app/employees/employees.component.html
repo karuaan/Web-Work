@@ -7,7 +7,7 @@
 			<a class="nav-link">+</a>
 		</li>
 	</ul>
-	<div class="row">
+	<div class="row" *ngIf="selectedGroup">
 		<div class="card xl-2">
 		
 			<div class="card-header">
@@ -86,7 +86,86 @@
 				</table>
 			</div>
 			<div id="lessonsPane" class="tab-pane">
-				<p>Hello</p>
+
+                <h3>Books</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <select name="book" id="book" [(ngModel)]="selectedBook"
+                                (change)="onChangeBook($event)"
+                                class="form-control input-sm">
+                            <option *ngFor="let book of books;" [value]="book.ID">{{book.NAME}}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                       <button type="button" (click)="resetForm()"  data-toggle="modal" data-target="#newBookModal"
+                               class="btn btn-sm btn-primary">+Add Book</button>
+                   </div>
+
+                </div>
+
+                <p *ngIf="selectedBookData && (selectedBookData.TOTAL_PAGES == 0 || selectedBookData.TOTAL_PAGES == null)">
+                   Book does not have pages
+                </p>
+
+                <div *ngIf="selectedBookData && selectedBookData.TOTAL_PAGES > 0">
+                    <h3>Lessons</h3>
+                    <div class="col-md-10" >
+                       <table class="table no-border lessons">
+                           <thead>
+                               <tr>
+                                   <th></th>
+                                   <th>Name</th>
+                                   <th>Start Page</th>
+                                   <th>End Page</th>
+                                   <th></th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                               <tr *ngFor="let lesson of book_lessions;" [ngClass]="{invalid:!lesson.validationCheck()}">
+                                   <td>
+                                       <input type="checkbox" name="lession[][id]" (click)="lesson.toggle()">
+                                   </td>
+                                   <td>
+                                       <input type="text" class="form-control input-sm col-sm-8"
+                                              (change)="lesson.changed()"
+                                              name="lession[][name]" [(ngModel)]="lesson.NAME">
+                                   </td>
+                                   <td>
+                                       <input type="number" class="form-control input-sm"
+                                              (change)="lesson.changed()"
+                                              [max]="selectedBookData.TOTAL_PAGES"
+                                              name="lession[][start_page]" [(ngModel)]="lesson.START_PAGE" min="0">
+                                   </td>
+                                   <td>
+                                       <input class="form-control input-sm " type="number"
+                                              (change)="lesson.changed()"
+                                              [max]="selectedBookData.TOTAL_PAGES"
+                                              name="lession[][end_page]" [(ngModel)]="lesson.END_PAGE" min="0">
+                                   </td>
+                                   <td>
+                                       <button class="btn btn-sm btn-success"
+                                               *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)">
+                                           Assigned
+                                       </button>
+
+                                       <button class="btn btn-sm btn-info" data-toggle="modal"
+                                               (click)="selectLesson(lesson)"
+                                               data-target="#newAssignment"
+                                               *ngIf="!lesson.isAssignedByGroupId(selectedGroup.ID) && lesson.ID">
+                                           Add Assignment
+                                       </button>
+                                   </td>
+                               </tr>
+
+                           </tbody>
+                       </table>
+                   </div>
+
+                    <button (click)="addLesson()" class="btn btn-primary btn-sm">+ Add Lession</button>
+                    <button (click)="saveLessions()" class="btn btn-primary btn-sm">Save</button>
+                    <!--<button (click)="deleteSelected()" class="btn btn-danger btn-sm">Delete</button>-->
+                </div>
+
 			</div>
 		</div>
 		<!-- End of right pane -->
@@ -99,35 +178,35 @@
 	
 	<!-- Begin Modal Definitions -->
 	
-	<div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">New Assignment</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-			<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
-			<form>
-				<fieldset>
-					<label>Start date</label>
-					<input type="date" id="startDate">
-					<label>Due date</label>
-					<input type="date" id="dueDate">
-					<label>End date</label>
-					<input type="date" id="endDate">
-				</fieldset>
-			</form>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Start Assignment</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
+	<!--<div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">-->
+	  <!--<div class="modal-dialog" role="document">-->
+		<!--<div class="modal-content">-->
+		  <!--<div class="modal-header">-->
+			<!--<h5 class="modal-title" id="exampleModalLabel">New Assignment</h5>-->
+			<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+			  <!--<span aria-hidden="true">&times;</span>-->
+			<!--</button>-->
+		  <!--</div>-->
+		  <!--<div class="modal-body">-->
+			<!--<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>-->
+			<!--<form>-->
+				<!--<fieldset>-->
+					<!--<label>Start date</label>-->
+					<!--<input type="date" id="startDate">-->
+					<!--<label>Due date</label>-->
+					<!--<input type="date" id="dueDate">-->
+					<!--<label>End date</label>-->
+					<!--<input type="date" id="endDate">-->
+				<!--</fieldset>-->
+			<!--</form>-->
+		  <!--</div>-->
+		  <!--<div class="modal-footer">-->
+			<!--<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
+			<!--<button type="button" class="btn btn-primary">Start Assignment</button>-->
+		  <!--</div>-->
+		<!--</div>-->
+	  <!--</div>-->
+	<!--</div>-->
 	<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -146,59 +225,6 @@
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 			<button type="button" class="btn btn-primary">Send Email</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
-	<div class="modal fade" id="newLessonModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog modal-lg" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">Add Lesson</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-			<form>
-				<fieldset>
-				<div class="form-group">
-				  <label for="selectBook">Select Book</label>
-				  <select class="form-control" id="selectBook">
-					<option>Book 1</option>
-					<option>Book 2</option>
-					<option>Book 3</option>
-					<option>Book 4</option>
-					<option>Book 5</option>
-				  </select>
-				</div>
-				<div class="form-group">
-				  <label for="lessonTitleInput">Lesson Title</label>
-				  <input type="text" class="form-control" id="lessonTitleInput" aria-describedby="lessonTitleHelp" placeholder="Enter title">
-				  <small id="lessonTitleHelp" class="form-text text-muted">Used to select lesson on new assignment screen</small>
-				</div>
-				<div class="form-group">
-				  <label for="lessonStart">Lesson Page Start</label>
-				  <input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title" [(ngModel)]="pdfStartPage" [ngModelOptions]="{standalone: true}">
-				  <label class="btn btn-primary" id="startPageButton" (click)="setStartPage()">Use Current Page</label>
-				  <small id="lessonStartHelp" class="form-text text-muted"></small>
-				</div>
-				<div class="form-group">
-				  <label for="lessonEnd">Lesson Page End</label>
-				  <input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title" [(ngModel)]="pdfEndPage" [ngModelOptions]="{standalone: true}">
-				  <label class="btn btn-primary" id="endPageButton" (click)="setEndPage()">Use Current Page</label>
-				  <small id="lessonEndHelp" class="form-text text-muted"></small>
-				</div>
-				</fieldset>
-			</form>
-			<button class="btn btn-primary" (click)="decrementPage()">Prev</button>
-			<input type="number" [(ngModel)]="pdfCurrentPage">
-			<button class="btn btn-primary" (click)="incrementPage()">Next</button>
-			<pdf-viewer [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Submit Lesson</button>
 		  </div>
 		</div>
 	  </div>
@@ -222,4 +248,193 @@
 		</div>
 	  </div>
 	</div>
+
+    <div class="modal fade" id="newLessonModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    	  <div class="modal-dialog modal-lg" role="document">
+    		<div class="modal-content">
+    		  <div class="modal-header">
+    			<h5 class="modal-title" id="exampleModalLabel">Add Lesson</h5>
+    			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    			  <span aria-hidden="true">&times;</span>
+    			</button>
+    		  </div>
+    		  <div class="modal-body">
+    			<form>
+    				<fieldset>
+    				<div class="form-group">
+    				  <label for="selectBook">Select Book</label>
+    				  <select class="form-control" id="selectBook">
+    					<option>Book 1</option>
+    					<option>Book 2</option>
+    					<option>Book 3</option>
+    					<option>Book 4</option>
+    					<option>Book 5</option>
+    				  </select>
+    				</div>
+    				<div class="form-group">
+    				  <label for="lessonTitleInput">Lesson Title</label>
+    				  <input type="text" class="form-control" id="lessonTitleInput" aria-describedby="lessonTitleHelp" placeholder="Enter title">
+    				  <small id="lessonTitleHelp" class="form-text text-muted">Used to select lesson on new assignment screen</small>
+    				</div>
+    				<div class="form-group">
+    				  <label for="lessonStart">Lesson Page Start</label>
+    				  <input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title" [(ngModel)]="pdfStartPage" [ngModelOptions]="{standalone: true}">
+    				  <label class="btn btn-primary" id="startPageButton" (click)="setStartPage()">Use Current Page</label>
+    				  <small id="lessonStartHelp" class="form-text text-muted"></small>
+    				</div>
+    				<div class="form-group">
+    				  <label for="lessonEnd">Lesson Page End</label>
+    				  <input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title" [(ngModel)]="pdfEndPage" [ngModelOptions]="{standalone: true}">
+    				  <label class="btn btn-primary" id="endPageButton" (click)="setEndPage()">Use Current Page</label>
+    				  <small id="lessonEndHelp" class="form-text text-muted"></small>
+    				</div>
+    				</fieldset>
+    			</form>
+    			<button class="btn btn-primary" (click)="decrementPage()">Prev</button>
+    			<input type="number" [(ngModel)]="pdfCurrentPage">
+    			<button class="btn btn-primary" (click)="incrementPage()">Next</button>
+    			<pdf-viewer [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
+    		  </div>
+    		  <div class="modal-footer">
+    			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    			<button type="button" class="btn btn-primary">Submit Lesson</button>
+    		  </div>
+    		</div>
+    	  </div>
+    	</div>
+    <div class="modal fade" id="newBookModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" *ngIf="bookForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Book</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form name="booksave" novalidate [formGroup]="bookGroupForm">
+                        <fieldset>
+                            <div class="form-group"  [ngClass]="displayFieldCss(bookGroupForm,'NAME')">
+                                <label for="bookName">Book Name</label>
+                                <input type="text" [(ngModel)]="bookForm.NAME"
+                                       class="form-control" id="bookName"
+                                       aria-describedby="lessonTitleHelp"
+                                       formControlName="NAME"
+                                       required
+                                       placeholder="Enter book name">
+                            </div>
+
+                            <div class="form-group" [ngClass]="displayFieldCss(bookGroupForm,'book_file')">
+                                <label for="bookFile">File</label>
+                                <input type="file" class="form-control" id="bookFile"
+                                       (change)="onFileChange($event)"
+                                       placeholder="Upload book (.pdf)" accept=".pdf">
+                                <small id="bookFileHelp" class="form-text text-muted">Only upload pdf</small>
+                                <input type="hidden" name="book_file" formControlName="book_file"/>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" [disabled]="bookGroupForm.invalid" (click)="saveBook()" class="btn btn-primary">Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="newAssignment" tabindex="-1" role="dialog" aria-labelledby="newAssignmentLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" *ngIf="selectedGroup && selectedLesson">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Assignment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form novalidate [formGroup]="assignmentGroupForm" name="assignmentForm">
+                        <fieldset>
+                            <div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'start_date')">
+                                <label for="bookName">Available from :</label>
+                                <input type="date" class="form-control" id="startDateHelp"
+                                       formControlName="start_date"
+                                        [(ngModel)]="assignmentForm.start_date"
+                                       name="start_date"
+                                       placeholder="Enter available from date" />
+                            </div>
+
+                            <div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'due_date')">
+                                <label for="dueDateHelp">Due :</label>
+                                <input type="date" class="form-control" id="dueDateHelp"
+                                       formControlName="due_date"
+                                       [(ngModel)]="assignmentForm.due_date"
+                                       name="due_date"
+                                       placeholder="Enter due date" />
+                            </div>
+
+                            <div class="form-group"  [ngClass]="displayFieldCss(assignmentGroupForm,'minute')">
+
+                                <label >Minimum reading time</label>
+                                <div class="col-md-12 form-inline">
+                                    <input type="number" class="form-control col-sm-2" id="minuteHelp"
+                                           formControlName="minute"
+                                           [(ngModel)]="assignmentForm.minute"
+                                           name="minute" /> Minute
+                                    <input type="number" class="form-control col-sm-2" id="secondHelp"
+                                           formControlName="second"
+                                           [(ngModel)]="assignmentForm.second"
+                                           name="second" />Seconds
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                   <label for="comment">Notes :</label>
+                                    <textarea name="comment"
+                                              formControlName="comment"
+                                              [(ngModel)]="assignmentForm.comment"
+                                              id="comment" cols="30" class="form-control" rows="4"></textarea>
+                               </div>
+                        </fieldset>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" [disabled]="!assignmentGroupForm.valid" (click)="saveAssignment()"
+                            class="btn btn-primary">Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="beforeChangePageOrBook" tabindex="-1" role="dialog" aria-labelledby="beforeChangePageOrBook"
+         aria-hidden="true">
+           <div class="modal-dialog modal-lg" role="document">
+               <div class="modal-content">
+                   <div class="modal-header">
+                       <h5 class="modal-title">
+                           <i class="fa fa-info"></i>Info</h5>
+                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                           <span aria-hidden="true">&times;</span>
+                       </button>
+                   </div>
+                   <div class="modal-body">
+                      <p>
+                          Are you sure to discard current changes ?
+                      </p>
+                   </div>
+                   <div class="modal-footer">
+                       <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                               (click)="discardAction(false)">No</button>
+                       <button type="button" class="btn btn-primary"
+                               (click)="discardAction(true)"
+                               data-dismiss="modal">Yes </button>
+                   </div>
+               </div>
+           </div>
+       </div>
+
 </div>

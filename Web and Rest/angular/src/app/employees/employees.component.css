@@ -1,0 +1,7 @@
+.has-error input{
+    border-color: red;
+}
+
+.lessons tr.invalid {
+    border: 2px solid red !important;
+}
