@@ -1,6 +1,7 @@
 * {
   box-sizing: border-box;
 }
+
 #groupTabs {
   padding-top: 1em;
   border-bottom: solid black 0.2em;
@@ -33,6 +34,7 @@
 #mainContainer {
   border: solid black 0.2em;
   border-top: solid black 0em;
+  background-color: #FFFFFF;
 }
 
 #summaryContainer {
@@ -54,6 +56,15 @@
   padding: 1em;
 }
 
+.book-header {
+  padding: 1em;
+}
+
+.lesson-header {
+  padding: 1em;
+  margin-top: 1em;
+}
+
 @media (min-width: 1200px) {
   #secondaryContainer {
     border-left: solid black 0.2em;
@@ -69,6 +80,10 @@
 #lessonButtonActive {
   background-color: #1d95c6;
   border-color: #1b8dbb;
+}
+
+#lessonsContainer {
+  padding: 1em;
 }
 
 .date-header h4 {
@@ -165,4 +180,82 @@
 .icon-action:hover {
   cursor: pointer;
   color: #29ABE0;
+}
+
+#bookDropdown {
+  margin: 0em 0.75em;
+  width: 70%;
+  display:inline-block;
+  font-size: 1.5em;
+}
+
+#addBookButton {
+  float:right;
+  width: 20%;
+  margin-top: -0.25em;
+}
+
+.input-range {
+  width: 5em;
+}
+
+#addLessonButton {
+  width: 10em;
+}
+
+#thirdColumn,
+#secondColumn {
+  padding: 0em;
+}
+
+#thirdColumn #groupSummary,
+#thirdColumn .table-container {
+  padding: 1em;
+}
+
+.pdf-controller {
+  padding: 1em;
+}
+
+.pdf-controller button {
+  width: 5em;
+}
+
+.pdf-controller input {
+  width: calc(100% - 9em);
+}
+
+@media (max-width: 1200px) {
+  #lessonsContainer {
+    border-top: solid black 0.2em;
+    border-bottom: solid black 0.2em;
+  }
+}
+
+.date-labels,
+.date-inputs {
+  font-size: 0;
+}
+
+.date-inputs input,
+.date-labels p {
+  font-size: 16px;
+  width: 45%;
+  margin: 0em;
+  padding: 0em;
+  display: inline-block;
+}
+
+.date-inputs input:first-of-type,
+.date-labels p:first-of-type {
+  margin-right: 5%;
+}
+
+#notesInput {
+  width: 100%;
+}
+
+.reading-time-input input,
+.reading-time-input p {
+  display: inline-block;
 }

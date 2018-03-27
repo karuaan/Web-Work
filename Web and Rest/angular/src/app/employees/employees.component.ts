@@ -36,11 +36,11 @@ export class EmployeesComponent implements OnInit {
 	emailContents: string;
 	modalEmails: string;
 	testPdf: Object;
-<<<<<<< HEAD
 
   viewAssignments: boolean;
   viewLessons: boolean;
   percentCompletes: Number[];
+  currentPercentComplete: Number;
 
   constructor(employeesService: EmployeesService){
     this.employees = [];
@@ -49,8 +49,11 @@ export class EmployeesComponent implements OnInit {
     this.books = [];
     this.potentialAssignments = [];
     this.employeesService = employeesService;
-    this.pdfCurrentPage = "2";
+    this.pdfCurrentPage = "1";
     this.modalEmails = "";
+
+    document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
+
     this.testPdf = {
       //url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
       url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
@@ -58,25 +61,26 @@ export class EmployeesComponent implements OnInit {
     };
 
     employeesService.getBooks().subscribe(data => {
-      this.books = data;
+      this.books = data.books;
       console.log('books');
+      console.log(data);
       console.log(this.books);
     });
 
     employeesService.getLessons().subscribe(data => {
       this.lessons = data;
+      console.log('lessons');
+      console.log(data);
       console.log(this.lessons);
     });
 
     employeesService.getGroups(this.admin_id).subscribe(data1 => {
       this.groups = data1;
       this.selectedGroup = data1[0];
-      console.log(data1[0]);
 
       employeesService.getAssignments(data1[0].ID).subscribe(data2 => {
         this.assignments = data2;
         this.selectedAssignment = data2[0];
-        console.log(data2[0]);
 
         const my_this = this; //needed for filter function
 
@@ -91,66 +95,12 @@ export class EmployeesComponent implements OnInit {
 
         employeesService.getEmployees(data1[0].ID, data2[0].assignment_id).subscribe(data3 => {
           this.employees = data3;
-          console.log(data3[0]);
+          console.log('getEmployees');
+          console.log(data3);
+          console.log(data3);
         });
       });
     });
-=======
-	lookAtAssignments = true;
-	
-  constructor(employeesService: EmployeesService){
-	  this.employees = [];
-	  this.groups = [];
-	this.assignments = [];
-	this.books = [];
-	this.potentialAssignments = [];
-	this.employeesService = employeesService;
-	this.pdfCurrentPage = "2";
-	this.modalEmails = ""
-	this.testPdf = {
-		//url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
-		url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
-		withCredentials: false
-	};
-	this.lookAtAssignments = true;
-	
-	employeesService.getBooks().subscribe(data => {
-		this.books = data;
-		console.log(this.books);
-	});
-	employeesService.getLessons().subscribe(data => {
-		this.lessons = data;
-		console.log(this.lessons);
-	});
-	
-	employeesService.getGroups(this.admin_id).subscribe(data1 => {
-		this.groups = data1;
-		this.selectedGroup = data1[0];
-		
-		employeesService.getAssignments(data1[0].ID).subscribe(data2 => {
-			this.assignments = data2;
-			this.selectedAssignment = data2[0];
-			
-			const my_this = this; //needed for filter function
-			
-			this.potentialAssignments = this.lessons.filter( function(lesson){ 
-				for(var i = 0; i < my_this.assignments.length; ++i){
-					if(my_this.assignments[i].lesson_id == lesson.ID){
-						return false;
-					}
-				}; return true;
-			});
-			
-			employeesService.getEmployees(data1[0].ID, data2[0].assignment_id).subscribe(data3 => {
-					this.employees = data3;
-			});
-		
-		});
-		
-	});
-	
-	
->>>>>>> 6e7a189e2c2439ed9ce7ee407aa07b3b947306b8
   }
 
   incrementPage() {
@@ -195,6 +145,7 @@ export class EmployeesComponent implements OnInit {
 
   groupSelect(group) {
     console.log(group.ID);
+    console.log('groupSelect');
     this.selectedGroup = group;
     this.employeesService.getAssignments(group.ID).subscribe(data2 => {
       console.log(data2);
@@ -233,23 +184,9 @@ export class EmployeesComponent implements OnInit {
 			console.log(this.potentialAssignments);
 		});
   }
-<<<<<<< HEAD
 
   addAssignment() {
-    console.log("Add assignment works")
-=======
-  
-  setAssignmentsActive(){
-	this.lookAtAssignments = true;
-  }
-  
-  setLessonsActive(){
-	this.lookAtAssignments = false;
-  }
-  
-  addAssignment(){
 	  console.log("Add assignment works")
->>>>>>> 6e7a189e2c2439ed9ce7ee407aa07b3b947306b8
   }
 
   addGroup() {
@@ -281,6 +218,7 @@ export class EmployeesComponent implements OnInit {
         document.getElementById('thirdColumn').className = 'col-xl-8';
       }
     } else if (selected === "lessons") {
+      console.log(this.books);
       this.viewAssignments = false;
       assignmentButton.id = 'assignmentButton';
       if(this.viewLessons) {
@@ -291,8 +229,8 @@ export class EmployeesComponent implements OnInit {
       } else {
         this.viewLessons = true;
         lessonButton.id = 'lessonButtonActive';
-        document.getElementById('secondColumn').className = 'col-xl-6';
-        document.getElementById('thirdColumn').className = 'col-xl-4';
+        document.getElementById('secondColumn').className = 'col-xl-7';
+        document.getElementById('thirdColumn').className = 'col-xl-3';
       }
     }
   }

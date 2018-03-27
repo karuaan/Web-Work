@@ -36,6 +36,45 @@
 						</div>
 					</div>
 				</div>
+
+
+
+
+
+
+				<div *ngIf="viewLessons" id="lessonsContainer">
+					<div class="book-header">
+						<h4>Book</h4>
+					</div>
+					<div>
+						<select id="bookDropdown">
+							<option *ngFor="let book of books">{{book.NAME}}</option>
+						</select>
+						<button type="button" class="btn btn-info" id="addBookButton">+ Add</button>
+					</div>
+					<div class="lesson-header">
+						<h4>Lessons</h4>
+					</div>
+					<table class="table table-hover">
+						<thead>
+							<th></th>
+							<th scope="col">Name</th>
+							<th scope="col">Start Page</th>
+							<th scope="col">End Page</th>
+							<th></th>
+						</thead>
+						<tbody>
+							<tr class="lesson-row" *ngFor="let lesson of potentialAssignments">
+								<td></td>
+								<td><input type="text" value={{lesson.NAME}} /></td>
+								<td><input type="number" class="input-range" value={{lesson.PAGE_START}} /></td>
+								<td><input type="number" class="input-range" value={{lesson.PAGE_END}} /></td>
+								<td><button type="button" class="btn btn-info" class="btn btn-info btn-block" (click)="lessonSelect(lesson)" data-toggle="modal" data-target="#newAssignmentModal">Assigned</button></td>
+							</tr>
+						</tbody>
+					</table>
+					<button type="button" class="btn btn-info" id="addLessonButton" data-toggle="modal" data-target="#newLessonModal">+ Add</button>
+				</div>
 			</div>
 		</div>
 
@@ -50,8 +89,8 @@
 								<div class="text">Time</div>
 							</div>
 							<div class="icon-action">
-								<div class="icon"></div>
-								<div class="text">Email</div>
+								<div class="icon"><img src="assets/pngs/ic_picture_as_pdf_48px.png" /></div>
+								<div class="text">PDF</div>
 							</div>
 							<div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>
@@ -60,12 +99,12 @@
 						</div>
 						<div class="row">
 							<div class="icon-text">
-								<div class="icon"></div>
-								<div class="text">Email</div>
+								<div class="icon"><img src="assets/pngs/calendar.png" /></div>
+								<div class="text">Due</div>
 							</div>
 							<div class="icon-text">
-								<div class="icon"></div>
-								<div class="text">Email</div>
+								<div class="icon"><img src="assets/pngs/cs-cc-party.png" /></div>
+								<div class="text">Complete</div>
 							</div>
 							<div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>
@@ -74,199 +113,199 @@
 						</div>
 					</div>
 				</div>
-				<table class="table table-hover">
-					<thead>
-						<th></th>
-						<th scope="col">First Name</th>
-						<th scope="col">Last Name</th>
-						<th scope="col">Email</th>
-					</thead>
-					<tr class="employee-row" *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
-						<td class="employee-delete"><p>X</p></td>
-						<td>{{employee.FIRST_NAME | pending}}</td>
-						<td>{{employee.LAST_NAME | pending}}</td>
-						<td>{{employee.EMAIL}}</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div>
-
-	<div class="row">
-		<div class="col-xl-2">
-			<div class="row">
-				<div class="btn-group-vertical btn-group btn-block">
-					<button class="btn btn-info disabled btn-block">Lessons yet to be assigned</button>
-					<button *ngFor="let lesson of potentialAssignments" type="button" class="btn btn-info btn-block" (click)="lessonSelect(lesson)" data-toggle="modal" data-target="#newAssignmentModal">
-						{{lesson.NAME}}
-					</button>
-					<button class="btn btn-success btn-block" data-toggle="modal" data-target="#newLessonModal">New Lesson</button>
+				<div class="table-container">
+					<table class="table table-hover">
+						<thead>
+							<th></th>
+							<th scope="col">First Name</th>
+							<th scope="col">Last Name</th>
+							<th scope="col">Email</th>
+						</thead>
+						<tr class="employee-row" *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
+							<td class="employee-delete"><p>X</p></td>
+							<td>{{employee.FIRST_NAME | pending}}</td>
+							<td>{{employee.LAST_NAME | pending}}</td>
+							<td>{{employee.EMAIL}}</td>
+						</tr>
+					</table>
 				</div>
 			</div>
+
+			<div *ngIf="viewLessons">
+				<div class="pdf-controller">
+					<button class="btn btn-primary" (click)="decrementPage()">Prev</button>
+					<input type="number" [(ngModel)]="pdfCurrentPage">
+					<button class="btn btn-primary" (click)="incrementPage()">Next</button>
+				</div>
+				<pdf-viewer [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
+			</div>
 		</div>
-		<!-- End of right pane -->
 	</div>
 
 
 	<div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">New Assignment</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-			<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
-			<form>
-				<fieldset>
-					<label>Start date</label>
-					<input type="date" id="startDate">
-					<label>Due date</label>
-					<input type="date" id="dueDate">
-					<label>End date</label>
-					<input type="date" id="endDate">
-				</fieldset>
-			</form>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Start Assignment</button>
-		  </div>
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Create Assignment</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p *ngIf="selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
+					<form>
+						<fieldset>
+							<div class="date-labels">
+								<p>Available From: </p>
+								<p>Due: </p>
+							</div>
+							<div class="date-inputs">
+								<input type="date" id="startDate">
+								<input type="date" id="dueDate">
+							</div>
+							<br>
+							<p>Minimum reading time: </p>
+							<div class="reading-time-input">
+								<input type="number" />
+								<p>minutes</p>
+								<input type="seconds" />
+								<p>seconds</p>
+							</div>
+							<br>
+							<p>Notes</p>
+							<textarea id="notesInput" rows="5"></textarea>
+						</fieldset>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Start Assignment</button>
+				</div>
+			</div>
 		</div>
-	  </div>
 	</div>
 
 	<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">Send Email</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-			<label>Recipients</label>
-			<input type="text" class="form-control form-control-sm" [(ngModel)]="modalEmails">
-			<label>Message</label>
-			<textarea class="form-control" rows="3"></textarea>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Send Email</button>
-		  </div>
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Send Email</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<label>Recipients</label>
+					<input type="text" class="form-control form-control-sm" [(ngModel)]="modalEmails">
+					<label>Message</label>
+					<textarea class="form-control" rows="3"></textarea>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Send Email</button>
+				</div>
+			</div>
 		</div>
-	  </div>
 	</div>
 
 	<div class="modal fade" id="newLessonModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog modal-lg" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">Add Lesson</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-			<form>
-				<fieldset>
-				<div class="form-group">
-				  <label for="selectBook">Select Book</label>
-				  <select class="form-control" id="selectBook">
-					<option>Book 1</option>
-					<option>Book 2</option>
-					<option>Book 3</option>
-					<option>Book 4</option>
-					<option>Book 5</option>
-				  </select>
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Add Lesson</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
 				</div>
-				<div class="form-group">
-				  <label for="lessonTitleInput">Lesson Title</label>
-				  <input type="text" class="form-control" id="lessonTitleInput" aria-describedby="lessonTitleHelp" placeholder="Enter title">
-				  <small id="lessonTitleHelp" class="form-text text-muted">Used to select lesson on new assignment screen</small>
+				<div class="modal-body">
+					<form>
+						<fieldset>
+							<div class="form-group">
+								<label for="lessonTitleInput">Lesson Title</label>
+								<input type="text" class="form-control" id="lessonTitleInput" aria-describedby="lessonTitleHelp" placeholder="Enter title">
+								<small id="lessonTitleHelp" class="form-text text-muted">Used to select lesson on new assignment screen</small>
+							</div>
+							<div class="form-group">
+								<label for="lessonStart">Lesson Page Start</label>
+								<input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title" [(ngModel)]="pdfStartPage" [ngModelOptions]="{standalone: true}">
+								<!--<label class="btn btn-primary" id="startPageButton" (click)="setStartPage()">Use Current Page</label>-->
+								<small id="lessonStartHelp" class="form-text text-muted"></small>
+							</div>
+							<div class="form-group">
+								<label for="lessonEnd">Lesson Page End</label>
+								<input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title" [(ngModel)]="pdfEndPage" [ngModelOptions]="{standalone: true}">
+								<!--<label class="btn btn-primary" id="endPageButton" (click)="setEndPage()">Use Current Page</label>-->
+								<small id="lessonEndHelp" class="form-text text-muted"></small>
+							</div>
+						</fieldset>
+					</form>
+					<!--
+					<button class="btn btn-primary" (click)="decrementPage()">Prev</button>
+					<input type="number" [(ngModel)]="pdfCurrentPage">
+					<button class="btn btn-primary" (click)="incrementPage()">Next</button>
+					<pdf-viewer [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
+					-->
 				</div>
-				<div class="form-group">
-				  <label for="lessonStart">Lesson Page Start</label>
-				  <input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title" [(ngModel)]="pdfStartPage" [ngModelOptions]="{standalone: true}">
-				  <label class="btn btn-primary" id="startPageButton" (click)="setStartPage()">Use Current Page</label>
-				  <small id="lessonStartHelp" class="form-text text-muted"></small>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Submit Lesson</button>
 				</div>
-				<div class="form-group">
-				  <label for="lessonEnd">Lesson Page End</label>
-				  <input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title" [(ngModel)]="pdfEndPage" [ngModelOptions]="{standalone: true}">
-				  <label class="btn btn-primary" id="endPageButton" (click)="setEndPage()">Use Current Page</label>
-				  <small id="lessonEndHelp" class="form-text text-muted"></small>
-				</div>
-				</fieldset>
-			</form>
-			<button class="btn btn-primary" (click)="decrementPage()">Prev</button>
-			<input type="number" [(ngModel)]="pdfCurrentPage">
-			<button class="btn btn-primary" (click)="incrementPage()">Next</button>
-			<pdf-viewer [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Submit Lesson</button>
-		  </div>
+			</div>
 		</div>
-	  </div>
 	</div>
 
 	<div class="modal fade" id="addGroupModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog modal-lg" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">Add Group</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-				<div class="form-group">
-					<label for="groupNameInput">Group Name</label>
-					<input type="text" class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Name">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Add Group</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
 				</div>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Add Group</button>
-		  </div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="groupNameInput">Group Name</label>
+						<input type="text" class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Name">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Add Group</button>
+				</div>
+			</div>
 		</div>
-	  </div>
 	</div>
 
 	<div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog modal-lg" role="document">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLabel">Add Employee</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			  <span aria-hidden="true">&times;</span>
-			</button>
-		  </div>
-		  <div class="modal-body">
-				<div class="form-group">
-					<label for="employeeFirstNameInput">First Name</label>
-					<input type="text" class="form-control" id="employeeFirstNameInput" aria-describedby="employeeFirstNameHelp" placeholder="Enter First Name">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Add Employee</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
 				</div>
-				<div class="form-group">
-					<label for="employeeLastNameInput">Last Name</label>
-					<input type="text" class="form-control" id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="employeeFirstNameInput">First Name</label>
+						<input type="text" class="form-control" id="employeeFirstNameInput" aria-describedby="employeeFirstNameHelp" placeholder="Enter First Name">
+					</div>
+					<div class="form-group">
+						<label for="employeeLastNameInput">Last Name</label>
+						<input type="text" class="form-control" id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">
+					</div>
+					<div class="form-group">
+						<label for="employeeEmailInput">Email</label>
+						<input type="text" class="form-control" id="employeeEmailInput" aria-describedby="employeeEmailHelp" placeholder="Enter Email">
+					</div>
 				</div>
-				<div class="form-group">
-					<label for="employeeEmailInput">Email</label>
-					<input type="text" class="form-control" id="employeeEmailInput" aria-describedby="employeeEmailHelp" placeholder="Enter Email">
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Add Employee</button>
 				</div>
-		  </div>
-		  <div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary">Add Employee</button>
-		  </div>
+			</div>
 		</div>
-	  </div>
 	</div>
-
 </div>
