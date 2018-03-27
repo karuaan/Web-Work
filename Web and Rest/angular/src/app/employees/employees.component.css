@@ -1,7 +1,269 @@
+
 .has-error input{
     border-color: red;
 }
 
 .lessons tr.invalid {
     border: 2px solid red !important;
+}
+* {
+  box-sizing: border-box;
+}
+
+#groupTabs {
+  padding-top: 1em;
+  border-bottom: solid black 0.2em;
+}
+
+#groupTabs label {
+  border-top: solid black 0.2em;
+  border-bottom: solid black 0.2em;
+  border-left: solid black 0.1em;
+  border-right: solid black 0.1em;
+  transform: translate(0%, 0.2em);
+  border-top-left-radius: 1em;
+  border-top-right-radius: 1em;
+}
+
+#groupTabs label:first-child {
+  border-left: solid black 0.2em;
+}
+
+#groupTabs button {
+  border-top: solid black 0.2em;
+  border-bottom: solid black 0.2em;
+  border-left: solid black 0.1em;
+  border-right: solid black 0.2em;
+  transform: translate(0%, 0.2em);
+  border-top-left-radius: 1em;
+  border-top-right-radius: 1em;
+}
+
+#mainContainer {
+  border: solid black 0.2em;
+  border-top: solid black 0em;
+  background-color: #FFFFFF;
+}
+
+#summaryContainer {
+  margin: 1em;
+}
+
+.summary-button {
+  margin: 0.5em 0em;
+  width: 14.5em;
+}
+
+#secondaryContainer {
+  height: 100%;
+}
+
+.date-header {
+  border-top: solid black 0.2em;
+  border-bottom: solid black 0.2em;
+  padding: 1em;
+}
+
+.book-header {
+  padding: 1em;
+}
+
+.lesson-header {
+  padding: 1em;
+  margin-top: 1em;
+}
+
+@media (min-width: 1200px) {
+  #secondaryContainer {
+    border-left: solid black 0.2em;
+    border-right: solid black 0.2em;
+  }
+
+  .date-header {
+    border-top: none;
+  }
+}
+
+#assignmentButtonActive,
+#lessonButtonActive {
+  background-color: #1d95c6;
+  border-color: #1b8dbb;
+}
+
+#lessonsContainer {
+  padding: 1em;
+}
+
+.date-header h4 {
+  margin: 0;
+  padding: 0;
+}
+
+.assignment-summary {
+  padding: 1em;
+  border-bottom: solid black 0.2em;
+  cursor: pointer;
+}
+
+.assignment-summary-selected,
+.assignment-summary:hover {
+  background-color: #EEEEEE;
+}
+
+.empty-assignments {
+  padding: 1em;
+  border-bottom: solid black 0.2em;
+
+}
+
+.col-xl-2 {
+  padding: 0;
+}
+
+#thirdColumn {
+  margin: 0;
+  padding: 1em;
+}
+
+.employee-row {
+  position: relative;
+}
+
+.employee-row:hover .employee-delete p {
+  opacity: 1;
+}
+
+.employee-delete p {
+  vertical-align: middle;
+  text-align: center;
+  padding: 0em;
+  margin: 0em;
+  opacity: 0;
+}
+
+.employee-delete {
+  cursor: pointer;
+}
+
+#groupSummary h4 {
+  padding: 0;
+  margin: 0;
+  margin-bottom: 1em;
+}
+
+#groupActions .row {
+  padding: 0em 1em;
+}
+
+#groupActions .icon-text,
+#groupActions .icon-action {
+  width: calc(100% / 3);
+}
+
+.icon-text .icon,
+.icon-action .icon {
+  height: 1.5em;
+  width: 1.5em;
+  display: inline-block;
+}
+
+.icon-text img,
+.icon-action img {
+  height: 1.5em;
+  width: 1.5em;
+}
+
+.icon-text .text,
+.icon-action .text {
+  display: inline-block;
+}
+
+@media (max-width: 500px) {
+  .icon-text .icon,
+  .icon-action .icon {
+    display: none;
+  }
+}
+
+.icon-action:hover {
+  cursor: pointer;
+  color: #29ABE0;
+}
+
+#bookDropdown {
+  margin: 0em 0.75em;
+  width: 70%;
+  display:inline-block;
+  font-size: 1.5em;
+}
+
+#addBookButton {
+  float:right;
+  width: 20%;
+  margin-top: -0.25em;
+}
+
+.input-range {
+  width: 5em;
+}
+
+#addLessonButton {
+  width: 10em;
+}
+
+#thirdColumn,
+#secondColumn {
+  padding: 0em;
+}
+
+#thirdColumn #groupSummary,
+#thirdColumn .table-container {
+  padding: 1em;
+}
+
+.pdf-controller {
+  padding: 1em;
+}
+
+.pdf-controller button {
+  width: 5em;
+}
+
+.pdf-controller input {
+  width: calc(100% - 9em);
+}
+
+@media (max-width: 1200px) {
+  #lessonsContainer {
+    border-top: solid black 0.2em;
+    border-bottom: solid black 0.2em;
+  }
+}
+
+.date-labels,
+.date-inputs {
+  font-size: 0;
+}
+
+.date-inputs input,
+.date-labels p {
+  font-size: 16px;
+  width: 45%;
+  margin: 0em;
+  padding: 0em;
+  display: inline-block;
+}
+
+.date-inputs input:first-of-type,
+.date-labels p:first-of-type {
+  margin-right: 5%;
+}
+
+#notesInput {
+  width: 100%;
+}
+
+.reading-time-input input,
+.reading-time-input p {
+  display: inline-block;
 }

@@ -1,43 +1,54 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Validators } from '@angular/forms';
-import {HttpClientModule} from '@angular/common/http';
-import {EmployeesService} from '../employees.service';
-import {Employee} from '../employee';
-import {Assignment} from '../assignment';
-import {Group} from '../group';
-import {Book} from '../book';
-import {Lesson} from '../lesson';
+import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
+import { NgClass } from '@angular/common';
+import { NgModel } from '@angular/forms';
+import { EmployeesService } from '../employees.service';
+import { Employee } from '../employee';
+import { Assignment } from '../assignment';
+import { Group } from '../group';
+import { Book } from '../book';
+import { Lesson } from '../lesson';
 import {BookService} from "../book.service";
 import { FormControl, FormGroup,FormBuilder } from '@angular/forms';
 
 declare var $:any;
 
 @Component({
-    selector: 'app-employees',
-    templateUrl: './employees.component.html',
-    styleUrls: ['./employees.component.css'],
-    providers: [HttpClientModule]
+  selector: 'app-employees',
+  templateUrl: './employees.component.html',
+  styleUrls: ['./employees.component.css'],
+  providers: [HttpClientModule]
 })
 export class EmployeesComponent implements OnInit {
 
-    testEmployee: Employee;
-    employees: Employee[];
-    groups: Group[];
-    books: Book[];
-    assignments: Assignment[];
+	testEmployee: Employee;
+	employees: Employee[];
+	groups: Group[];
+	books: Book[];
+	assignments: Assignment[];
     potentialAssignments: Lesson[];
-    lessons: Lesson[];
-    selectedAssignment: Assignment;
-    admin_id = 3;
-    assignment_id: 1;
-    pdfCurrentPage: string;
-    pdfStartPage: Number;
-    pdfEndPage: Number;
-    employeesService: EmployeesService;
-    emailContents: string;
-    modalEmails: string;
-    testPdf: Object;
+	lessons: Lesson[];
+	potentialAssignments: Lesson[];
+	selectedAssignment: Assignment;
+	selectedLesson: Lesson;
+	selectedGroup: Group;
+	admin_id = 3;
+	assignment_id: 1;
+	pdfCurrentPage: string;
+	pdfStartPage: Number;
+	pdfEndPage: Number;
+	employeesService: EmployeesService;
+	emailContents: string;
+	modalEmails: string;
+	testPdf: Object;
     lookAtAssignments = true;
+
+  viewAssignments: boolean;
+  viewLessons: boolean;
+  percentCompletes: Number[];
+  currentPercentComplete: Number;
 
     bookGroupForm : FormGroup;
     assignmentGroupForm: FormGroup;
@@ -54,52 +65,71 @@ export class EmployeesComponent implements OnInit {
     public book_lessions: Lesson[];
 
     constructor(employeesService: EmployeesService, bookService: BookService,public fb:FormBuilder) {
-        this.employees = [];
-        this.groups = [];
-        this.assignments = [];
-        this.books = [];
-        this.potentialAssignments = [];
-        this.employeesService = employeesService;
-        this.bookService = bookService;
-        this.pdfCurrentPage = "2";
-        this.bookForm = null;
-        this.modalEmails = ""
-        this.testPdf = {
-            url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
-            withCredentials: false
-        };
-        this.lookAtAssignments = true;
-        this.resetForm();
-        this.reactiveFormGroup();
-        employeesService.getGroups(this.admin_id).subscribe(data1 => {
-            this.groups = data1;
-            this.selectedGroup = data1[0];
-            this.initialLoad();
+    this.employees = [];
+    this.groups = [];
+    this.assignments = [];
+    this.books = [];
+    this.potentialAssignments = [];
+    this.employeesService = employeesService;
+    this.bookService = bookService;
+    this.pdfCurrentPage = "1";
+    this.bookForm = null;
+    this.modalEmails = "";
+    this.lookAtAssignments = true;
+    this.resetForm();
+    this.reactiveFormGroup();
 
-            employeesService.getAssignments(this.selectedGroup.ID).subscribe(data2 => {
-                this.assignments = data2;
-                this.selectedAssignment = data2[0];
+    document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
 
-                const my_this = this; //needed for filter function
+    this.testPdf = {
+      //url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
+      url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
+      withCredentials: false
+    };
 
-                // this.potentialAssignments = this.lessons.filter(function (lesson) {
-                //     for (var i = 0; i < my_this.assignments.length; ++i) {
-                //         if (my_this.assignments[i].lesson_id == lesson.ID) {
-                //             return false;
-                //         }
-                //     }
-                //     ;
-                //     return true;
-                // });
+    employeesService.getBooks().subscribe(data => {
+      this.books = data.books;
+      console.log('books');
+      console.log(data);
+      console.log(this.books);
+    });
 
-                employeesService.getEmployees(this.selectedGroup.ID, this.selectedAssignment.assignment_id).subscribe(data3 => {
-                    this.employees = data3;
-                });
+    employeesService.getLessons().subscribe(data => {
+      this.lessons = data;
+      console.log('lessons');
+      console.log(data);
+      console.log(this.lessons);
+    });
 
-            });
+    employeesService.getGroups(this.admin_id).subscribe(data1 => {
+      this.groups = data1;
+      this.selectedGroup = data1[0];
+      this.initialLoad();
 
+      employeesService.getAssignments(data1[0].ID).subscribe(data2 => {
+        this.assignments = data2;
+        this.selectedAssignment = data2[0];
+
+        const my_this = this; //needed for filter function
+
+        this.potentialAssignments = this.lessons.filter( function(lesson){
+          for(var i = 0; i < my_this.assignments.length; ++i){
+            if(my_this.assignments[i].lesson_id == lesson.ID){
+              return false;
+            }
+          };
+          return true;
         });
-    }
+
+        employeesService.getEmployees(data1[0].ID, data2[0].assignment_id).subscribe(data3 => {
+          this.employees = data3;
+          console.log('getEmployees');
+          console.log(data3);
+          console.log(data3);
+        });
+      });
+    });
+  }
 
     onFileChange($event){
         let file = null;
@@ -257,6 +287,8 @@ export class EmployeesComponent implements OnInit {
                 tempLession.END_PAGE,
                 tempLession.PDF_FILE)
             );
+        }else{
+            alert('please select book')
         }
     }
 
@@ -298,7 +330,7 @@ export class EmployeesComponent implements OnInit {
 
     saveLessions(): void {
         const new_lessons: any[] = this.book_lessions.filter((item) => {
-             if(item.changed_state && item.validationCheck() || item.ID == null){
+             if(item.changed_state && item.validationCheck(this.selectedBookData.TOTAL_PAGES) || item.ID == null){
                 return true;
             }else{
                 return false;
@@ -339,128 +371,165 @@ export class EmployeesComponent implements OnInit {
 
 
 
-    incrementPage() {
-        console.log(this.pdfCurrentPage)
-        this.pdfCurrentPage = String(Number(this.pdfCurrentPage) + 1);
-        console.log(this.pdfCurrentPage)
+  incrementPage() {
+    console.log(this.pdfCurrentPage)
+    this.pdfCurrentPage = String(Number(this.pdfCurrentPage) + 1);
+    console.log(this.pdfCurrentPage)
+  }
+
+  decrementPage() {
+    console.log(this.pdfCurrentPage)
+    this.pdfCurrentPage = String(Number(this.pdfCurrentPage) - 1);
+    console.log(this.pdfCurrentPage)
+  }
+
+  setStartPage() {
+	  this.pdfStartPage = Number(this.pdfCurrentPage);
+	  if(this.pdfStartPage > this.pdfEndPage){
+		  this.pdfEndPage = this.pdfStartPage;
+	  }
+  }
+
+  setEndPage() {
+    this.pdfEndPage = Number(this.pdfCurrentPage);
+    if(this.pdfEndPage < this.pdfStartPage){
+      this.pdfStartPage = this.pdfEndPage;
     }
+  }
 
-    decrementPage() {
-        console.log(this.pdfCurrentPage)
-        this.pdfCurrentPage = String(Number(this.pdfCurrentPage) - 1);
-        console.log(this.pdfCurrentPage)
-    }
+  emailGroup(text) {
+    this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function(total, next){return total + ", " + next});
+  }
 
-    setStartPage() {
-        this.pdfStartPage = Number(this.pdfCurrentPage);
-        if (this.pdfStartPage > this.pdfEndPage) {
-            this.pdfEndPage = this.pdfStartPage;
-        }
-    }
+  emailGroupIncomplete(text) {
+    console.log(text);
+    console.log(this.emailContents);
+  }
 
-    setEndPage() {
-        this.pdfEndPage = Number(this.pdfCurrentPage);
-        if (this.pdfEndPage < this.pdfStartPage) {
-            this.pdfStartPage = this.pdfEndPage;
-        }
-    }
+  emailGroupLate(text) {
+    console.log(text);
+    console.log(this.emailContents);
+  }
 
-    emailGroup(text) {
-        this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function (total, next) {
-            return total + ", " + next
-        });
-    }
-
-    emailGroupIncomplete(text) {
-        console.log(text);
-        console.log(this.emailContents);
-    }
-
-    emailGroupLate(text) {
-        console.log(text);
-        console.log(this.emailContents);
-    }
-
-    groupSelect(group) {
-        console.log(group.ID);
-        this.selectedGroup = group;
-        this.employeesService.getAssignments(group.ID).subscribe(data2 => {
-            console.log(data2);
-            if (!data2['err']) {
-                if (typeof(data2[0]) === undefined) {
-                    this.assignments = [];
-                    this.selectedAssignment = null;
-                    this.employees = [];
-                }
-                else {
-                    this.assignments = data2;
-                    this.selectedAssignment = data2[0];
-                    this.employeesService.getEmployees(group.ID, data2[0].assignment_id).subscribe(data3 => {
-                        this.employees = data3;
-                        console.log(data3[0]);
-
-                    });
-                }
-            }
-            else {
-                this.assignments = [{
-                    "assignment_id": -1,
-                    "NAME": "No assignments",
-                    "START_DATE": null,
-                    "DUE_DATE": null,
-                    "book_id": -1,
-                    "lesson_id": -1
-                }];
-                this.selectedAssignment = this.assignments[0];
-                this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
-                    this.employees = data3;
-                    console.log(data3[0]);
-
-                });
-            }
-
-            const my_this = this; //needed for filter function
-
-            // this.potentialAssignments = this.lessons.filter(function (lesson) {
-            //     for (var i = 0; i < my_this.assignments.length; ++i) {
-            //         if (my_this.assignments[i].lesson_id == lesson.ID) {
-            //             return false;
-            //         }
-            //     }
-            //     ;
-            //     return true;
-            // });
-            // console.log(this.potentialAssignments);
-        });
-    }
-
-    setAssignmentsActive() {
-        this.lookAtAssignments = true;
-    }
-
-    setLessonsActive() {
-        this.lookAtAssignments = false;
-    }
-
-
-    assignmentSelect(assignment) {
-
-        this.selectedAssignment = assignment;
-        this.employeesService.getEmployees(this.selectedGroup.ID, assignment.assignment_id).subscribe(data3 => {
+  groupSelect(group) {
+    console.log(group.ID);
+    console.log('groupSelect');
+    this.selectedGroup = group;
+    this.employeesService.getAssignments(group.ID).subscribe(data2 => {
+      console.log(data2);
+      if(!data2['err']) {
+        if(typeof(data2[0]) === undefined){
+          this.assignments = [];
+          this.selectedAssignment = null;
+          this.employees = [];
+        } else {
+          this.assignments = data2;
+          this.selectedAssignment = data2[0];
+          this.employeesService.getEmployees(group.ID, data2[0].assignment_id).subscribe(data3 => {
             this.employees = data3;
-            //console.log(data3[0]);
+            console.log(data3[0]);
+
+          });
+        }
+      } else {
+        this.assignments = [{"assignment_id": -1, "NAME": "No assignments", "START_DATE": null, "DUE_DATE": null, "book_id": -1, "lesson_id": -1}];
+        this.selectedAssignment = this.assignments[0];
+        this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
+          this.employees = data3;
+          console.log(data3[0]);
 
         });
+      }
+
+			const my_this = this; //needed for filter function
+
+			this.potentialAssignments = this.lessons.filter( function(lesson){
+				for(var i = 0; i < my_this.assignments.length; ++i){
+					if(my_this.assignments[i].lesson_id == lesson.ID){
+						return false;
+					}
+				};
+        return true;
+			});
+			console.log(this.potentialAssignments);
+		});
+  }
+
+  addAssignment() {
+	  console.log("Add assignment works")
+  }
+
+  addGroup() {
+	  console.log("Add group works")
+  }
+
+  viewSwitch(selected) {
+    var assignmentButton = document.getElementById('assignmentButton');
+    var lessonButton = document.getElementById('lessonButton');
+    if(assignmentButton == null || assignmentButton == undefined) {
+      assignmentButton = document.getElementById('assignmentButtonActive');
+    }
+    if(lessonButton == null || lessonButton == undefined) {
+      lessonButton = document.getElementById('lessonButtonActive');
     }
 
-    lessonSelect(lesson) {
-        this.selectedLesson = lesson;
+    if(selected === "assignments") {
+      this.viewLessons = false;
+      lessonButton.id = 'lessonButton';
+      if(this.viewAssignments) {
+        this.viewAssignments = false;
+        assignmentButton.id = 'assignmentButton';
+        document.getElementById('secondColumn').className = 'col-xl-0';
+        document.getElementById('thirdColumn').className = 'col-xl-10';
+      } else {
+        this.viewAssignments = true;
+        assignmentButton.id = 'assignmentButtonActive';
+        document.getElementById('secondColumn').className = 'col-xl-2';
+        document.getElementById('thirdColumn').className = 'col-xl-8';
+      }
+    } else if (selected === "lessons") {
+      console.log(this.books);
+      this.viewAssignments = false;
+      assignmentButton.id = 'assignmentButton';
+      if(this.viewLessons) {
+        this.viewLessons = false;
+        lessonButton.id = 'lessonButton';
+        document.getElementById('secondColumn').className = 'col-xl-0';
+        document.getElementById('thirdColumn').className = 'col-xl-10';
+      } else {
+        this.viewLessons = true;
+        lessonButton.id = 'lessonButtonActive';
+        document.getElementById('secondColumn').className = 'col-xl-7';
+        document.getElementById('thirdColumn').className = 'col-xl-3';
+      }
     }
+  }
 
-    ngOnInit() {
-
-        this.selectedGroup = this.groups[0];
-
+  assignmentSelect(assignment, index) {
+    let assignments = document.getElementsByClassName('assignment-summary');
+    for(let i = 0; i < assignments.length; i++) {
+      if(index == i) {
+        assignments[i].className = 'assignment-summary assignment-summary-selected';
+      } else {
+        assignments[i].className = 'assignment-summary';
+      }
     }
+    this.selectedAssignment = assignment;
+    this.employeesService.getEmployees(this.selectedGroup.ID, assignment.assignment_id).subscribe(data3 => {
+      this.employees = data3;
+      //console.log(data3[0]);
+
+    });
+  }
+
+  lessonSelect(lesson){
+    this.selectedLesson = lesson;
+  }
+
+  ngOnInit() {
+
+    this.selectedGroup = this.groups[0];
+
+  }
 
 }

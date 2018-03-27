@@ -33,7 +33,8 @@
             </intent-filter>
         </activity>
         <activity android:name="com.novoholdings.safetybook.activities.GroupsActivity" />
-        <activity android:name=".activities.AssignmentsActivity"/>
+        <activity android:name=".activities.AssignmentsActivity"
+            android:configChanges="orientation|screenSize"/>
 
         <service
             android:name=".firebase.MyFirebaseInstanceIDService">
