@@ -30,10 +30,7 @@ export class EmployeesComponent implements OnInit {
 	assignments: Assignment[];
     potentialAssignments: Lesson[];
 	lessons: Lesson[];
-	potentialAssignments: Lesson[];
 	selectedAssignment: Assignment;
-	selectedLesson: Lesson;
-	selectedGroup: Group;
 	admin_id = 3;
 	assignment_id: 1;
 	pdfCurrentPage: string;
@@ -88,7 +85,7 @@ export class EmployeesComponent implements OnInit {
     };
 
     employeesService.getBooks().subscribe(data => {
-      this.books = data.books;
+      this.books = data;
       console.log('books');
       console.log(data);
       console.log(this.books);
