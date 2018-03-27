@@ -1,15 +1,99 @@
 <div class="container">
-	<div class="row">
+
+	<div class="row" id="groupTabs">
+		<div class="btn-group btn-group-toggle" data-toggle="buttons">
+			<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
+				<input type="radio" name="groups" id={{group.ID}} autocomplete="off"  value={{group.ID}}>{{group.NAME}}
+			</label>
+			<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
+		</div>
+	</div>
+
+	<div class="row" id="mainContainer">
 		<div class="col-xl-2">
-			<div class="row">
-				<div class="btn-group-vertical btn-group-toggle btn-block" data-toggle="buttons">
-					<label class="btn btn-primary btn-block disabled">Running Assignments</label>
-					<label class="btn btn-primary btn-block" *ngFor="let assignment of assignments" (click)="assignmentSelect(assignment)">
-						<input type="radio" name="assignments" id={{assignment.assignment_id}} autocomplete="off"  value={{assignment.ID}}>{{assignment.NAME}}
-					</label>
+			<div id="summaryContainer">
+				<h5 *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false">{{selectedGroup.NAME}}</h5>
+				<h5 *ngIf="selectedGroup !== undefined && employees.length == 1 ? selectedGroup !== null : false">{{employees.length}} Employee</h5>
+				<h5 *ngIf="selectedGroup !== undefined && employees.length > 1 ? selectedGroup !== null : false">{{employees.length}} Employees</h5>
+				<button *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" type="button" class="btn btn-info summary-button" data-toggle="modal" data-target="#addEmployeeModal">+ Add Employee</button>
+				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('assignments')" class="btn btn-info summary-button" id="assignmentButton">Assignments</div>
+				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('lessons')" class="btn btn-info summary-button" id="lessonButton">Lesson Plan</div>
+			</div>
+		</div>
+
+		<div class="col-xl-0" id="secondColumn">
+			<div *ngIf="viewAssignments || viewLessons" id="secondaryContainer">
+				<div *ngIf="viewAssignments" id="assignmentsContainer">
+					<div class="date-header">
+						<h4>Due Date</h4>
+					</div>
+					<div *ngIf="assignments[0].NAME == 'No assignments'" class="empty-assignments">No Assignments</div>
+					<div *ngIf="assignments[0].NAME !== 'No assignments'">
+						<div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
+							<h5>{{assignment.NAME}}</h5>
+							Due {{assignment.DUE_DATE | date:'MM/dd/yyyy'}}
+							Available {{assignment.START_DATE | date:'MM/dd/yyyy'}}
+						</div>
+					</div>
 				</div>
 			</div>
-			<br />
+		</div>
+
+		<div class="col-xl-10" id="thirdColumn">
+			<div *ngIf="viewAssignments || !viewLessons">
+				<div id="groupSummary">
+					<h4 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignment.NAME}}</h4>
+					<div id="groupActions">
+						<div class="row">
+							<div class="icon-text">
+								<div class="icon"><img src="assets/pngs/hourglass.png" /></div>
+								<div class="text">Time</div>
+							</div>
+							<div class="icon-action">
+								<div class="icon"></div>
+								<div class="text">Email</div>
+							</div>
+							<div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
+								<div class="icon"><img src="assets/pngs/mail.png" /></div>
+								<div class="text">Email all employees</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="icon-text">
+								<div class="icon"></div>
+								<div class="text">Email</div>
+							</div>
+							<div class="icon-text">
+								<div class="icon"></div>
+								<div class="text">Email</div>
+							</div>
+							<div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
+								<div class="icon"><img src="assets/pngs/mail.png" /></div>
+								<div class="text">Email all incomplete</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<table class="table table-hover">
+					<thead>
+						<th></th>
+						<th scope="col">First Name</th>
+						<th scope="col">Last Name</th>
+						<th scope="col">Email</th>
+					</thead>
+					<tr class="employee-row" *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
+						<td class="employee-delete"><p>X</p></td>
+						<td>{{employee.FIRST_NAME | pending}}</td>
+						<td>{{employee.LAST_NAME | pending}}</td>
+						<td>{{employee.EMAIL}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-2">
 			<div class="row">
 				<div class="btn-group-vertical btn-group btn-block">
 					<button class="btn btn-info disabled btn-block">Lessons yet to be assigned</button>
@@ -19,43 +103,10 @@
 					<button class="btn btn-success btn-block" data-toggle="modal" data-target="#newLessonModal">New Lesson</button>
 				</div>
 			</div>
-			
-		</div>
-		<div class="col-xl-10">
-			<div class="btn-group btn-group-toggle" data-toggle="buttons">
-				<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
-					<input type="radio" name="groups" id={{group.ID}} autocomplete="off"  value={{group.ID}}>{{group.NAME}}
-				</label>
-				<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
-			</div>
-			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Name: {{selectedAssignment.NAME}}</h3>
-			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Start: {{selectedAssignment.START_DATE | date}}</h3>
-			<h3 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">Due: {{selectedAssignment.DUE_DATE | date}}</h3>
-			<table class="table table-hover">
-				<thead>
-					<th scope="col">First Name</th>
-					<th scope="col">Last Name</th>
-					<th scope="col">Email</th>
-					<div *ngIf="selectedAssignment !== undefined">
-					<th scope="col" *ngIf="selectedAssignment.assignment_id > 0">Status</th>
-					</div>
-				</thead>
-				<tr *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
-					<td>{{employee.FIRST_NAME | pending}}</td>
-					<td>{{employee.LAST_NAME | pending}}</td>
-					<td>{{employee.EMAIL}}</td>
-					<div *ngIf="selectedAssignment !== undefined && employee.IS_COMPLETE !== null">
-					<td *ngIf="selectedAssignment.assignment_id > 0" >{{employee.IS_COMPLETE.data[0]}}</td>
-					</div>
-				</tr>
-			</table>
-			<!-- TODO - implement email buttons --> 
 		</div>
 	</div>
-	<br />
-	<div class="row"><button class="btn btn-info" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">Email all in this group</button></div>
-	<div class="row"><button class="btn btn-danger" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">Email all incomplete in this group</button></div>
-	<div class="row"><button class="btn btn-danger" (click)="emailGroupLate()" data-toggle="modal" data-target="#emailModal">Email all late in this group</button></div>
+
+
 	<div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -85,6 +136,7 @@
 		</div>
 	  </div>
 	</div>
+
 	<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -107,6 +159,7 @@
 		</div>
 	  </div>
 	</div>
+
 	<div class="modal fade" id="newLessonModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
@@ -160,6 +213,7 @@
 		</div>
 	  </div>
 	</div>
+
 	<div class="modal fade" id="addGroupModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
@@ -170,7 +224,10 @@
 			</button>
 		  </div>
 		  <div class="modal-body">
-
+				<div class="form-group">
+					<label for="groupNameInput">Group Name</label>
+					<input type="text" class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Name">
+				</div>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -179,4 +236,36 @@
 		</div>
 	  </div>
 	</div>
+
+	<div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="exampleModalLabel">Add Employee</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+				<div class="form-group">
+					<label for="employeeFirstNameInput">First Name</label>
+					<input type="text" class="form-control" id="employeeFirstNameInput" aria-describedby="employeeFirstNameHelp" placeholder="Enter First Name">
+				</div>
+				<div class="form-group">
+					<label for="employeeLastNameInput">Last Name</label>
+					<input type="text" class="form-control" id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">
+				</div>
+				<div class="form-group">
+					<label for="employeeEmailInput">Email</label>
+					<input type="text" class="form-control" id="employeeEmailInput" aria-describedby="employeeEmailHelp" placeholder="Enter Email">
+				</div>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Add Employee</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+
 </div>
