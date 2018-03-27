@@ -58,9 +58,9 @@ export class Lesson {
     }
 
 
-    validationCheck() {
+    validationCheck(total_pages:number = 0) {
 	   return this.is_valid =  this.NAME !='' && this.END_PAGE && this.START_PAGE &&
-	              (this.START_PAGE <= this.END_PAGE);
+	              (this.START_PAGE <= this.END_PAGE) && (this.END_PAGE <=total_pages && this.START_PAGE<=total_pages);
     }
 
     setGroup(groupId) {
