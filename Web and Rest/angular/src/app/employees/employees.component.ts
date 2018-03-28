@@ -23,10 +23,8 @@ declare var $:any;
   providers: [HttpClientModule]
 })
 export class EmployeesComponent implements OnInit {
-	user = {
-	   email: '',
-	   password: ''
-	};
+	userEmail: string;
+	userPassword: string;
 	isLoggedIn = false;
 	testEmployee: Employee;
 	employees: Employee[];
@@ -68,10 +66,8 @@ export class EmployeesComponent implements OnInit {
     public book_lessions: Lesson[];
 
     constructor(employeesService: EmployeesService, authService: AuthService, bookService: BookService,public fb:FormBuilder) {
-    this.user = {
-	   email: '',
-	   password: ''
-	};
+    this.userEmail = '';
+	this.userPassword = '';
 	this.employees = [];
     this.groups = [];
     this.assignments = [];
@@ -544,7 +540,7 @@ export class EmployeesComponent implements OnInit {
     this.selectedLesson = lesson;
   }
 	signInWithEmail() {
-	   this.authService.signInRegular(this.user.email, this.user.password)
+	   this.authService.signInRegular(this.userEmail, this.userPassword)
 		  .then((res) => {
 			 console.log(res);
 			this.isLoggedIn = true;
