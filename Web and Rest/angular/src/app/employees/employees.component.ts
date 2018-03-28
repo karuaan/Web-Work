@@ -396,7 +396,7 @@ export class EmployeesComponent implements OnInit {
   }
 
   emailConfirm(){
-	this.employeesService.email(this.modalEmails, )
+	this.employeesService.email(this.modalEmails, this.emailContents);
   }
   
   emailGroup(text) {
