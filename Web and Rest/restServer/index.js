@@ -2124,9 +2124,12 @@ function emailToList(emailList, text, callback){
 app.post('/emailToList', function(req, res){
 	emailToList(req.body.emailList, req.body.text, function(err, result){
 		if(err){
+			console.log(err);
 			res.json(err);
+			
 		}
 		else{
+			console.log(result);
 			res.json(result);
 		}
 	})
