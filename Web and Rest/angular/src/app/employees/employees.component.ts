@@ -396,6 +396,9 @@ export class EmployeesComponent implements OnInit {
   }
 
   emailConfirm(){
+	console.log("Email")
+	console.log(this.modalEmails);
+	console.log(this.emailContents);
 	this.employeesService.email(this.modalEmails, this.emailContents);
   }
   
