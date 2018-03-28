@@ -68,7 +68,11 @@ export class EmployeesComponent implements OnInit {
     public book_lessions: Lesson[];
 
     constructor(employeesService: EmployeesService, authService: AuthService, bookService: BookService,public fb:FormBuilder) {
-    this.employees = [];
+    this.user = {
+	   email: '',
+	   password: ''
+	};
+	this.employees = [];
     this.groups = [];
     this.assignments = [];
     this.books = [];
