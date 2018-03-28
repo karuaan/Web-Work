@@ -540,7 +540,7 @@ export class EmployeesComponent implements OnInit {
     this.selectedLesson = lesson;
   }
 	signInWithEmail() {
-		this.userEmail = 'test@test.test';
+		this.userEmail = 'thebesttestrest@test.rest';
 		this.userPassword = 'testtesttest';
 	   this.authService.signInRegular(this.userEmail, this.userPassword)
 		  .then((res) => {
