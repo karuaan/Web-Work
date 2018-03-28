@@ -72,6 +72,7 @@ export class EmployeesComponent implements OnInit {
     this.pdfCurrentPage = "1";
     this.bookForm = null;
     this.modalEmails = "";
+	this.emailContents = "";
     this.lookAtAssignments = true;
     this.resetForm();
     this.reactiveFormGroup();
@@ -394,6 +395,10 @@ export class EmployeesComponent implements OnInit {
     }
   }
 
+  emailConfirm(){
+	this.employeesService.email(this.modalEmails, )
+  }
+  
   emailGroup(text) {
     this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function(total, next){return total + ", " + next});
   }

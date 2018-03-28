@@ -27,8 +27,9 @@ export class EmployeesService {
 	  
   }
   
-  email(user_emails){
-  
+  email(user_emails, message){
+	var response = this.http.post(this.restURL + '/emailToList', {'emailList': user_emails, 'text': message});
+	return response;
   }
   
   getMasterTable(admin_id): Observable<MasterEntry[]>{
