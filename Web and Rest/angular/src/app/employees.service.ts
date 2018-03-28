@@ -39,8 +39,8 @@ export class EmployeesService {
 	  return response;
   }
   
-  getBooks(): Observable<Book[]>{
-	  var response = this.http.get<Book[]>(this.restURL + '/books');
+  getBooks(): Observable<any>{
+	  var response = this.http.get<any>(this.restURL + '/books');
 	  return response;
   }
   

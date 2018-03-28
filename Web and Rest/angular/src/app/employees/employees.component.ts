@@ -30,7 +30,7 @@ export class EmployeesComponent implements OnInit {
 	testEmployee: Employee;
 	employees: Employee[];
 	groups: Group[];
-	books: Book[];
+	books: any;
 	assignments: Assignment[];
     potentialAssignments: Lesson[];
 	lessons: Lesson[];
@@ -212,7 +212,7 @@ export class EmployeesComponent implements OnInit {
 
         this.groupForm = this.fb.group({
             group_name: new FormControl(null, [Validators.required]),
-            emails: new FormControl(this.emailTags, [Validators.required]),
+            emails: new FormControl(null, [Validators.required]),
         });
     }
 
@@ -448,8 +448,8 @@ export class EmployeesComponent implements OnInit {
         });
     }
 
-    changePdfPageNo(pageNo: number) {
-        if (pageNo != null && pageNo != '' && pageNo <= this.selectedBookData.TOTAL_PAGES){
+    changePdfPageNo(pageNo: any) {
+        if (pageNo != null && pageNo !== '' && pageNo <= this.selectedBookData.TOTAL_PAGES){
             this.pdfCurrentPage = pageNo;
         }
     }
