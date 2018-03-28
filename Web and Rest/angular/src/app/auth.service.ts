@@ -13,7 +13,7 @@ signInRegular(email, password) {
 	console.log(email);
 	console.log(password);
    const credential = firebase.auth.EmailAuthProvider.credential( email, password );
-   return this._firebaseAuth.auth.createUserWithEmailAndPassword(email, password);
+   return this._firebaseAuth.auth.signInWithEmailAndPassword(email, password);
 }  
 }
 
