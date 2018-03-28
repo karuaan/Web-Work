@@ -22,7 +22,11 @@ declare var $:any;
   providers: [HttpClientModule]
 })
 export class EmployeesComponent implements OnInit {
-
+	user = {
+	   email: '',
+	   password: ''
+	};
+	isLoggedIn = false;
 	testEmployee: Employee;
 	employees: Employee[];
 	groups: Group[];
@@ -532,7 +536,14 @@ export class EmployeesComponent implements OnInit {
   lessonSelect(lesson){
     this.selectedLesson = lesson;
   }
-
+	signInWithEmail() {
+	   this.authService.signInRegular(this.user.email, this.user.password)
+		  .then((res) => {
+			 console.log(res);
+			this.isLoggedIn = true;
+		  })
+		  .catch((err) => console.log('error: ' + err));
+	}
   ngOnInit() {
 
     this.selectedGroup = this.groups[0];
