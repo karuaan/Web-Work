@@ -13,7 +13,8 @@ import { Lesson } from '../lesson';
 import {BookService} from "../book.service";
 import { FormControl, FormGroup,FormBuilder } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import {isUndefined} from "util";
+import { AuthService } from '../auth.service';
+
 declare var $:any;
 
 @Component({
@@ -23,7 +24,9 @@ declare var $:any;
   providers: [HttpClientModule]
 })
 export class EmployeesComponent implements OnInit {
-
+	userEmail: string;
+	userPassword: string;
+	isLoggedIn = false;
 	testEmployee: Employee;
 	employees: Employee[];
 	groups: Group[];
@@ -38,6 +41,7 @@ export class EmployeesComponent implements OnInit {
 	pdfStartPage: Number;
 	pdfEndPage: Number;
 	employeesService: EmployeesService;
+	authService: AuthService;
 	emailContents: string;
 	modalEmails: string;
 	testPdf: Object;
@@ -65,15 +69,17 @@ export class EmployeesComponent implements OnInit {
     public book_lessions: Lesson[];
     public fb;
     public toastrService: ToastrService;
-
     public validators = [this.validateEmail];
     public errorMessages = {
        'validateEmail': 'invalid email address'
     };
 
     constructor(employeesService: EmployeesService,
-                toastrService: ToastrService,
-                bookService: BookService, fb: FormBuilder) {
+                    toastrService: ToastrService,
+                authService: AuthService,
+                    bookService: BookService, fb: FormBuilder) {
+    this.userEmail = '';
+    this.userPassword = '';
     this.employees = [];
     this.groups = [];
     this.assignments = [];
@@ -81,6 +87,7 @@ export class EmployeesComponent implements OnInit {
     this.potentialAssignments = [];
     this.employeesService = employeesService;
     this.bookService = bookService;
+	this.authService = authService;
     this.pdfCurrentPage = "1";
     this.bookForm = null;
     this.modalEmails = "";
@@ -659,7 +666,16 @@ export class EmployeesComponent implements OnInit {
   lessonSelect(lesson){
     this.selectedLesson = lesson;
   }
-
+	signInWithEmail() {
+		this.userEmail = 'thebesttestrest@test.rest';
+		this.userPassword = 'testtesttest';
+	   this.authService.signInRegular(this.userEmail, this.userPassword)
+		  .then((res) => {
+			 console.log(res);
+			this.isLoggedIn = true;
+		  })
+		  .catch((err) => console.log('error: ' + err));
+	}
   ngOnInit() {
 
     this.selectedGroup = this.groups[0];
