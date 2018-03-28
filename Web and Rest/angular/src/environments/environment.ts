@@ -12,5 +12,5 @@ export const environment = {
     projectId: "safety-book-reader",
     storageBucket: "safety-book-reader.appspot.com",
     messagingSenderId: "219029116689"
-  };
+  }
 };
