@@ -27,6 +27,14 @@ export class BookService {
     return this.http.post<any>(`${this._api.endpoint}/lessons/${lessionId}/assignment`, data);
   }
 
+  saveEmployee(group_id, data): Observable<Book[]> {
+    return this.http.post<any>(`${this._api.endpoint}/groups/${group_id}/employees`, data);
+  }
+
+  saveGroup(data): Observable<Book[]> {
+    return this.http.post<any>(`${this._api.endpoint}/groups/save`, data);
+  }
+
   batchSaveLesson(data): Observable<any[]> {
     return this.http.post<any>(this._api.endpoint + '/batch-save/lessons', data);
   }

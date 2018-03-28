@@ -1,4 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { TagInputModule } from 'ngx-chips';
+
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -12,6 +15,9 @@ import { EmployeesService } from './employees.service';
 import { PendingPipe } from './pending.pipe';
 import {BookService} from "./book.service";
 
+import { ToastrModule } from 'ngx-toastr';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -20,7 +26,10 @@ import {BookService} from "./book.service";
   ],
   imports: [
     BrowserModule,
+      BrowserAnimationsModule,
+      ToastrModule.forRoot(),
       FormsModule,
+      TagInputModule,
       ReactiveFormsModule,
 	HttpClientModule,
 	PdfViewerModule,

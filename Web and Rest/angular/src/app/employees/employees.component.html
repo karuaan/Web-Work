@@ -15,7 +15,9 @@
 				<h5 *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false">{{selectedGroup.NAME}}</h5>
 				<h5 *ngIf="selectedGroup !== undefined && employees.length == 1 ? selectedGroup !== null : false">{{employees.length}} Employee</h5>
 				<h5 *ngIf="selectedGroup !== undefined && employees.length > 1 ? selectedGroup !== null : false">{{employees.length}} Employees</h5>
-				<button *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" type="button" class="btn btn-info summary-button" data-toggle="modal" data-target="#addEmployeeModal">+ Add Employee</button>
+				<button *ngIf="selectedGroup && selectedGroup !== undefined"
+                        type="button"
+                        class="btn btn-info summary-button" data-toggle="modal" data-target="#addEmployeeModal">+ Add Employee</button>
 				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('assignments')" class="btn btn-info summary-button" id="assignmentButton">Assignments</div>
 				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('lessons')" class="btn btn-info summary-button" id="lessonButton">Lesson Plan</div>
 			</div>
@@ -60,9 +62,11 @@
 						<!--<button type="button" class="btn btn-info" id="addBookButton">+ Add</button>-->
 					</div>
 
-                    <p *ngIf="selectedBookData && (selectedBookData.TOTAL_PAGES == 0 || selectedBookData.TOTAL_PAGES == null)">
-                       Book does not have pages
-                    </p>
+                    <div class="col-md-12" *ngIf="selectedBookData">
+                       <h3>{{selectedBookData.NAME}}</h3>
+                       <span>Total Pages : <strong>{{selectedBookData.TOTAL_PAGES}}</strong></span>
+                    </div>
+
 
 					<div class="lesson-header">
 						<h4>Lessons</h4>
@@ -109,13 +113,17 @@
                                                        </td>
                                                        <td>
                                                            <input type="number" class="form-control input-sm"
-                                                                  (change)="lesson.changed()"
+                                                                  (change)="lesson.changed();"
+                                                                  (click)="changePdfPageNo(lesson.START_PAGE)"
+                                                                  (keyup)="changePdfPageNo(lesson.START_PAGE)"
                                                                   [max]="selectedBookData.TOTAL_PAGES"
                                                                   name="lession[][start_page]" [(ngModel)]="lesson.START_PAGE" min="0">
                                                        </td>
                                                        <td>
                                                            <input class="form-control input-sm " type="number"
-                                                                  (change)="lesson.changed()"
+                                                                  (change)="lesson.changed();"
+                                                                  (click)="changePdfPageNo(lesson.END_PAGE)"
+                                                                  (keyup)="changePdfPageNo(lesson.END_PAGE)"
                                                                   [max]="selectedBookData.TOTAL_PAGES"
                                                                   name="lession[][end_page]" [(ngModel)]="lesson.END_PAGE" min="0">
                                                        </td>
@@ -198,13 +206,22 @@
 				</div>
 			</div>
 
-			<div *ngIf="viewLessons">
+			<div *ngIf="viewLessons && testPdf">
 				<div class="pdf-controller">
-					<button class="btn btn-primary" (click)="decrementPage()">Prev</button>
+					<button class="btn btn-primary"
+                            [disabled]="'1' == pdfCurrentPage"
+                            (click)="decrementPage()">Prev</button>
 					<input type="number" [(ngModel)]="pdfCurrentPage">
-					<button class="btn btn-primary" (click)="incrementPage()">Next</button>
+					<button class="btn btn-primary" [disabled]="selectedBookData.TOTAL_PAGES == pdfCurrentPage"
+                            (click)="incrementPage()">Next
+                    </button>
 				</div>
-				<pdf-viewer [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
+				<pdf-viewer [src]="testPdf" [render-text]="false"
+                            [(page)]="pdfCurrentPage"
+                            (error)="onPdfLoadError($event)"
+                            [show-all]="false"
+                            [original-size]="false"
+                            style="display: block;"></pdf-viewer>
 			</div>
 		</div>
 	</div>
@@ -332,14 +349,37 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<div class="form-group">
-						<label for="groupNameInput">Group Name</label>
-						<input type="text" class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Name">
-					</div>
+                    <form [formGroup]="groupForm" (submit)="saveGroup()">
+                        <div class="form-group">
+                            <label for="groupNameInput">Group Name</label>
+                            <input type="text"
+                                   formControlName="group_name"
+                                   class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="groupEmailInput">Emails</label>
+                            <tag-input type="text"
+                                       [separatorKeyCodes]='[9, 188]'
+                                       [placeholder]="'Add email'"
+                                       [secondaryPlaceholder]="'Add email'"
+                                       [errorMessages]="errorMessages"
+                                       [validators]="validators"
+                                       id="groupEmailInput"
+                                       formControlName="emails"
+                                       (onAdd)="onItemAdded($event)"
+                                       [editable]='true'></tag-input>
+                            <!--<input type="text"-->
+                                   <!--formControlName="emails"-->
+                                   <!--class="form-control" id="groupEmailInput" aria-describedby="groupEmailInputHelp"-->
+                                   <!--placeholder="Enter email addresses">-->
+                        </div>
+                    </form>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary">Add Group</button>
+					<button type="button" (click)="saveGroup()" [disabled]="groupForm.invalid"
+                            class="btn btn-primary">Add Group</button>
 				</div>
 			</div>
 		</div>
@@ -354,23 +394,35 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body">
-					<div class="form-group">
-						<label for="employeeFirstNameInput">First Name</label>
-						<input type="text" class="form-control" id="employeeFirstNameInput" aria-describedby="employeeFirstNameHelp" placeholder="Enter First Name">
-					</div>
-					<div class="form-group">
-						<label for="employeeLastNameInput">Last Name</label>
-						<input type="text" class="form-control" id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">
-					</div>
-					<div class="form-group">
-						<label for="employeeEmailInput">Email</label>
-						<input type="text" class="form-control" id="employeeEmailInput" aria-describedby="employeeEmailHelp" placeholder="Enter Email">
-					</div>
+				<div class="modal-body" *ngIf="selectedGroup">
+                    <form name="employeeform" novalidate [formGroup]="employeeForm" (submit)="saveEmployee()">
+                        <div class="form-group">
+                            <label for="employeeFirstNameInput">First Name</label>
+                            <input type="text"
+                                   formControlName="first_name"
+                                   class="form-control"
+                                   id="employeeFirstNameInput"
+                                   aria-describedby="employeeFirstNameHelp"
+                                   placeholder="Enter First Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeLastNameInput">Last Name</label>
+                            <input type="text" class="form-control"
+                                   formControlName="last_name"
+                                   id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeEmailInput">Email</label>
+                            <input type="text"
+                                   formControlName="email"
+                                   class="form-control" id="employeeEmailInput" aria-describedby="employeeEmailHelp" placeholder="Enter Email">
+                        </div>
+                    </form>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary">Add Employee</button>
+					<button type="button" (click)="saveEmployee()" [disabled]="employeeForm.invalid" class="btn btn-primary">Add
+                        Employee</button>
 				</div>
 			</div>
 		</div>

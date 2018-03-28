@@ -15,7 +15,7 @@ global.__basedir = __dirname;
 
 //const filesys = require('fs')
 ///*
-const debug = false;
+const debug = true;
 var con;
 
 if(!debug){
@@ -317,6 +317,21 @@ app.get('/email/test', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 			res.json(info);
 		}
 	})
+});
+
+app.get('/read-pdf', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+	console.log('req',req.query.path);
+	var filePath = "/"+req.query.path;
+	console.log('full url',__basedir + filePath);
+	fs.readFile(__basedir + filePath , function (err,data){
+		res.contentType("application/pdf");
+		if(!err){
+			res.send(data);
+		}else{
+			console.log('err',err);
+			res.send('');
+		}
+	});
 });
 
 app.get('/testgroupthing', function(req, res){
@@ -1500,8 +1515,68 @@ app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res)
 	})
 })
 
+app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+	var admin_id = 3;
+
+
+	// Save employee if not exists , if exists than return employee
+	BookService.saveEmployee(req.body).then((employeeDataRes) => {
+		console.log('employeeDataRes',employeeDataRes.data.ID);
+		if(employeeDataRes.status && employeeDataRes.data.ID){
+			
+			var savedGroupData =  BookService.insertGroup({
+				USER_ID : employeeDataRes.data.ID,
+				ADMIN_ID : admin_id,
+				NAME : req.body.group_name,
+				ID : req.params.groupId
+			}).then((groupdata) => {
+
+				res.json({
+					employeeDataRes:employeeDataRes,
+					res : groupdata
+				});
+				
+			});
+		}
+	});
+});
+
+app.post('/groups/save', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+
+	// temp admin id 3 
+
+	if(!req.body.NAME){
+		res.json({
+			message : 'NAME required',
+			status : false,
+			data : null
+		});
+	}
+	
+	if(req.body.employees.length > 0){
+		BookService.saveGroup(req.body).then((data) => {
+			res.json(data);
+		});	
+	}
+	else{
+		res.json({
+			message : 'Employee required',
+			status : false,
+			data : null
+		});
+	}
+});
+
 app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if (req.body.lessons && req.body.lessons.length > 0){
+
+
+		var lessons = req.body.lessons.filter(() => {
+
+			
+			
+		});
+
 
 		BookService.saveLesssons(req.body.lessons).then(function(results){
 			// console.log('results',results);

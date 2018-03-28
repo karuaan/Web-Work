@@ -1,8 +1,8 @@
 module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
-    var module_methods = {};
+    const module_methods = {};
 
-    var bookExistsByName = (name) => {
+    const bookExistsByName = (name) => {
         return new Promise((_resolve, _reject) => {
             const query = 'SELECT count(ID) as books_count FROM BOOKS WHERE BOOKS.NAME=?';
             con.query(query,[name], (err, rows) => {
@@ -19,7 +19,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
      };
 
-     var insertBook = (bookReq) => {
+     const insertBook = (bookReq) => {
         return new Promise((resolve,reject) => {
             con.query('INSERT INTO BOOKS (NAME, PDF_FILE,TOTAL_PAGES) VALUES (?,?,?)', [
                 bookReq.NAME,
@@ -46,7 +46,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
      };
 
-     var newBook = (book) => {
+     const newBook = (book) => {
         return new Promise(async (resolve,reject) =>{
             var bookCounts = await bookExistsByName(book.NAME);
             if (bookCounts.count > 0) {
@@ -75,7 +75,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
      };
 
-     var deleteFile = (path) => {
+     const deleteFile = (path) => {
          return new Promise(async (resolve,reject)=>{
             fs.unlink(path, (err) => {
                 if (err) {
@@ -90,7 +90,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
 
 
-    var addLessonIfNotExists = (lesson,isExist) => {
+     const addLessonIfNotExists = (lesson,isExist) => {
         return new Promise(async (resolve,reject) => {
             var status = true;
         if(isExist){
@@ -151,7 +151,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
     };
     
-    var saveLesssons =(lessons) => {
+    const saveLesssons =(lessons) => {
         return new Promise(async (resolve, reject) => {
             console.log('lessons',lessons);
             var allLesson = [];
@@ -173,7 +173,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
     
     
-    var checkLessonExist = (lesson)=> {
+    const checkLessonExist = (lesson)=> {
         console.log('checkLessonExist : ',lesson);
         return new Promise((resolve, reject) => {
               con.query("SELECT count(LESSONS.ID) as LESSONS_COUNT FROM LESSONS WHERE LESSONS.NAME=:NAME AND" +
@@ -224,7 +224,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
       };
 
-      var updateLesson = (lesson)=>{
+      const updateLesson = (lesson)=>{
         return new Promise( (resolve, reject) => {
             var updateQuery = "UPDATE LESSONS SET BOOK_ID = ?, START_PAGE = ?, END_PAGE = ?, NAME = ?, PDF_FILE = ? WHERE LESSONS.ID = ?";
                 con.query(updateQuery,[
@@ -251,7 +251,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
       };
     
-    var writeToFile = function writeToFile(filePath) {
+      const writeToFile = function writeToFile(filePath) {
         return new Promise( (resolve, reject) => {
             console.log('filePath',filePath);
             var file = fs.createWriteStream(filePath, { overwrite: false });
@@ -266,7 +266,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
     }
     
-    var lessonSplitPdf = (lesson) => {
+    const lessonSplitPdf = (lesson) => {
         return new Promise(async (resolve,reject) => {
     
                try{
@@ -310,6 +310,206 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
          });
     
        };
+
+
+       const checkGroupExist = (name)=> {
+        console.log('checkGroupExist : ',name);
+        return new Promise((resolve, reject) => {
+              con.query("SELECT GROUPS.ID as GROUP_ID FROM GROUPS WHERE GROUPS.NAME=? group by GROUPS.ID",[name], (err, rows) => {
+                  if (rows != undefined && rows.length > 0 && rows[0]['GROUP_ID']){
+                      resolve(rows[0]['GROUP_ID']);
+                  }else {
+                      resolve(0);
+                  }
+              });
+        });
+      };
+      
+      const insertGroup = (group) => {
+        return new Promise(async (resolve, reject) => {
+            console.log('insertGroup',group);
+
+
+var newQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
+var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
+
+            con.query(newQ,[
+                group.ID,
+                group.ADMIN_ID,
+                group.USER_ID,
+                group.NAME,
+                group.NAME,
+                group.ADMIN_ID,
+                group.USER_ID
+            ], (err, rows) => {
+                console.log('insertGroup',err, rows);
+                if (!err){
+                    resolve({
+                        status : true,
+                        data : group
+                    });
+                }else {
+                    resolve({
+                        status : false,
+                        data : null
+                    });
+                }
+            });
+        });
+      };
+
+      const getMaxGroupId = () =>{
+        return new Promise((resolve,reject) => {
+                con.query('SELECT MAX(ID) as group_id FROM GROUPS',(err,rows) => {
+                    if(!err && rows.length >0 && rows[0].group_id){
+                        resolve({
+                            status : true,
+                            data : rows[0].group_id
+                        });
+                    }else{
+                        resolve({
+                            status : false,
+                            data : null
+                        });
+                    }
+                });
+
+
+        });
+      };
+
+
+       const saveGroup = (group) => {
+            return new Promise(async (resolve,reject) => {
+                //var firstname =  email.replace(/@.*$/,"");
+                console.log('group request',group.employees);
+                if(group.hasOwnProperty('employees') && group.employees.length > 0){
+                    
+                    var existsId = await checkGroupExist(group.NAME);
+                    if(existsId > 0){
+                        resolve({
+                            status : false,
+                            data : existsId,
+                            message : 'Group already exists',
+                        });
+                    }
+
+
+                    var max_group_data = await getMaxGroupId();
+                    var NEW_GROUP_ID = null;
+                    if(max_group_data.data){
+                        NEW_GROUP_ID = Number(max_group_data.data) + 1;
+                    }else{
+                        resolve({
+                            status : false,
+                            data : null,
+                            message : 'New group id not found!',
+                        });
+                    }
+                    console.log('NEW_GROUP_ID',NEW_GROUP_ID);
+                    var groupEmployees = [];
+                    for(var i = 0;i<group.employees.length;i++){
+                        var empdata = await saveEmployee(group.employees[i]);    
+                        console.log('empdata.data.ID',empdata.data.ID);
+                        if(empdata.data && empdata.data.ID){
+                            console.log('savedGroupData started');
+                            var savedGroupData =  await insertGroup({
+                                ID : NEW_GROUP_ID,
+                                NAME : group.NAME,
+                                USER_ID : empdata.data.ID,
+                                ADMIN_ID : 3               
+                            });
+                            console.log('savedGroupData', savedGroupData);
+
+                            if(savedGroupData.data){
+                                groupEmployees.push(savedGroupData.data);
+                            }
+                        }
+                    }
+
+                    if(groupEmployees.length > 0){
+                        resolve({
+                            status : true,
+                            data : groupEmployees,
+                            message : 'Group saved',
+                        });
+                    }else{
+                        resolve({
+                            status : false,
+                            message : 'Enter employee emails',
+                        })
+                    }
+
+                }else{
+                    resolve({
+                        status : false,
+                        message : 'Enter employee emails',
+                    })
+                }
+            }); 
+       };
+
+       const getEmployeeByEmail = (email) => {
+            return new Promise(async (resolve,reject) => {
+                con.query('SELECT * FROM USERS WHERE EMAIL = ?',[email],(err,rows) =>{
+                    resolve({
+                        status : true,
+                        data : rows.length > 0 ? rows[0] : null
+                    });
+                });
+            });
+       };
+
+       const insertEmployee = (employee) => {
+          return new Promise((resolve,reject) => {
+              console.log('insertEmployee == ',employee);
+
+            var insertQuery = "INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL,IS_ADMIN) VALUES (?,?,?,0)";
+                con.query(insertQuery,[
+                    employee.FIRST_NAME,
+                    employee.LAST_NAME,
+                    employee.EMAIL
+               ],function(err,rows) {
+                   if (!err){
+                       var data = {
+                         data : Object.assign(employee,{
+                             ID : rows.insertId
+                         }),
+                         is_new : true,
+                         status : true
+                       };
+                       resolve(data);
+                   }else{
+                       resolve({
+                           is_new : false,
+                           status : false,
+                           data : null
+                       });
+                   }
+               });
+
+          });
+       };
+
+       const saveEmployee = (employee) => {
+            return new Promise(async (resolve,reject) => {
+                var existEmployeeData = await getEmployeeByEmail(employee.EMAIL);
+                console.log('existEmployeeData',existEmployeeData);
+                if(existEmployeeData.data != null && existEmployeeData.data){
+                    var data = {
+                        data : existEmployeeData.data,
+                        is_new : false,
+                        status : true
+                    };
+                    resolve(data);
+                }
+                else{
+                    var newdata = await insertEmployee(employee);
+                    console.log('insertEmployee data',newdata);
+                    resolve(newdata);
+                }         
+            });
+       }
     
     
     
@@ -319,5 +519,10 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
        module_methods.insertLesson = insertLesson;
        module_methods.lessonSplitPdf = lessonSplitPdf;
        module_methods.newBook = newBook;
+
+       module_methods.saveGroup = saveGroup;
+       module_methods.saveEmployee = saveEmployee;
+       module_methods.insertGroup=insertGroup;
+
        return module_methods;
 }

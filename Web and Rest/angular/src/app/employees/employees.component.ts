@@ -12,7 +12,8 @@ import { Book } from '../book';
 import { Lesson } from '../lesson';
 import {BookService} from "../book.service";
 import { FormControl, FormGroup,FormBuilder } from '@angular/forms';
-
+import { ToastrService } from 'ngx-toastr';
+import {isUndefined} from "util";
 declare var $:any;
 
 @Component({
@@ -49,8 +50,10 @@ export class EmployeesComponent implements OnInit {
 
     bookGroupForm : FormGroup;
     assignmentGroupForm: FormGroup;
+    employeeForm: FormGroup;
 
     bookForm: any = null;
+    groupForm: any = FormGroup;
     assignmentForm: any = null;
 
     private bookService: BookService;
@@ -60,8 +63,17 @@ export class EmployeesComponent implements OnInit {
     public selectedBookData: Book;
     public selectedLesson: Lesson;
     public book_lessions: Lesson[];
+    public fb;
+    public toastrService: ToastrService;
 
-    constructor(employeesService: EmployeesService, bookService: BookService,public fb:FormBuilder) {
+    public validators = [this.validateEmail];
+    public errorMessages = {
+       'validateEmail': 'invalid email address'
+    };
+
+    constructor(employeesService: EmployeesService,
+                toastrService: ToastrService,
+                bookService: BookService, fb: FormBuilder) {
     this.employees = [];
     this.groups = [];
     this.assignments = [];
@@ -74,19 +86,28 @@ export class EmployeesComponent implements OnInit {
     this.modalEmails = "";
 	this.emailContents = "";
     this.lookAtAssignments = true;
+
+    this.fb = fb;
+    this.toastrService = toastrService;
+
+
     this.resetForm();
     this.reactiveFormGroup();
 
     document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
 
-    this.testPdf = {
-      //url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
-      url: 'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/6f08a44e-97c6-4ddd-b626-7d127eef77dc/book_file/Assignment1-Cloud-Computing.pdf',
-      withCredentials: false
-    };
 
     employeesService.getBooks().subscribe(data => {
       this.books = data;
+
+      if (data.books.length > 0){
+          this.testPdf = {
+            //url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
+            url: `${this.bookService._api.endpoint}/read-pdf?path=${data.books[0].PDF_FILE}`,
+            withCredentials: false
+          };
+          console.log('this.testPdf',this.testPdf);
+      }
       console.log('books');
       console.log(data);
       console.log(this.books);
@@ -141,6 +162,19 @@ export class EmployeesComponent implements OnInit {
       return !form.get(field).valid && form.get(field).touched;
     }
 
+    private validateEmail(control: FormControl) {
+       if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(control.value))) {
+           return {
+               'invalidEmail': true
+           };
+       }
+       return null;
+   }
+
+    onItemAdded(event){
+        console.log('event',event, this.validateEmail(event.value));
+    }
+
     displayFieldCss(form,field: string) {
       return {
         'has-error': this.isFieldValid(form,field),
@@ -160,6 +194,18 @@ export class EmployeesComponent implements OnInit {
         this.bookGroupForm = this.fb.group({
             NAME: new FormControl(null, Validators.required),
             book_file: new FormControl(null, Validators.required),
+        });
+
+        this.employeeForm = this.fb.group({
+            email: new FormControl(null, [Validators.required, Validators.email]),
+            first_name: new FormControl(null, Validators.required),
+            // group_id: new FormControl(null, Validators.required),
+            last_name: new FormControl(null, Validators.required),
+        });
+
+        this.groupForm = this.fb.group({
+            group_name: new FormControl(null, [Validators.required]),
+            emails: new FormControl(this.emailTags, [Validators.required]),
         });
     }
 
@@ -210,21 +256,22 @@ export class EmployeesComponent implements OnInit {
             this.bookService.saveBooks(formData).subscribe((res: any) => {
                     if (res.data && res.data.ID) {
                         this.books.push(res.data as Book);
-                        $('#newBookModal').modal('hide');
                     }
+                    this.toastrService.success('Book', 'Saved');
+                    $('#newBookModal').modal('hide');
                   },
                   (err) => {
-                    console.log('err', err);
+                      this.toastrService.success('Book', 'Save fail');
                 });
        } else {
-            alert('upload file')
+            this.toastrService.success('Book', 'Enter proper data');
        }
     }
 
     saveAssignment(): void {
 
         if (this.assignmentGroupForm.invalid) {
-            alert('Enter proper data!');
+            this.toastrService.warning('Assignment', 'Enter proper data!');
             return;
         }
         let minute = 0;
@@ -256,12 +303,15 @@ export class EmployeesComponent implements OnInit {
                         item.setGroup(this.assignmentForm.group_id);
                     }
                 });
+                this.toastrService.success('Assignment', 'Saved');
                 $('#newAssignment').modal('hide');
             } else {
+                this.toastrService.warning('Assignment', 'Please enter proper data');
                 console.log('fail');
             }
          },
          (err) => {
+             this.toastrService.warning('Assignment', 'Internal server error');
            console.log('err',err);
        });
     }
@@ -286,7 +336,7 @@ export class EmployeesComponent implements OnInit {
                 tempLession.PDF_FILE)
             );
         }else{
-            alert('please select book')
+            this.toastrService.warning('Lesson', 'Please select book');
         }
     }
 
@@ -298,10 +348,75 @@ export class EmployeesComponent implements OnInit {
         }
     }
 
+    saveEmployee(){
+        if (this.employeeForm.invalid) {
+            this.toastrService.warning('Employee','Enter proper data');
+            return;
+        }
+        console.log(this.employeeForm.value);
+        this.bookService.saveEmployee(
+            this.selectedGroup.ID,
+            {
+                FIRST_NAME : this.employeeForm.value.first_name,
+                LAST_NAME : this.employeeForm.value.last_name,
+                group_name : this.selectedGroup.NAME,
+                EMAIL : this.employeeForm.value.email
+            }
+        ).subscribe((res: any) => {
+            console.log('res',res);
+            this.employeeForm.reset();
+            $('#addEmployeeModal').modal('hide');
+            this.toastrService.success('Employee', 'Saved');
+        },(err) => {
+            this.toastrService.warning('Employee', 'Save Failed');
+        });
+    }
+
+    saveGroup() {
+        if (this.groupForm.invalid) {
+            this.toastrService.warning('Employee', 'Enter proper data');
+            return;
+        }
+
+        const groupData = {
+            NAME : this.groupForm.value.group_name,
+            employees : this.groupForm.value.emails.map(item => {
+                return {
+                    FIRST_NAME : item.value.replace(/@.*$/,''),
+                    LAST_NAME : '',
+                    EMAIL : item.value
+                };
+            }),
+        };
+
+        this.bookService.saveGroup(groupData).subscribe((res: any) => {
+            if (res && !res.status && res.message){
+                this.toastrService.warning('Group', res.message);
+            }else {
+                this.toastrService.success('Group', 'Saved');
+                this.groupForm.reset();
+                $('#addGroupModal').modal('hide');
+            }
+        }, (err) => {
+            this.toastrService.warning('Group', 'Internal server error');
+        });
+
+    }
+
+    onPdfLoadError(event){
+        this.toastrService.warning('PDF', 'Pdf does not have data');
+        this.testPdf = null;
+        console.log('onPdfLoadError event', event);
+    }
+
     onChangeBook(event){
        let book =  this.books.filter((item) => item.ID == this.selectedBook);
        if (book.length > 0){
            this.selectedBookData = book[0];
+           this.testPdf = {
+             url: `${this.bookService._api.endpoint}/read-pdf?path=${this.selectedBookData.PDF_FILE}`,
+             withCredentials: false
+           };
        }
         this.selectedLesson = null;
         this.refreshBookLessons(this.selectedBook);
@@ -326,9 +441,16 @@ export class EmployeesComponent implements OnInit {
         });
     }
 
+    changePdfPageNo(pageNo: number) {
+        if (pageNo != null && pageNo != '' && pageNo <= this.selectedBookData.TOTAL_PAGES){
+            this.pdfCurrentPage = pageNo;
+        }
+    }
+
     saveLessions(): void {
-        const new_lessons: any[] = this.book_lessions.filter((item) => {
-             if(item.changed_state && item.validationCheck(this.selectedBookData.TOTAL_PAGES) || item.ID == null){
+        const new_lessons: any[] = this.book_lessions.filter((item: Lesson) => {
+             let validation = item.NAME != '' && item.START_PAGE > 0 && item.END_PAGE > 0;
+             if((item.changed_state && item.validationCheck(this.selectedBookData.TOTAL_PAGES) && validation) || (item.ID == null && validation)){
                 return true;
             }else{
                 return false;
@@ -354,10 +476,11 @@ export class EmployeesComponent implements OnInit {
 
         if (new_lessons.length > 0){
             this.bookService.batchSaveLesson(data).subscribe((lessons: Lesson[]) => {
+                this.toastrService.success('Lesson', 'Saved');
                 this.refreshBookLessons(this.selectedBook);
             });
         }else{
-            alert('Enter proper data');
+            this.toastrService.warning('Lesson', 'Enter proper data');
         }
     }
 
@@ -419,9 +542,13 @@ export class EmployeesComponent implements OnInit {
   }
 
   groupSelect(group) {
+      if (group.ID == this.selectedGroup.ID){
+          return;
+      }
     console.log(group.ID);
     console.log('groupSelect');
     this.selectedGroup = group;
+      this.initialLoad();
     this.employeesService.getAssignments(group.ID).subscribe(data2 => {
       console.log(data2);
       if(!data2['err']) {
