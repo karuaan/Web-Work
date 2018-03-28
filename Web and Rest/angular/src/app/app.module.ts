@@ -12,6 +12,13 @@ import { EmployeesService } from './employees.service';
 import { PendingPipe } from './pending.pipe';
 import {BookService} from "./book.service";
 
+import { environment } from '../environments/environment';
+import { AngularFireModule } from 'angularfire2';
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { AngularFireAuthModule } from 'angularfire2/auth';
+
+import { AuthService } from './auth.service';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -24,8 +31,11 @@ import {BookService} from "./book.service";
       ReactiveFormsModule,
 	HttpClientModule,
 	PdfViewerModule,
+	AngularFireModule.initializeApp(environment.firebase, 'angular-auth-firebase'),
+    AngularFireDatabaseModule,
+    AngularFireAuthModule
   ],
-  providers: [EmployeesService,BookService],
+  providers: [EmployeesService,BookService,AuthService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
