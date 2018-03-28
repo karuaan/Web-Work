@@ -12,6 +12,7 @@ import { Book } from '../book';
 import { Lesson } from '../lesson';
 import {BookService} from "../book.service";
 import { FormControl, FormGroup,FormBuilder } from '@angular/forms';
+import { AuthService } from '../auth.service';
 
 declare var $:any;
 
@@ -41,6 +42,7 @@ export class EmployeesComponent implements OnInit {
 	pdfStartPage: Number;
 	pdfEndPage: Number;
 	employeesService: EmployeesService;
+	authService: AuthService;
 	emailContents: string;
 	modalEmails: string;
 	testPdf: Object;
@@ -65,7 +67,7 @@ export class EmployeesComponent implements OnInit {
     public selectedLesson: Lesson;
     public book_lessions: Lesson[];
 
-    constructor(employeesService: EmployeesService, bookService: BookService,public fb:FormBuilder) {
+    constructor(employeesService: EmployeesService, authService: AuthService, bookService: BookService,public fb:FormBuilder) {
     this.employees = [];
     this.groups = [];
     this.assignments = [];
@@ -73,6 +75,7 @@ export class EmployeesComponent implements OnInit {
     this.potentialAssignments = [];
     this.employeesService = employeesService;
     this.bookService = bookService;
+	this.authService = authService;
     this.pdfCurrentPage = "1";
     this.bookForm = null;
     this.modalEmails = "";
