@@ -72,5 +72,8 @@ export class EmployeesService {
        }
    }
 
-  
+    sendInvitation(data): any {
+        var response = this.http.post(this.restURL + '/send-invitaion', data);
+        return response;
+    }
 }
