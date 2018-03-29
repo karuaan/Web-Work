@@ -66,6 +66,7 @@ export class EmployeesComponent implements OnInit {
 
     bookForm: any = null;
     groupForm: any = FormGroup;
+    inviteAdminForm: any = FormGroup;
     assignmentForm: any = null;
 
     private bookService: BookService;
@@ -268,6 +269,10 @@ export class EmployeesComponent implements OnInit {
         this.groupForm = this.fb.group({
             group_name: new FormControl(null, [Validators.required]),
             emails: new FormControl(null, [Validators.required]),
+        });
+
+        this.inviteAdminForm = this.fb.group({
+            email: new FormControl(null, [Validators.required]),
         });
     }
 
@@ -497,6 +502,29 @@ export class EmployeesComponent implements OnInit {
             this.toastrService.warning('Group', 'Internal server error');
         });
 
+    }
+
+    inviteAdmin() {
+        if (this.inviteAdminForm.invalid) {
+            this.toastrService.warning('Invite', 'Enter Email address');
+            return;
+        }
+
+        const inviteData = {
+            EMAIL: this.inviteAdminForm.value.email,
+        };
+
+        this.employeesService.sendInvitation(inviteData).subscribe((res: any) => {
+            if (res && !res.status && res.message) {
+                this.toastrService.warning('Invite', res.message);
+            } else {
+                this.toastrService.success('Invite', 'Success');
+                this.inviteAdminForm.reset();
+                $('#inviteAdminModal').modal('hide');
+            }
+        }, (err) => {
+            this.toastrService.warning('Invite', 'Internal server error');
+        });
     }
 
     onPdfLoadError(event) {
