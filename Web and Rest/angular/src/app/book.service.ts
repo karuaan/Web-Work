@@ -27,6 +27,10 @@ export class BookService {
     return this.http.post<any>(`${this._api.endpoint}/lessons/${lessionId}/assignment`, data);
   }
 
+  getStatuses(): Observable<any[]> {
+    return this.http.get<any>(`${this._api.endpoint}/getstatuses`);
+  }
+
   saveEmployee(group_id, data): Observable<Book[]> {
     return this.http.post<any>(`${this._api.endpoint}/groups/${group_id}/employees`, data);
   }

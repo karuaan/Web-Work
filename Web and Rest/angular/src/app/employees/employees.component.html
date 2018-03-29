@@ -56,57 +56,31 @@
 				</div>
 
 
-
-
-
-
 				<div *ngIf="viewLessons" id="lessonsContainer">
 					<div class="book-header">
 						<h4>Book</h4>
 					</div>
 					<div>
-						<!--<select id="bookDropdown">-->
-							<!--<option *ngFor="let book of books">{{book.NAME}}</option>-->
-						<!--</select>-->
                         <select name="book" id="bookDropdown" [(ngModel)]="selectedBook"
                                 (change)="onChangeBook($event)"
                                 class="form-control input-sm">
-                            <option *ngFor="let book of books;" [value]="book.ID">{{book.NAME}}</option>
+                            <option *ngFor="let book of dataObj.books;" [value]="book.ID">{{book.NAME}}</option>
                         </select>
                         <button type="button" (click)="resetForm()"  data-toggle="modal" data-target="#newBookModal"
                                 class="btn btn-info">+Add Book</button>
-						<!--<button type="button" class="btn btn-info" id="addBookButton">+ Add</button>-->
 					</div>
 
-                    <div class="col-md-12" *ngIf="selectedBookData">
-                       <h3>{{selectedBookData.NAME}}</h3>
-                       <span>Total Pages : <strong>{{selectedBookData.TOTAL_PAGES}}</strong></span>
+                    <div class="col-md-12" *ngIf="dataObj.selectedBook">
+                       <h3>{{dataObj.selectedBook.NAME}}</h3>
+                       <span>Total Pages : <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong></span>
                     </div>
 
 
 					<div class="lesson-header">
 						<h4>Lessons</h4>
 					</div>
-					<!--<table class="table table-hover">-->
-						<!--<thead>-->
-							<!--<th></th>-->
-							<!--<th scope="col">Name</th>-->
-							<!--<th scope="col">Start Page</th>-->
-							<!--<th scope="col">End Page</th>-->
-							<!--<th></th>-->
-						<!--</thead>-->
-						<!--<tbody>-->
-							<!--<tr class="lesson-row" *ngFor="let lesson of potentialAssignments">-->
-								<!--<td></td>-->
-								<!--<td><input type="text" value={{lesson.NAME}} /></td>-->
-								<!--<td><input type="number" class="input-range" value={{lesson.PAGE_START}} /></td>-->
-								<!--<td><input type="number" class="input-range" value={{lesson.PAGE_END}} /></td>-->
-								<!--<td><button type="button" class="btn btn-info" class="btn btn-info btn-block" (click)="lessonSelect(lesson)" data-toggle="modal" data-target="#newAssignmentModal">Assigned</button></td>-->
-							<!--</tr>-->
-						<!--</tbody>-->
-					<!--</table>-->
 
-                    <div *ngIf="selectedBookData && selectedBookData.TOTAL_PAGES > 0">
+                    <div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
                         <table  class="table table-hover lessons">
                                                <thead>
                                                    <tr>
@@ -118,7 +92,8 @@
                                                    </tr>
                                                </thead>
                                                <tbody>
-                                                   <tr *ngFor="let lesson of book_lessions;" [ngClass]="{invalid:!lesson.validationCheck(selectedBookData.TOTAL_PAGES)}">
+                                                   <tr *ngFor="let lesson of dataObj.selectedBook.LESSONS;"
+                                                       [ngClass]="{invalid:!lesson.validationCheck(dataObj.selectedBook.TOTAL_PAGES)}">
                                                        <td>
                                                            <input type="checkbox" name="lession[][id]" (click)="lesson.toggle()">
                                                        </td>
@@ -132,7 +107,7 @@
                                                                   (change)="lesson.changed();"
                                                                   (click)="changePdfPageNo(lesson.START_PAGE)"
                                                                   (keyup)="changePdfPageNo(lesson.START_PAGE)"
-                                                                  [max]="selectedBookData.TOTAL_PAGES"
+                                                                  [max]="dataObj.selectedBook.TOTAL_PAGES"
                                                                   name="lession[][start_page]" [(ngModel)]="lesson.START_PAGE" min="0">
                                                        </td>
                                                        <td>
@@ -140,7 +115,7 @@
                                                                   (change)="lesson.changed();"
                                                                   (click)="changePdfPageNo(lesson.END_PAGE)"
                                                                   (keyup)="changePdfPageNo(lesson.END_PAGE)"
-                                                                  [max]="selectedBookData.TOTAL_PAGES"
+                                                                  [max]="dataObj.selectedBook.TOTAL_PAGES"
                                                                   name="lession[][end_page]" [(ngModel)]="lesson.END_PAGE" min="0">
                                                        </td>
                                                        <td>
@@ -222,13 +197,13 @@
 				</div>
 			</div>
 
-			<div *ngIf="viewLessons && testPdf">
+			<div *ngIf="viewLessons && testPdf && dataObj.selectedBook">
 				<div class="pdf-controller">
 					<button class="btn btn-primary"
                             [disabled]="'1' == pdfCurrentPage"
                             (click)="decrementPage()">Prev</button>
 					<input type="number" [(ngModel)]="pdfCurrentPage">
-					<button class="btn btn-primary" [disabled]="selectedBookData.TOTAL_PAGES == pdfCurrentPage"
+					<button class="btn btn-primary" [disabled]="dataObj.selectedBook.TOTAL_PAGES == pdfCurrentPage"
                             (click)="incrementPage()">Next
                     </button>
 				</div>
@@ -253,7 +228,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<p *ngIf="selectedLesson && selectedLesson !== undefined">{{selectedLesson.NAME}}</p>
+					<p *ngIf="dataObj.selectedLesson && dataObj.selectedLesson !== undefined">{{dataObj.selectedLesson.NAME}}</p>
 					<form>
 						<fieldset>
 							<div class="date-labels">
@@ -490,7 +465,7 @@
     <div class="modal fade" id="newAssignment" tabindex="-1" role="dialog" aria-labelledby="newAssignmentLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content" *ngIf="selectedGroup && selectedLesson">
+            <div class="modal-content" *ngIf="selectedGroup && dataObj.selectedLesson">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Assignment</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">

@@ -347,7 +347,8 @@ app.get('/testgroupthing', function(req, res){
 //app.post('/get')
 
 function getLessons(callback){
-    con.query("SELECT * FROM LESSONS", function(err, rows){
+    con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
+	" LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS", function(err, rows){
 		if(err){
 			callback(err, null)
 		}
@@ -1447,6 +1448,17 @@ app.get('/books', /*user_oidc.ensureAuthenticated(),*/ function(req, res) {
 	});
 });
 
+app.get('/getstatuses',function(req,res){
+
+	con.query('SELECT * FROM STATUS',function(err,rows){
+		if(!err && rows){
+			res.json(rows);
+		}else{
+			res.json([]);
+		}
+	});
+});
+
 //Done
 app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if(req.body.book_name =='' || req.body.book_name == null){
@@ -1522,21 +1534,27 @@ app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ fun
 	// Save employee if not exists , if exists than return employee
 	BookService.saveEmployee(req.body).then((employeeDataRes) => {
 		console.log('employeeDataRes',employeeDataRes.data.ID);
+
+		var response = {
+			is_new : employeeDataRes.is_new,
+			status : employeeDataRes.status,
+			data : employeeDataRes.data,
+			group : null
+		};
+
 		if(employeeDataRes.status && employeeDataRes.data.ID){
-			
+			// assign current group if not assign
 			var savedGroupData =  BookService.insertGroup({
 				USER_ID : employeeDataRes.data.ID,
 				ADMIN_ID : admin_id,
 				NAME : req.body.group_name,
 				ID : req.params.groupId
 			}).then((groupdata) => {
-
-				res.json({
-					employeeDataRes:employeeDataRes,
-					res : groupdata
-				});
-				
+				response.group = groupdata.data;
+				res.json(response);
 			});
+		}else{
+			res.json(response);
 		}
 	});
 });
@@ -1569,15 +1587,6 @@ app.post('/groups/save', /*admin_oidc.ensureAuthenticated(),*/ function(req, res
 
 app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if (req.body.lessons && req.body.lessons.length > 0){
-
-
-		var lessons = req.body.lessons.filter(() => {
-
-			
-			
-		});
-
-
 		BookService.saveLesssons(req.body.lessons).then(function(results){
 			// console.log('results',results);
 			res.json({
@@ -1610,7 +1619,7 @@ app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ functi
     insertLessonAssignment(req.param('id'),req.body).then(function (result) {
         res.json(result);
     });
-})
+});
 
 app.post('/get/group', /*user_oidc.ensureAuthenticated(),*/ function(req, res){
 	let userData = req.body

@@ -131,6 +131,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
              if (data.status){
                  resolve({
                     data:data.data,
+                    isExist : isExist,
                     status : true,
                     message : lesson.NAME+' saved'
                 });
@@ -157,12 +158,14 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
             var allLesson = [];
             // lessons.forEach((item,key) => {
                 for(var i=0;i<lessons.length;i++){
-                    if(lessons[i].action == 'new'){
-                        var lessonResData = await addLessonIfNotExists(lessons[i],false);
-                    }else{
-                        var lessonResData = await addLessonIfNotExists(lessons[i],true);
+                    var is_exist = lessons[i].action != 'new';
+                    var lessonResData = await addLessonIfNotExists(lessons[i],is_exist);
+                    if(lessonResData.status && lessonResData.data){
+                        allLesson.push(Object.assign(lessonResData.data,{
+                            action : !is_exist ? 'new' : 'existing'
+                        }))
                     }
-                    allLesson.push(lessonResData);
+                    // allLesson.push(lessonResData);
                 }
                
             // });
@@ -330,8 +333,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
             console.log('insertGroup',group);
 
 
-var newQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
-var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
+            var newQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
 
             con.query(newQ,[
                 group.ID,
@@ -346,11 +348,13 @@ var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
                 if (!err){
                     resolve({
                         status : true,
+                        rows : rows,
                         data : group
                     });
                 }else {
                     resolve({
                         status : false,
+                        rows: null,
                         data : null
                     });
                 }
@@ -408,9 +412,12 @@ var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
                     }
                     console.log('NEW_GROUP_ID',NEW_GROUP_ID);
                     var groupEmployees = [];
+                    var employees = [];
                     for(var i = 0;i<group.employees.length;i++){
                         var empdata = await saveEmployee(group.employees[i]);    
+
                         console.log('empdata.data.ID',empdata.data.ID);
+
                         if(empdata.data && empdata.data.ID){
                             console.log('savedGroupData started');
                             var savedGroupData =  await insertGroup({
@@ -419,10 +426,12 @@ var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
                                 USER_ID : empdata.data.ID,
                                 ADMIN_ID : 3               
                             });
+
                             console.log('savedGroupData', savedGroupData);
 
                             if(savedGroupData.data){
                                 groupEmployees.push(savedGroupData.data);
+                                employees.push(empdata.data);
                             }
                         }
                     }
@@ -431,11 +440,14 @@ var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
                         resolve({
                             status : true,
                             data : groupEmployees,
+                            employees : employees,
                             message : 'Group saved',
                         });
                     }else{
                         resolve({
                             status : false,
+                            data : null,
+                            employees : null,
                             message : 'Enter employee emails',
                         })
                     }
@@ -443,6 +455,8 @@ var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
                 }else{
                     resolve({
                         status : false,
+                        data : null,
+                        employees : null,
                         message : 'Enter employee emails',
                     })
                 }
@@ -481,7 +495,7 @@ var oldQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) VALUES (?,?,?,?)";
                        resolve(data);
                    }else{
                        resolve({
-                           is_new : false,
+                           is_new : true,
                            status : false,
                            data : null
                        });
