@@ -136,7 +136,7 @@ export class EmployeesComponent implements OnInit {
 
         employeesService.getGroups(this.admin_id).subscribe(groups => {
             this.groups = groups;
-            this.selectedGroup = groups[0];
+            this.selectedGroup = groups[0] || null;
 
             employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
                 this.assignments = assignments;
@@ -152,14 +152,15 @@ export class EmployeesComponent implements OnInit {
                 //   };
                 //   return true;
                 // });
-
-                employeesService.getEmployees(
-                    this.selectedGroup.ID,
-                    this.selectedAssignment.assignment_id
-                ).subscribe(employees => {
-                    this.employees = employees;
-                    console.log('getEmployees');
-                });
+                if (this.selectedGroup && this.selectedAssignment){
+                    employeesService.getEmployees(
+                        this.selectedGroup.ID,
+                        this.selectedAssignment.assignment_id
+                    ).subscribe(employees => {
+                        this.employees = employees;
+                        console.log('getEmployees');
+                    });
+                }
             });
         });
     }
@@ -366,7 +367,7 @@ export class EmployeesComponent implements OnInit {
             TIME_TO_COMPLETE: this.assignmentForm.time_to_complete
         };
         this.bookService.saveAssignment(this.assignmentForm.lesson_id, dataForm).subscribe((res: any) => {
-                if (res.status && res.data && res.data.affectedRows > 0) {
+                if (res.status && res.data && res.data.ID) {
 
                     const assign: Assignment = {
                         NAME: name,
@@ -374,7 +375,7 @@ export class EmployeesComponent implements OnInit {
                         book_id: this.dataObj.selectedLesson.BOOK_ID,
                         DUE_DATE: this.assignmentForm.due_date,
                         START_DATE: this.assignmentForm.start_date,
-                        assignment_id : res.data.insertId
+                        assignment_id : res.data.ID
                     };
 
                     this.assignments.push(assign);
@@ -470,7 +471,7 @@ export class EmployeesComponent implements OnInit {
             NAME: this.groupForm.value.group_name,
             employees: this.groupForm.value.emails.map(item => {
                 return {
-                    FIRST_NAME: item.value.replace(/@.*$/, ''),
+                    FIRST_NAME: '', //item.value.replace(/@.*$/, '')
                     LAST_NAME: '',
                     EMAIL: item.value
                 };

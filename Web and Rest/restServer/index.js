@@ -1616,9 +1616,13 @@ app.get('/books/:id/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req
 })
 
 app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-    insertLessonAssignment(req.param('id'),req.body).then(function (result) {
-        res.json(result);
-    });
+	BookService.addAssignment(req.body).then((data) => {
+		if(data.data){
+			res.json(data.data);
+		}else{
+			res.json(data);
+		}
+	});
 });
 
 app.post('/get/group', /*user_oidc.ensureAuthenticated(),*/ function(req, res){

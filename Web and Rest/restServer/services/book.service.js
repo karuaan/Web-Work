@@ -404,11 +404,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                     if(max_group_data.data){
                         NEW_GROUP_ID = Number(max_group_data.data) + 1;
                     }else{
-                        resolve({
-                            status : false,
-                            data : null,
-                            message : 'New group id not found!',
-                        });
+                        NEW_GROUP_ID = 1;
                     }
                     console.log('NEW_GROUP_ID',NEW_GROUP_ID);
                     var groupEmployees = [];
@@ -524,7 +520,124 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                 }         
             });
        }
-    
+
+       const insertLessonAssignment = (assignment) => {
+        return new Promise(async (resolve, reject) => {
+            var insertQuery = "INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, START_DATE,TIME_TO_COMPLETE)" +
+                " VALUES (?,?,?,?,?,?)";
+                con.query(insertQuery,[
+                  assignment.NAME,
+                  assignment.LESSON_ID,
+                  assignment.GROUP_ID,
+                  assignment.DUE_DATE,
+                  assignment.START_DATE,
+                  assignment.TIME_TO_COMPLETE
+               ],function (err,rows) {
+                   console.log('rows',rows);
+                   if (!err){
+                       resolve({
+                           status : true,
+                           data : Object.assign(assignment,{
+                               ID : rows.insertId
+                           })
+                       });
+                   }else{
+                       resolve({
+                           status : false,
+                           data : null,
+                       });
+                   }
+               });
+        });
+      }
+
+
+       const getAssignmentsByLessonAndGroupId = (group_id,lesson_id) =>{
+                return new Promise(async (resolve,reject) => {
+                con.query('SELECT * FROM ASSIGNMENTS WHERE LESSON_ID=? AND GROUP_ID=?',[lesson_id,group_id],
+                        function(err, rows){
+                            if(!err && rows && rows.length > 0){
+                                resolve(rows);
+                            }else{
+                                resolve([]);
+                            }
+                    });
+                });
+        };
+
+        const getGroupUsers = (group_id) => {
+            return new Promise((resolve,reject) => {
+                con.query('SELECT USER_ID as user_id FROM GROUPS WHERE ID=?',[group_id], function(err, users){
+                    if(!err && users && users.length > 0){
+                        resolve(users);
+                    }else{
+                        resolve([]);
+                    }
+                });
+
+            });
+        };
+
+
+
+    const addAssignment = (assignment) => {
+        
+        return new Promise(async(resolve,reject) => {
+
+            console.log('assignmentData',assignment);
+
+            var group_assignments = await getAssignmentsByLessonAndGroupId(assignment.GROUP_ID,assignment.LESSON_ID);
+            console.log('group_assignments',group_assignments);
+            if(group_assignments && group_assignments[0] && group_assignments[0]['ID']){
+                console.log('out');
+                resolve({
+                    status : false,
+                    message : 'An assignment for that lesson and group already exists'
+                });
+                
+            
+            }else{
+                console.log('in');
+                var assignmentData = await insertLessonAssignment(assignment);
+                    
+                if(!assignmentData.data && (assignmentData.data && !assignmentData.data.ID)){
+                        resolve({
+                            status : false,
+                            message : 'Whoops, something went wrong!'
+                        });
+                }
+
+                var users = await getGroupUsers(assignment.GROUP_ID);
+                console.log('users',users);
+
+                users.forEach((value, index, arr) => {
+                        console.log(value.user_id)
+                        arr[index] = [Number(assignment.GROUP_ID), Number(value.user_id), assignmentData.data.ID, 0]
+                });
+
+
+                con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?', [users], function(err4, rows4){
+                        if(!err4){
+                            resolve({
+                                status : true,
+                                data : assignmentData
+                            });
+                        }else{
+                            resolve({
+                                status : false,
+                                data : assignmentData
+                            });
+                        }
+                });
+
+            }
+        
+        });
+
+    }
+        
+
+
     
     
        module_methods.saveLesssons = saveLesssons;
@@ -533,6 +646,8 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
        module_methods.insertLesson = insertLesson;
        module_methods.lessonSplitPdf = lessonSplitPdf;
        module_methods.newBook = newBook;
+       module_methods.addAssignment = addAssignment;
+       
 
        module_methods.saveGroup = saveGroup;
        module_methods.saveEmployee = saveEmployee;
