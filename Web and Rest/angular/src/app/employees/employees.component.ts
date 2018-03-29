@@ -293,7 +293,7 @@ export class EmployeesComponent implements OnInit {
         this.assignmentForm.group_id = this.selectedGroup.ID;
         this.assignmentForm.lesson_id = this.selectedLesson.ID;
 
-        const name = `ASSIGNMENT_${this.assignmentForm.lesson_id}_${this.assignmentForm.group_id}`;
+        const name = this.selectedLesson.NAME;
         this.bookService.saveAssignment(this.assignmentForm.lesson_id, {
             NAME : name,
             LESSON_ID : this.assignmentForm.lesson_id,
