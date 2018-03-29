@@ -46,7 +46,7 @@
 						<h4>Due Date</h4>
 					</div>
 					<div *ngIf="assignments[0].NAME == 'No assignments'" class="empty-assignments">No Assignments</div>
-					<div *ngIf="assignments[0].NAME !== 'No assignments'">
+					<div *ngIf="assignments[0].NAME !== 'No assignments'" class="assignment-list--container">
 						<div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
 							<h5>{{assignment.NAME}}</h5>
 							Due {{assignment.DUE_DATE | date:'MM/dd/yyyy'}}
@@ -412,21 +412,21 @@
 				</div>
 				<div class="modal-body" *ngIf="selectedGroup">
                     <form name="employeeform" novalidate [formGroup]="employeeForm" (submit)="saveEmployee()">
-                        <div class="form-group">
-                            <label for="employeeFirstNameInput">First Name</label>
-                            <input type="text"
-                                   formControlName="first_name"
-                                   class="form-control"
-                                   id="employeeFirstNameInput"
-                                   aria-describedby="employeeFirstNameHelp"
-                                   placeholder="Enter First Name">
-                        </div>
-                        <div class="form-group">
-                            <label for="employeeLastNameInput">Last Name</label>
-                            <input type="text" class="form-control"
-                                   formControlName="last_name"
-                                   id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">
-                        </div>
+                        <!--<div class="form-group">-->
+                            <!--<label for="employeeFirstNameInput">First Name</label>-->
+                            <!--<input type="text" style=""-->
+                                   <!--formControlName="first_name"-->
+                                   <!--class="form-control"-->
+                                   <!--id="employeeFirstNameInput"-->
+                                   <!--aria-describedby="employeeFirstNameHelp"-->
+                                   <!--placeholder="Enter First Name">-->
+                        <!--</div>-->
+                        <!--<div class="form-group">-->
+                            <!--<label for="employeeLastNameInput">Last Name</label>-->
+                            <!--<input type="text" class="form-control"-->
+                                   <!--formControlName="last_name"-->
+                                   <!--id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">-->
+                        <!--</div>-->
                         <div class="form-group">
                             <label for="employeeEmailInput">Email</label>
                             <input type="text"

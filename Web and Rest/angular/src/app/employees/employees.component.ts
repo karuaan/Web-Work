@@ -205,9 +205,9 @@ export class EmployeesComponent implements OnInit {
 
         this.employeeForm = this.fb.group({
             email: new FormControl(null, [Validators.required, Validators.email]),
-            first_name: new FormControl(null, Validators.required),
+            // first_name: new FormControl(null, Validators.required),
             // group_id: new FormControl(null, Validators.required),
-            last_name: new FormControl(null, Validators.required),
+            // last_name: new FormControl(null, Validators.required),
         });
 
         this.groupForm = this.fb.group({
@@ -263,6 +263,11 @@ export class EmployeesComponent implements OnInit {
             this.bookService.saveBooks(formData).subscribe((res: any) => {
                     if (res.data && res.data.ID) {
                         this.books.push(res.data as Book);
+
+                        this.selectedBook = res.data.ID;
+                        this.selectedBookData = res.data;
+                        this.onChangeBook(null);
+
                     }
                     this.toastrService.success('Book', 'Saved');
                     $('#newBookModal').modal('hide');
@@ -364,8 +369,8 @@ export class EmployeesComponent implements OnInit {
         this.bookService.saveEmployee(
             this.selectedGroup.ID,
             {
-                FIRST_NAME : this.employeeForm.value.first_name,
-                LAST_NAME : this.employeeForm.value.last_name,
+                FIRST_NAME : '',
+                LAST_NAME : '',
                 group_name : this.selectedGroup.NAME,
                 EMAIL : this.employeeForm.value.email
             }

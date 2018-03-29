@@ -1,4 +1,6 @@
-
+.assignment-list--container{
+    max-height: 100%;
+}
 .has-error input{
     border-color: red;
 }
