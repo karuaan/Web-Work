@@ -28,6 +28,7 @@ import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.novoholdings.safetybook.BuildConfig;
@@ -102,42 +103,6 @@ public class LoginActivity extends AppCompatActivity{
         updateChecker();
         setContentView(R.layout.activity_main);
         Stetho.initializeWithDefaults(this);
-
-        new OkHttpClient.Builder()
-                .addNetworkInterceptor  (new StethoInterceptor())
-                .build();
-
-        groupsDao = new GroupsDao(LoginActivity.this);
-        assignmentsDao = new AssignmentsDao(LoginActivity.this);
-
-        loginButton = (Button)findViewById(R.id.loginButton);
-        forgotPass = (Button) findViewById(R.id.forgetPass);
-
-        mOktaAuth = OktaAppAuth.getInstance(this);
-
-        if (mOktaAuth.isUserLoggedIn()){
-            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
-            startActivity(i);
-        }
-        else
-            mOktaAuth.init(this, new OktaAppAuth.OktaAuthListener() {
-                @Override
-                public void onSuccess() {
-                    //handle successful initialization (display login button)
-                    loginButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            startAuth();
-                        }
-                    });
-                }
-
-                @Override
-                public void onTokenFailure(@NonNull AuthorizationException e) {
-                    //handle failed initialization
-                    e.printStackTrace();
-                }
-            });
 
 //        forgotPass.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -498,6 +463,44 @@ public class LoginActivity extends AppCompatActivity{
                                 .show();
                     }
 
+                    else
+                    {
+                        new OkHttpClient.Builder()
+                                .addNetworkInterceptor  (new StethoInterceptor())
+                                .build();
+
+                        groupsDao = new GroupsDao(LoginActivity.this);
+                        assignmentsDao = new AssignmentsDao(LoginActivity.this);
+
+                        loginButton = (Button)findViewById(R.id.loginButton);
+                        forgotPass = (Button) findViewById(R.id.forgetPass);
+                        mOktaAuth = OktaAppAuth.getInstance(LoginActivity.this);
+
+                        if (mOktaAuth.isUserLoggedIn()){
+                            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
+                            startActivity(i);
+                        }
+                        else
+                            mOktaAuth.init(LoginActivity.this, new OktaAppAuth.OktaAuthListener() {
+                                @Override
+                                public void onSuccess() {
+                                    //handle successful initialization (display login button)
+                                    loginButton.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            startAuth();
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onTokenFailure(@NonNull AuthorizationException e) {
+                                    //handle failed initialization
+                                    e.printStackTrace();
+                                }
+                            });
+                    }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -534,6 +537,8 @@ public class LoginActivity extends AppCompatActivity{
                         .show();
             }
         });
+
+        Volley.newRequestQueue(this).add(getComplete);
     }
 
     private void downloadUpdate(Uri uri )
