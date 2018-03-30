@@ -73,7 +73,7 @@ export class EmployeesService {
    }
 
     sendInvitation(data): any {
-        var response = this.http.post(this.restURL + '/send-invitaion', data);
+        var response = this.http.post(this.restURL + '/send-invitation', data);
         return response;
     }
 }

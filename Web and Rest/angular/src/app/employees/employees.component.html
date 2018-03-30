@@ -122,7 +122,17 @@
                                                        <td>
                                                            <button class="btn btn-sm btn-success"
                                                                    *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)">
-                                                               Assigned
+
+                                                               <i class="fa fa-check"></i> Assigned
+
+                                                           </button>
+
+                                                           <button class="btn btn-sm btn-success"
+                                                                   *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)"
+                                                           (click)="removeAssignment(lesson)">
+
+                                                               <i class="fa fa-check"></i> Remove Assignment
+
                                                            </button>
 
                                                            <button class="btn btn-sm btn-info" data-toggle="modal"

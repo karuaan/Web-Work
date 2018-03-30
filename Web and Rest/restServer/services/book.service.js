@@ -319,6 +319,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         console.log('checkGroupExist : ',name);
         return new Promise((resolve, reject) => {
               con.query("SELECT GROUPS.ID as GROUP_ID FROM GROUPS WHERE GROUPS.NAME=? group by GROUPS.ID",[name], (err, rows) => {
+                  console.log('checkgroupexists : ',rows);
                   if (rows != undefined && rows.length > 0 && rows[0]['GROUP_ID']){
                       resolve(rows[0]['GROUP_ID']);
                   }else {
@@ -333,15 +334,17 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
             console.log('insertGroup',group);
 
 
-            var newQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
+            
 
+
+            var newQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
+            var newQ = "INSERT INTO GROUPS(ID, ADMIN_ID, USER_ID, NAME) SELECT ID, ADMIN_ID, USER_ID, NAME FROM (SELECT ? as ID, ? as ADMIN_ID, ? as USER_ID, ? as NAME ) AS tmp WHERE NOT EXISTS (SELECT * FROM GROUPS WHERE NAME = ? AND USER_ID = ?)";
             con.query(newQ,[
                 group.ID,
                 group.ADMIN_ID,
                 group.USER_ID,
                 group.NAME,
                 group.NAME,
-                group.ADMIN_ID,
                 group.USER_ID
             ], (err, rows) => {
                 console.log('insertGroup',err, rows);
@@ -355,6 +358,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                     resolve({
                         status : false,
                         rows: null,
+                        err : err,
                         data : null
                     });
                 }
@@ -386,49 +390,68 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
        const saveGroup = (group) => {
             return new Promise(async (resolve,reject) => {
                 //var firstname =  email.replace(/@.*$/,"");
-                console.log('group request',group.employees);
                 if(group.hasOwnProperty('employees') && group.employees.length > 0){
-                    
                     var existsId = await checkGroupExist(group.NAME);
+
+                    // console.log('existsId',existsId);
+                    // if(existsId > 0){
+                    //     resolve({
+                    //         status : false,
+                    //         data : existsId,
+                    //         message : 'Group already exists',
+                    //     });
+                    // }
+
+                    // if(!group.hasOwnProperty('GROUP_ID')){
+
+                    // }
+
                     if(existsId > 0){
-                        resolve({
-                            status : false,
-                            data : existsId,
-                            message : 'Group already exists',
-                        });
-                    }
-
-
-                    var max_group_data = await getMaxGroupId();
-                    var NEW_GROUP_ID = null;
-                    if(max_group_data.data){
-                        NEW_GROUP_ID = Number(max_group_data.data) + 1;
+                        NEW_GROUP_ID = existsId;
                     }else{
-                        NEW_GROUP_ID = 1;
+                        var max_group_data = await getMaxGroupId();
+                        var NEW_GROUP_ID = null;
+                        if(max_group_data.data){
+                            NEW_GROUP_ID = Number(max_group_data.data) + 1;
+                        }else{
+                            NEW_GROUP_ID = 1;
+                        }
                     }
                     console.log('NEW_GROUP_ID',NEW_GROUP_ID);
+
                     var groupEmployees = [];
                     var employees = [];
+                    var employee_statuses = [];
+                    console.log('group.employees length ',group.employees.length);
+
                     for(var i = 0;i<group.employees.length;i++){
                         var empdata = await saveEmployee(group.employees[i]);    
 
-                        console.log('empdata.data.ID',empdata.data.ID);
-
                         if(empdata.data && empdata.data.ID){
-                            console.log('savedGroupData started');
+                       
                             var savedGroupData =  await insertGroup({
                                 ID : NEW_GROUP_ID,
                                 NAME : group.NAME,
                                 USER_ID : empdata.data.ID,
                                 ADMIN_ID : 3               
                             });
+                        
 
                             console.log('savedGroupData', savedGroupData);
 
                             if(savedGroupData.data){
                                 groupEmployees.push(savedGroupData.data);
                                 employees.push(empdata.data);
+
+                                var ddd = {
+                                    GROUP_ID : NEW_GROUP_ID,
+                                    EMPLOYEE_ID : empdata.data.ID
+                                };
+                                var employee_statuses_res =  await attachAssignmentToEmployeeByGroup(ddd);
+                                console.log('employee_statuses_res',employee_statuses_res);
+                                employee_statuses.push(employee_statuses_res);
                             }
+
                         }
                     }
 
@@ -436,6 +459,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                         resolve({
                             status : true,
                             data : groupEmployees,
+                            employee_statuses : employee_statuses,
                             employees : employees,
                             message : 'Group saved',
                         });
@@ -472,8 +496,6 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
        const insertEmployee = (employee) => {
           return new Promise((resolve,reject) => {
-              console.log('insertEmployee == ',employee);
-
             var insertQuery = "INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL,IS_ADMIN) VALUES (?,?,?,0)";
                 con.query(insertQuery,[
                     employee.FIRST_NAME,
@@ -504,8 +526,8 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
        const saveEmployee = (employee) => {
             return new Promise(async (resolve,reject) => {
                 var existEmployeeData = await getEmployeeByEmail(employee.EMAIL);
-                console.log('existEmployeeData',existEmployeeData);
                 if(existEmployeeData.data != null && existEmployeeData.data){
+                    console.log('old emp ',existEmployeeData.data);
                     var data = {
                         data : existEmployeeData.data,
                         is_new : false,
@@ -515,7 +537,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                 }
                 else{
                     var newdata = await insertEmployee(employee);
-                    console.log('insertEmployee data',newdata);
+                    console.log('new emp ',newdata);
                     resolve(newdata);
                 }         
             });
@@ -564,6 +586,28 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                     });
                 });
         };
+
+
+        const deleteAssignmentById = (assignmentId) =>{
+            return new Promise(async (resolve,reject) => {
+                con.query("DELETE FROM ASSIGNMENTS where ID = ? ",assignmentId,function(err2,result){
+                    if(!err2){
+                        resolve({
+                            status : true,
+                            deleted : assignmentId,
+                            data : result
+                        });
+                    }else{
+                        resolve({
+                            status : false,
+                            deleted : null,
+                            data : null,
+                            err : err2
+                        });
+                    }
+                });
+            });
+    };
 
         const getGroupUsers = (group_id) => {
             return new Promise((resolve,reject) => {
@@ -635,6 +679,159 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
 
     }
+
+    const deleteStatusByGroupAndAssignmentIds = (groupAndAsssignmentIds) =>{
+        return new Promise(async (resolve,reject) =>{
+            con.query("DELETE FROM STATUS WHERE GROUP_ID = ? AND ASSIGNMENT_ID = ? ",groupAndAsssignmentIds,function(err2,result){
+                    if(!err2){
+                        resolve({
+                            status : true,
+                            deleted : groupAndAsssignmentIds,
+                            data : result
+                        });
+                    }else{
+                        resolve({
+                            status : false,
+                            deleted : null,
+                            data : null,
+                            err : err2
+                        });
+                    }
+            });
+        });
+    };
+
+    const removeAssignmentLesson = (data) => {
+
+        var LESSON_ID = data.LESSON_ID;
+        var GROUP_ID = data.GROUP_ID;
+
+        return new Promise(async (resolve ,reject) => {
+            con.query("SELECT * FROM ASSIGNMENTS WHERE GROUP_ID = ? AND LESSON_ID =? ",[GROUP_ID,LESSON_ID],async (err,rows)=>{
+                var deleteStatusArr = [];
+                var deleteAssignment = [];
+                if(!err && rows && rows!= undefined){
+                    for(var i = 0;i<rows.length;i++){
+                        var item  = rows[i];
+                        var deletedStatus = await deleteStatusByGroupAndAssignmentIds([
+                            GROUP_ID,
+                            item.ID,
+                        ]);
+                        
+                        var deletedRes = await deleteAssignmentById(item.ID);
+                        deleteAssignment.push({
+                            ASSIGNMENT_ID : item.ID,
+                            res : deletedRes
+                        });
+
+                        deleteStatusArr.push({
+                            GROUP_ID : GROUP_ID,
+                            ASSIGNMENT_ID : item.ID,
+                            res : deletedStatus,
+                        });
+                    }
+                   
+
+    
+                    resolve({
+                        status : true,
+                        data : {
+                            deleted_assignments : deleteAssignment,
+                            delete_assignment_status : deleteStatusArr
+                        },
+                        message : 'Deleted'
+                    });
+
+                }else{
+                    resolve({
+                        status : false,
+                        data : {
+                            deleted_assignments : null,
+                            delete_assignment_status : null
+                        },
+                        message : 'No Assignment found!'
+                    });
+                }
+            });
+        
+        });
+
+    };
+
+    const getAssignmentByGroupId = (groupId) => {
+        return new Promise((resolve,reject) => {
+             con.query('select * from ASSIGNMENTS WHERE GROUP_ID = ? group by ASSIGNMENTS.ID',[groupId],(err,result)=>{
+                 if(!err && result && result != undefined &&  result.length > 0){
+                     resolve(result);
+                 }else{
+                     resolve([]);
+                 }
+             });
+        });
+     };
+
+     const insertStatus = (result) => {
+        return new Promise((resolve,reject) => {
+            con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?', [result], function(err4, rows4){
+                if(!err4){
+                    resolve({
+                        status : true,
+                        data : {
+                            new_status : result,
+                            result : rows4,
+                        }
+                    });
+                }else{
+                    resolve({
+                        status : false,
+                        data : null
+                    });
+                }
+            });
+
+        });
+    };
+
+
+    const attachAssignmentToEmployeeByGroup = (data) => {
+        return new Promise(async (resolve,reject) => {
+            var EMP_ID = data.EMPLOYEE_ID;
+            var GROUP_ID = data.GROUP_ID;
+            var data2 = [];
+
+            var result2 = await getAssignmentByGroupId(GROUP_ID);
+            console.log('result2',result2);
+
+            if(result2.length > 0){
+                result2.forEach((value, index, arr) => {
+                    console.log(value.ID)
+                    data2.push({
+                        ASSIGNMENT_ID : value.ID,
+                        GROUP_ID: Number(GROUP_ID),
+                        EMPLOYEE_ID : Number(EMP_ID),
+                    });
+                    arr[index] = [Number(GROUP_ID), Number(EMP_ID), value.ID, 0]
+               });
+
+               var rs = await insertStatus(result2);
+                resolve({
+                    status : true,
+                    data : {
+                        new_status : data2,
+                        result : rs,
+                    }
+                });
+
+            }else{
+                resolve({
+                    status : false,
+                    data : null,
+                    err : null,
+                    message : 'No assignment available assign'
+                });
+            }
+        });
+    };
         
 
 
@@ -647,11 +844,15 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
        module_methods.lessonSplitPdf = lessonSplitPdf;
        module_methods.newBook = newBook;
        module_methods.addAssignment = addAssignment;
+
+       module_methods.removeAssignmentLesson = removeAssignmentLesson;
+       
        
 
        module_methods.saveGroup = saveGroup;
        module_methods.saveEmployee = saveEmployee;
-       module_methods.insertGroup=insertGroup;
+       module_methods.attachAssignmentToEmployeeByGroup = attachAssignmentToEmployeeByGroup;
+       module_methods.insertGroup= insertGroup;
 
        return module_methods;
 }

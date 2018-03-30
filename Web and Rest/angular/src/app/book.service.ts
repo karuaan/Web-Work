@@ -35,6 +35,10 @@ export class BookService {
     return this.http.post<any>(`${this._api.endpoint}/groups/${group_id}/employees`, data);
   }
 
+  removeAssignmentFromGroup(data) {
+      return this.http.post<any>(`${this._api.endpoint}/lessons/remove-assignment`, data);
+  }
+
   saveGroup(data): Observable<Book[]> {
     return this.http.post<any>(`${this._api.endpoint}/groups/save`, data);
   }

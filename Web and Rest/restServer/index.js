@@ -15,7 +15,7 @@ global.__basedir = __dirname;
 
 //const filesys = require('fs')
 ///*
-const debug = false;
+const debug = true;
 var con;
 
 if(!debug){
@@ -1527,36 +1527,54 @@ app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res)
 	})
 })
 
-app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ function (req, res) {
 	var admin_id = 3;
-
-
 	// Save employee if not exists , if exists than return employee
-	BookService.saveEmployee(req.body).then((employeeDataRes) => {
-		console.log('employeeDataRes',employeeDataRes.data.ID);
+	// var employeeDataRes = await BookService.saveEmployee(req.body);
 
-		var response = {
-			is_new : employeeDataRes.is_new,
-			status : employeeDataRes.status,
-			data : employeeDataRes.data,
-			group : null
-		};
 
-		if(employeeDataRes.status && employeeDataRes.data.ID){
-			// assign current group if not assign
-			var savedGroupData =  BookService.insertGroup({
-				USER_ID : employeeDataRes.data.ID,
-				ADMIN_ID : admin_id,
-				NAME : req.body.group_name,
-				ID : req.params.groupId
-			}).then((groupdata) => {
-				response.group = groupdata.data;
-				res.json(response);
-			});
-		}else{
-			res.json(response);
-		}
+	 BookService.saveGroup({
+		NAME : req.body.group_name,
+		GROUP_ID : req.params.groupId,
+		employees : [
+			{
+				FIRST_NAME: '', //item.value.replace(/@.*$/, '')
+				LAST_NAME: '',
+				EMAIL: req.body.EMAIL
+			}
+		]
+	}).then(function(data) {
+		res.json(data);
 	});
+
+	// res.json(data);
+
+	// var response = {
+	// 	is_new : employeeDataRes.is_new,
+	// 	status : employeeDataRes.status,
+	// 	data : employeeDataRes.data,
+	// 	employee_statuses_res : null,
+	// 	group : null
+	// };
+
+	// if(employeeDataRes.status && employeeDataRes.data.ID){
+	// 	// assign current group if not assign
+	// 	response.group =  await BookService.insertGroup({
+	// 		USER_ID : employeeDataRes.data.ID,
+	// 		ADMIN_ID : admin_id,
+	// 		NAME : req.body.group_name,
+	// 		ID : req.params.groupId
+	// 	});
+
+	// 	response.employee_statuses_res =  await BookService.attachAssignmentToEmployeeByGroup({
+	// 		GROUP_ID : req.params.groupId,
+	// 		EMPLOYEE_ID : employeeDataRes.data.ID
+	// 	});
+
+	// }else{
+	// 	res.json(response);
+	// }
+
 });
 
 app.post('/groups/save', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
@@ -1583,6 +1601,30 @@ app.post('/groups/save', /*admin_oidc.ensureAuthenticated(),*/ function(req, res
 			data : null
 		});
 	}
+});
+
+app.post('/send-invitation', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+
+	if(!req.body.email){
+		res.json({
+			message : 'Please provide email'
+		})
+	}
+
+	res.json({
+		message : 'Invitation send successfull'
+	})
+	
+
+});
+
+app.post('/lessons/remove-assignment',function(req,res){
+
+	console.log('req',req.body);
+
+	BookService.removeAssignmentLesson(req.body).then(function(result){
+		res.json(result);
+	});
 });
 
 app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){

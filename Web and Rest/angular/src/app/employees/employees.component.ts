@@ -112,56 +112,43 @@ export class EmployeesComponent implements OnInit {
         document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
 
 
-        // employeesService.getBooks().subscribe(data => {
-        //   this.books = data;
-        //
-        //   if (data.books.length > 0){
-        //       this.testPdf = {
-        //         //url: 'https://vadimdez.github.io/ng2-pdf-viewer/pdf-test.pdf',
-        //         url: `${this.bookService._api.endpoint}/read-pdf?path=${data.books[0].PDF_FILE}`,
-        //         withCredentials: false
-        //       };
-        //       console.log('this.testPdf',this.testPdf);
-        //   }
-        //   console.log('books');
-        //   console.log(data);
-        //   console.log(this.books);
-        // });
-
-        // employeesService.getLessons().subscribe(data => {
-        //   this.lessons = data;
-        //   console.log('lessons');
-        //   console.log(data);
-        //   console.log(this.lessons);
-        // });
-
         employeesService.getGroups(this.admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
 
             employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
-                this.assignments = assignments;
-                this.selectedAssignment = assignments[0];
 
-                // const my_this = this; //needed for filter function
-                //
-                // this.potentialAssignments = this.lessons.filter( function(lesson){
-                //   for(var i = 0; i < my_this.assignments.length; ++i){
-                //     if(my_this.assignments[i].lesson_id == lesson.ID){
-                //       return false;
-                //     }
-                //   };
-                //   return true;
-                // });
-                if (this.selectedGroup && this.selectedAssignment){
-                    employeesService.getEmployees(
-                        this.selectedGroup.ID,
-                        this.selectedAssignment.assignment_id
-                    ).subscribe(employees => {
-                        this.employees = employees;
-                        console.log('getEmployees');
-                    });
+                if (assignments && assignments.hasOwnProperty('err')){
+                    this.assignments = [{
+                                        "assignment_id": -1,
+                                        "NAME": "No assignments",
+                                        "START_DATE": null,
+                                        "DUE_DATE": null,
+                                        "book_id": -1,
+                                        "lesson_id": -1
+                                    }];
+                    this.selectedAssignment = assignments[0];
+                                    if (this.selectedGroup && this.selectedAssignment){
+                                        employeesService.getEmployees(
+                                            this.selectedGroup.ID,
+                                            -1
+                                        ).subscribe(employees => {
+                                            this.employees = employees;
+                                        });
+                                    }
+                }else{
+                    this.assignments = assignments;
+                    this.selectedAssignment = assignments[0];
+                                    if (this.selectedGroup && this.selectedAssignment){
+                                        employeesService.getEmployees(
+                                            this.selectedGroup.ID,
+                                            this.selectedAssignment.assignment_id
+                                        ).subscribe(employees => {
+                                            this.employees = employees;
+                                        });
+                                    }
                 }
+
             });
         });
     }
@@ -372,6 +359,7 @@ export class EmployeesComponent implements OnInit {
             TIME_TO_COMPLETE: this.assignmentForm.time_to_complete
         };
         this.bookService.saveAssignment(this.assignmentForm.lesson_id, dataForm).subscribe((res: any) => {
+                console.log('res',res);
                 if (res.status && res.data && res.data.ID) {
 
                     const assign: Assignment = {
@@ -382,8 +370,18 @@ export class EmployeesComponent implements OnInit {
                         START_DATE: this.assignmentForm.start_date,
                         assignment_id : res.data.ID
                     };
+                    console.log('NEW assignMENT', assign);
+
+                    if (this.assignments.length > 0 && this.assignments[0].assignment_id == -1){
+                        this.assignments.splice(0,1);
+                    }
+                    if (!this.assignments){
+                        this.assignments = [];
+                    }
 
                     this.assignments.push(assign);
+                    this.selectedAssignment = assign;
+
 
                     this.dataObj.selectedBook.LESSONS.forEach((item) => {
                         if (item.ID == dataForm.LESSON_ID) {
@@ -397,6 +395,7 @@ export class EmployeesComponent implements OnInit {
                     this.assignmentGroupForm.reset();
                     this.resetForm();
 
+                    console.log('this.assignments',this.assignments);
                     this.toastrService.success('Assignment', 'Saved');
                     $('#newAssignment').modal('hide');
 
@@ -438,6 +437,7 @@ export class EmployeesComponent implements OnInit {
             FIRST_NAME: '',
             LAST_NAME: '',
             group_name: this.selectedGroup.NAME,
+            GROUP_ID: this.selectedGroup.ID,
             EMAIL: this.employeeForm.value.email
         };
         console.log(this.employeeForm.value);
@@ -446,17 +446,31 @@ export class EmployeesComponent implements OnInit {
             dataEmployee
         ).subscribe((res: any) => {
 
-            if (res.data && res.data.ID) {
-                this.employeeForm.reset();
-                this.employees.push(Object.assign(res.data, {
-                    IS_COMPLETE: null
-                }));
+    console.log('this.employees',this.employees);
 
-                if (res.is_new) {
-                    this.toastrService.success('Employee', 'Saved');
-                } else {
-                    this.toastrService.success('Employee', 'Group assign to employee');
+            if (res.employees && res.employees.length > 0 && res.employees[0].ID) {
+                this.employeeForm.reset();
+
+                if (res.data.length) {
+                    const emp = this.employees.filter((item: Employee) => {
+                        return item.ID == res.data[0]['USER_ID'];
+                    });
+                    if (emp.length == 0){
+                        this.employees.push(Object.assign(res.employees[0], {
+                           IS_COMPLETE: null
+                        }));
+                        this.toastrService.success('Employee', 'Saved');
+                    }else{
+                        this.toastrService.success('Employee', 'Already Added');
+                    }
                 }
+
+
+                // if (res.is_new) {
+                //     this.toastrService.success('Employee', 'Saved');
+                // } else {
+                //     this.toastrService.success('Employee', 'Group assign to employee');
+                // }
                 $('#addEmployeeModal').modal('hide');
             } else {
                 this.toastrService.warning('Employee', 'Save Failed');
@@ -525,6 +539,50 @@ export class EmployeesComponent implements OnInit {
             }
         }, (err) => {
             this.toastrService.warning('Invite', 'Internal server error');
+        });
+    }
+
+    removeAssignment(lesson) {
+        console.log('lesson',lesson);
+        this.bookService.removeAssignmentFromGroup({
+            GROUP_ID: this.selectedGroup.ID,
+            LESSON_ID : lesson.ID
+        }).subscribe((res : any) => {
+            if (res.data && res.data.deleted_assignments && res.data.deleted_assignments.length > 0) {
+                const assignmentIds = res.data.deleted_assignments.filter((item: any) => {
+                    if (item.res && item.res.status) {
+                        return true;
+                    }
+                }).map((item: any) => {
+                    return item.res.deleted;
+                });
+
+
+                if (assignmentIds.length > 0) {
+                    this.toastrService.success('Assignment deleted');
+
+                    this.assignments = this.assignments.filter((a : Assignment) => {
+                        return !(assignmentIds.indexOf(a.assignment_id) > -1);
+                    });
+
+                    if(this.assignments.length == 0) {
+                        this.assignments = [{
+                            "assignment_id": -1,
+                            "NAME": "No assignments",
+                            "START_DATE": null,
+                            "DUE_DATE": null,
+                            "book_id": -1,
+                            "lesson_id": -1
+                        }];
+                        this.selectedAssignment = this.assignments[0];
+                    }
+                    lesson.removeAssingGroup(this.selectedGroup.ID);
+                }
+            }
+
+
+        }, (err)=>{
+            this.toastrService.warning('Whoops, something went wrong!');
         });
     }
 
