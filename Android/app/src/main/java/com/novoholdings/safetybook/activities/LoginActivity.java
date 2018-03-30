@@ -428,8 +428,8 @@ public class LoginActivity extends AppCompatActivity{
             {
                 try
                 {
-                    int latestVersionNumber = response.getInt("versionNumber");
-                    Uri downloadUrl = (Uri) response.get("android.apk");
+                    int latestVersionNumber = response.getInt("version_number");
+                    Uri downloadUrl = (Uri) response.get("version_url");
 
                     if (currentVersionNumber != latestVersionNumber) {
                         AlertDialog.Builder downloadAlert = new AlertDialog.Builder(LoginActivity.this);
