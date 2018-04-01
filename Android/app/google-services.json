@@ -1,35 +1,35 @@
 {
   "project_info": {
-    "project_number": "808960293079",
-    "firebase_url": "https://safetybooknotifications.firebaseio.com",
-    "project_id": "safetybooknotifications",
-    "storage_bucket": "safetybooknotifications.appspot.com"
+    "project_number": "219029116689",
+    "firebase_url": "https://safety-book-reader.firebaseio.com",
+    "project_id": "safety-book-reader",
+    "storage_bucket": "safety-book-reader.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:808960293079:android:ea26c356d5057ec1",
+        "mobilesdk_app_id": "1:219029116689:android:d19c96668006f2dc",
         "android_client_info": {
           "package_name": "com.novoholdings.safetybook"
         }
       },
       "oauth_client": [
         {
-          "client_id": "808960293079-csudr1f3m2u4tfgn4vqke1deo924jb9s.apps.googleusercontent.com",
+          "client_id": "219029116689-g7pp0rt9bp91snj3hqsdrfo2rt3p5sir.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.novohodings.safetybook",
-            "certificate_hash": "516783f3536de12743c8d378b6eab48ae85eff94"
+            "package_name": "com.novoholdings.safetybook",
+            "certificate_hash": "31b92a3aae22dcc0183b37eb548f4f24f2efcdf5"
           }
         },
         {
-          "client_id": "808960293079-jhufdfl78bdla0q7dnu6u33iv054p30o.apps.googleusercontent.com",
+          "client_id": "219029116689-g78vvh3lufe4rrs7vgkp2hdr3j8ed7ae.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDSs3asGnXgUAaYUmLXsoom5QQr5oQ5Ab4"
+          "current_key": "AIzaSyCdycBmQzU5HFyE5SyEmxf66TvxIN8OXs0"
         }
       ],
       "services": {
@@ -40,7 +40,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "808960293079-jhufdfl78bdla0q7dnu6u33iv054p30o.apps.googleusercontent.com",
+              "client_id": "219029116689-g78vvh3lufe4rrs7vgkp2hdr3j8ed7ae.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
