@@ -39,7 +39,6 @@ public class AssignmentsDao {
     public static String COLUMN_TIME_TO_READ="time_to_read";
     public static String COLUMN_DUE_DATE="due_date";
     public static String COLUMN_SERVER_PATH ="server_path";
-    public static String COLUMN_LOCAL_PATH="local_path";
     public static String COLUMN_FILE_NAME="file_name";
     public static String COLUMN_IS_COMPLETE="complete";
     public static String COLUMN_GROUP_ID="group_id";
@@ -55,20 +54,18 @@ public class AssignmentsDao {
         _database = AppDatabase.openDataBase(ctx);
 
         if (AppProperties.isDemoMode() && !AppDatabase.alreadyExists(TABLE_NAME, "status='" + AppProperties.STATUS_ACTIVE + "'")) {
-            insertData("Section 1 - General Safety", 1, 1,  AppProperties.YES, 120, "2018-02-02T00:00.000Z", AppProperties.NO, "section1.pdf", 8, 13);
-            insertData("Section 2 - Safety Inspections", 2, 1,  AppProperties.YES, 120, "2018-02-09T00:00.000Z", AppProperties.NO, "section2.pdf", 17, 19);
-            addFileName(1, "section1.pdf");
-            addFileName(2, "section2.pdf");
+            insertData("Section 1 - General Safety", 1, 1,  AppProperties.YES, 120, "2018-02-02T00:00.000Z", AppProperties.NO, 8, 13);
+            insertData("Section 2 - Safety Inspections", 2, 1,  AppProperties.YES, 120, "2018-02-09T00:00.000Z", AppProperties.NO, 17, 19);
         }
     }
 
-    public long insertData(String name, long serverId, long groupId, String isSynced, int timeToRead, String dueDate, String isComplete, String serverPath, int startPage, int endPage)
+    public long insertData(String name, long serverId, long groupId, String isSynced, int timeToRead, String dueDate, String isComplete, int startPage, int endPage)
     {
         long res;
         ContentValues values = new ContentValues();
 
         String recordTime = AppProperties.getCurrentDate();
-        String fileName = serverPath.substring(serverPath.lastIndexOf("/")+1);
+
 
 
         values.put(COLUMN_NAME, name);
@@ -78,8 +75,6 @@ public class AssignmentsDao {
         values.put(COLUMN_IS_SYNCED, isSynced);
         values.put(COLUMN_TIME_TO_READ, timeToRead);
         values.put(COLUMN_DUE_DATE, dueDate);
-        values.put(COLUMN_FILE_NAME, AppProperties.NVL(fileName, "-1"));
-        values.put(COLUMN_SERVER_PATH, serverPath);
         values.put(COLUMN_IS_COMPLETE, isComplete);
         values.put(COLUMN_GROUP_ID, groupId);
         values.put(COLUMN_ID, serverId);
@@ -99,7 +94,7 @@ public class AssignmentsDao {
         return res;
     }
 
-    public long updateData(long id, String name, String recordTime,String isSynced, int timeToRead, String dueDate, String fileName)
+    public long updateData(long id, String name,String isSynced, int timeToRead, String dueDate, int startPage, int endPage)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -108,6 +103,7 @@ public class AssignmentsDao {
 
         values.put(COLUMN_STATUS, AppProperties.STATUS_ACTIVE);
 
+        String recordTime = AppProperties.getCurrentDate();
         if (!AppProperties.isNull(recordTime))
             values.put(COLUMN_MODIFIED_ON, recordTime);
         if (!AppProperties.isNull(isSynced))
@@ -116,8 +112,10 @@ public class AssignmentsDao {
             values.put(COLUMN_TIME_TO_READ, timeToRead);
         if (!AppProperties.isNull(dueDate))
             values.put(COLUMN_DUE_DATE, dueDate);
-        if (!AppProperties.isNull(fileName))
-            values.put(COLUMN_SERVER_PATH, AppProperties.NVL(fileName, "-1"));
+        if (startPage > 0)
+            values.put(COLUMN_START_PAGE, startPage);
+        if (endPage > 0)
+            values.put(COLUMN_END_PAGE, endPage);
         try
         {
             res = _database.update(TABLE_NAME, values, COLUMN_ID+"=?",new String[] { String.valueOf(id) });
@@ -336,12 +334,6 @@ public class AssignmentsDao {
                 //END PAGE
                 try{
                     f.setEndPage(cursor.getInt(cursor.getColumnIndex(COLUMN_END_PAGE)));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                //FILE NAME
-                try{
-                    f.setFileName(cursor.getString(cursor.getColumnIndex(COLUMN_FILE_NAME)));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

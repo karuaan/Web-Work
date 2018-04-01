@@ -10,7 +10,10 @@ public class GroupBean {
             adminName,
             adminEmail,
             bookName,
-            dueDate;
+            dueDate,
+            serverPath,
+            localPath,
+            fileName;
     boolean status;
 
     private long id;
@@ -57,10 +60,25 @@ public class GroupBean {
         this.bookName= bookName;
     }
 
-    public String getDueDate(){
-        return dueDate;
+    public String getServerPath() {
+        return serverPath;
     }
-    public void setDueDate(String dueDate){
-        this.dueDate = dueDate;
+    public void setServerPath(String serverPath){
+        this.serverPath = serverPath;
+    }
+
+    public void setLocalPath(String path) {
+        this.serverPath = path;
+    }
+
+    public String getLocalPath(){
+        return localPath;
+    }
+
+    public String getFileName(){
+        return fileName;
+    }
+    public void setFileName(String fileName){
+        this.fileName = fileName;
     }
 }

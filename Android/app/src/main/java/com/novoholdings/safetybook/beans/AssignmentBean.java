@@ -15,7 +15,7 @@ public class AssignmentBean implements Parcelable {
     private int mData;
     private int pageStart, pageEnd, readingTime;
     long groupId, id;
-    private String name, serverPath, localPath, fileName, dueDate;
+    private String name,  dueDate;
     private PdfDocument pdf;
     private boolean isComplete, timeToComplete;
     private float lastReadPosition;
@@ -42,28 +42,6 @@ public class AssignmentBean implements Parcelable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getServerPath() {
-        return serverPath;
-    }
-    public void setServerPath(String serverPath){
-        this.serverPath = serverPath;
-    }
-
-    public void setLocalPath(String path) {
-        this.serverPath = path;
-    }
-
-    public String getLocalPath(){
-        return localPath;
-    }
-
-    public String getFileName(){
-        return fileName;
-    }
-    public void setFileName(String fileName){
-        this.fileName = fileName;
     }
 
     public boolean isComplete() {
@@ -136,9 +114,8 @@ public class AssignmentBean implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(groupId);
-        dest.writeString(serverPath);
         dest.writeString(dueDate);
-        dest.writeString(name);;
+        dest.writeString(name);
     }
 
     public static final Parcelable.Creator<AssignmentBean> CREATOR
@@ -154,14 +131,12 @@ public class AssignmentBean implements Parcelable {
 
     private AssignmentBean(Parcel in) {
         groupId = in.readLong();
-        serverPath = in.readString();
         dueDate = in.readString();
         name = in.readString();
     }
 
-    public AssignmentBean(long groupId, String serverPath){
+    public AssignmentBean(long groupId){
         this.groupId = groupId;
-        this.serverPath = serverPath;
     }
 
     public AssignmentBean(){

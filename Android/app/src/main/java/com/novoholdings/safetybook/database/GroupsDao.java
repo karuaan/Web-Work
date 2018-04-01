@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class GroupsDao {
     public static String TABLE_NAME="tblGroups";
 
-    public static final String QUERY_TABLE_CREATE = "create table "+ TABLE_NAME + " (server_id INTEGER, name text, modified_on text, is_synced text, status text, admin_name text, admin_email text, book_name text);";
+    public static final String QUERY_TABLE_CREATE = "create table "+ TABLE_NAME + " (server_id INTEGER, name text, modified_on text, is_synced text, status text, admin_name text, admin_email text, book_name text, server_path text, local_path text);";
 
 
     public static final String QUERY_GET_ALL="SELECT * from "+TABLE_NAME+ " WHERE status='"+ AppProperties.STATUS_ACTIVE+"'";
@@ -23,15 +23,17 @@ public class GroupsDao {
 
     public static final String QUERY_GET_MODIFIED="SELECT * from "+TABLE_NAME+ " WHERE isSynced='"+AppProperties.NO+"'";
 
-    public static String COLUMN_ID="id";
-    public static String COLUMN_NAME="name";
-    public static String COLUMN_BOOK_NAME="book_name";
-    public static String COLUMN_MODIFIED_ON="modified_on";
-    public static String COLUMN_IS_SYNCED="is_synced";
-    public static String COLUMN_STATUS="status";
-    public static String COLUMN_ADMIN_NAME="admin_name";
-    public static String COLUMN_ADMIN_EMAIL="admin_email";
-    public static String COLUMN_SERVER_ID="server_id";
+    private static String COLUMN_ID="id";
+    private static String COLUMN_NAME="name";
+    private static String COLUMN_BOOK_NAME="book_name";
+    private static String COLUMN_MODIFIED_ON="modified_on";
+    private static String COLUMN_IS_SYNCED="is_synced";
+    private static String COLUMN_STATUS="status";
+    private static String COLUMN_ADMIN_NAME="admin_name";
+    private static String COLUMN_ADMIN_EMAIL="admin_email";
+    private static String COLUMN_SERVER_ID="server_id";
+    private static String COLUMN_BOOK_SERVER_PATH="server_path";
+    private static String COLUMN_BOOK_LOCAL_PATH="local_path";
 
     SQLiteDatabase _database;
 
@@ -43,13 +45,13 @@ public class GroupsDao {
         _database = AppDatabase.openDataBase(ctx);
 
         if (AppProperties.isDemoMode() && !AppDatabase.alreadyExists(TABLE_NAME, "status='"+AppProperties.STATUS_ACTIVE+"'")){
-            insertData("Example Group", 1, AppProperties.getCurrentDate(), AppProperties.YES, "Administrator Name", "admin@gmail.com", "Example Book");
+           insertData("Example Group", 1, AppProperties.getCurrentDate(), AppProperties.YES, "Administrator Name", "admin@gmail.com", "Example Book", "");
         }
 
     }
 
 
-    public long insertData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName)
+    public long insertData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName, String bookServerPath)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -60,9 +62,10 @@ public class GroupsDao {
         values.put(COLUMN_MODIFIED_ON, recordTime);
         values.put(COLUMN_IS_SYNCED, isSynced);
 
-        values.put(COLUMN_ADMIN_NAME, AppProperties.NVL(adminName, "-1"));
-        values.put(COLUMN_ADMIN_EMAIL, AppProperties.NVL(adminEmail, "-1"));
-        values.put(COLUMN_BOOK_NAME, AppProperties.NVL(bookName, "-1"));
+        values.put(COLUMN_ADMIN_NAME, AppProperties.NVL(adminName, null));
+        values.put(COLUMN_ADMIN_EMAIL, AppProperties.NVL(adminEmail, null));
+        values.put(COLUMN_BOOK_NAME, AppProperties.NVL(bookName, null));
+        values.put(COLUMN_BOOK_SERVER_PATH, AppProperties.NVL(bookServerPath, null));
 
         values.put(COLUMN_SERVER_ID, serverId);
 
@@ -217,15 +220,52 @@ public class GroupsDao {
             do {
                 GroupBean f = new GroupBean();
 
-
+                //SERVER ID
                 try {
                     f.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_SERVER_ID)));
-                    f.setName(cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
-                    f.setAdminEmail(cursor.getString(cursor.getColumnIndex(COLUMN_ADMIN_EMAIL)));
-                    f.setAdminName(cursor.getString(cursor.getColumnIndex(COLUMN_ADMIN_NAME)));
-                    f.setBookName(cursor.getString(cursor.getColumnIndex(COLUMN_BOOK_NAME)));
-                    f.setStatus(cursor.getString(cursor.getColumnIndex(COLUMN_STATUS)).equals("A"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //NAME
+                try{
 
+                    f.setName(cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //ADMIN EMAIL
+                try {
+                    f.setAdminEmail(cursor.getString(cursor.getColumnIndex(COLUMN_ADMIN_EMAIL)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //ADMIN NAME
+                try{
+                    f.setAdminName(cursor.getString(cursor.getColumnIndex(COLUMN_ADMIN_NAME)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //BOOK NAME
+                try{
+                    f.setBookName(cursor.getString(cursor.getColumnIndex(COLUMN_BOOK_NAME)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //STATUS
+                try{
+                    f.setStatus(cursor.getString(cursor.getColumnIndex(COLUMN_STATUS)).equals("A"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //BOOK DIRECTORY (SERVER)
+                try{
+                    f.setServerPath(cursor.getString(cursor.getColumnIndex(COLUMN_BOOK_SERVER_PATH)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //BOOK DIRECTORY (LOCAL)
+                try{
+                    f.setLocalPath(cursor.getString(cursor.getColumnIndex(COLUMN_BOOK_LOCAL_PATH)));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

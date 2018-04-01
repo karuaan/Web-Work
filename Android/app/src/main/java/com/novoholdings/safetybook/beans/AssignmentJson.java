@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Created by James on 12/6/2017.
  */
 
-public class AssignmentJson {
+public class AssignmentJson extends JSONObject{
 
     @JsonProperty("assignment_name")
     public String name;
@@ -37,15 +37,6 @@ public class AssignmentJson {
 
     @JsonProperty("status")
     public int isComplete;
-
-
-    /*public String getPath(){
-        try{
-            return getString("group_name");
-        }catch (JSONException e){
-            return "Not found";
-        }
-    }
 
     public long getGroupId(){
         try{
@@ -109,5 +100,9 @@ public class AssignmentJson {
         }catch (JSONException e){
             return "Not found";
         }
-    }*/
+    }
+
+    public boolean isComplete(){
+        return getCompletionStatus()==1;
+    }
 }

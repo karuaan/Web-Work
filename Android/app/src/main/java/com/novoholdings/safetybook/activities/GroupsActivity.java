@@ -27,6 +27,8 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.facebook.stetho.json.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.novoholdings.safetybook.MySingleton;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.beans.AssignmentBean;
@@ -39,9 +41,6 @@ import com.novoholdings.safetybook.database.AppDatabase;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
 import com.novoholdings.safetybook.ui.GridAdapter;
-import com.okta.appauth.android.OktaAppAuth;
-
-import net.openid.appauth.AuthorizationException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,11 +62,10 @@ public class GroupsActivity extends AppCompatActivity {
     private GridLayout gridLayout;
     private GridView studentGrid;
     private TextView studentWelcome;
-    private ArrayList<AssignmentBean> assignmentArray;
-    private HashMap<Long, AssignmentBean> assignmentGroupsMap;
+    private ArrayList<AssignmentJson> assignmentArray = new ArrayList<>();
+    private HashMap<Long, AssignmentJson> assignmentGroupsMap;
 
-    private OktaAppAuth mOktaAppAuth;
-    private final AtomicReference<JSONObject> mUserInfoJson = new AtomicReference<>();
+    private FirebaseAuth mAuth;
 
     Bundle extras;
 
@@ -85,42 +83,15 @@ public class GroupsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student);
 
-        mOktaAppAuth = OktaAppAuth.getInstance(GroupsActivity.this);
-        mOktaAppAuth.init(this, new OktaAppAuth.OktaAuthListener() {
-            @Override
-            public void onSuccess() {
-                extras = getIntent().getExtras();
+        mAuth = FirebaseAuth.getInstance();
 
-                groupsDao = new GroupsDao(GroupsActivity.this);
-                assignmentsDao = new AssignmentsDao(GroupsActivity.this);
-
-                studentGrid = (GridView) findViewById(R.id.studentGrid);
-                studentWelcome = (TextView) findViewById(R.id.studentWelcome);
-
-                if (!AppProperties.isDemoMode() && savedInstanceState != null) {
-                    try {
-                        mUserInfoJson.set(new JSONObject(savedInstanceState.getString(KEY_USER_INFO)));
-                    } catch (JSONException ex) {
-                        Log.e(TAG, "Failed to parse saved user info JSON, discarding", ex);
-                    }
-                }
-                fetchUserInfo();
-
-
-                int check = ActivityCompat.checkSelfPermission(GroupsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                if (check == PackageManager.PERMISSION_GRANTED) {
-                    //Do something
-                } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1024);
-                }
-
-            }
-
-            @Override
-            public void onTokenFailure(@NonNull AuthorizationException e) {
-
-            }
-        });
+        if (mAuth.getCurrentUser()==null){
+            Intent i = new Intent(GroupsActivity.this, LoginActivity.class);
+            startActivity(i);
+        }
+        else {
+            updateUI(mAuth.getCurrentUser());
+        }
 
         threeDayNotification = new NotificationCompat.Builder(GroupsActivity.this);
         threeDayNotification.setAutoCancel(true);
@@ -150,82 +121,88 @@ public class GroupsActivity extends AppCompatActivity {
 
         setTestNotifier();
 
-        if (!AppProperties.isDemoMode() && !mOktaAppAuth.isUserLoggedIn()) {
+        if (!AppProperties.isDemoMode() && mAuth.getCurrentUser()==null) {
             Log.i(TAG, "No authorization state retained - reauthorization required");
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
+
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser!=null){
+            updateUI(currentUser);
+        }
+        else {
+            Intent i = new Intent(GroupsActivity.this, LoginActivity.class);
+            startActivity(i);
+        }
     }
 
+    private void updateUI(FirebaseUser currentUser){
+        extras = getIntent().getExtras();
+
+        groupsDao = new GroupsDao(GroupsActivity.this);
+        assignmentsDao = new AssignmentsDao(GroupsActivity.this);
+
+        studentGrid = (GridView) findViewById(R.id.studentGrid);
+        studentWelcome = (TextView) findViewById(R.id.studentWelcome);
+
+        fetchUserInfo(currentUser);
+
+
+        int check = ActivityCompat.checkSelfPermission(GroupsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (check == PackageManager.PERMISSION_GRANTED) {
+            //Do something
+        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1024);
+        }
+    }
+
+
     @MainThread
-    private void fetchUserInfo() {
+    private void fetchUserInfo(FirebaseUser currentUser) {
         //displayLoading(getString(R.string.user_info_loading));
         if (AppProperties.isDemoMode()){
             runOnUiThread(() -> downloadUserData());
             return;
         }
-        mOktaAppAuth.getUserInfo(new OktaAppAuth.OktaAuthActionCallback<JSONObject>() {
-            @Override
-            public void onSuccess(JSONObject response) {
-                // Do whatever you need to do with the user info data
-                mUserInfoJson.set(response);
-                AppProperties.saveUserData(GroupsActivity.this, mUserInfoJson.get());
+        // Do whatever you need to do with the user info data
 
-                //get user ID
-                String email = AppProperties.getUserEmail(GroupsActivity.this, null);
-                if (!AppProperties.isNull(email)){
+//        AppProperties.saveUserData(GroupsActivity.this, mUserInfoJson.get());
 
-                    String url = AppProperties.DIR_SERVER_ROOT+"getUID";
-                    JSONObject getUserDataRequest = new JSONObject();
-                    try{
+        //get user ID
+        String email = AppProperties.getUserEmail(GroupsActivity.this, null);
+        if (!AppProperties.isNull(email)){
 
-                        getUserDataRequest.put("user_email", "userE1@test.test");
-                    }catch (JSONException e){
-                        e.printStackTrace();
-                    }
+            String url = AppProperties.DIR_SERVER_ROOT+"getUID";
+            JSONObject getUserDataRequest = new JSONObject();
+            try{
 
-                    JsonObjectRequest getUserId = new JsonObjectRequest
-                            (Request.Method.POST, url, getUserDataRequest, new Response.Listener<JSONObject>() {
-                                @Override
-                                public void onResponse(JSONObject response) {
-                                    try{
-                                        AppProperties.setUserId(GroupsActivity.this, response.getLong("ID"));
-                                        runOnUiThread(() -> downloadUserData());
-
-                                    }catch (JSONException e){
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }, new Response.ErrorListener() {
-                                @Override
-                                public void onErrorResponse(VolleyError error) {
-                                    error.printStackTrace();
-                                }
-                            });
-                    MySingleton.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
-                }
+                getUserDataRequest.put("user_email", "userE1@test.test");
+            }catch (JSONException e){
+                e.printStackTrace();
             }
 
-            @Override
-            public void onTokenFailure(@NonNull AuthorizationException ex) {
-                // Handle an error with the Okta authorization and tokens
-                mUserInfoJson.set(null);
-                runOnUiThread(() -> {
-                    downloadUserData();
-                    showSnackbar(getString(R.string.token_failure_message));
-                });
-            }
+            JsonObjectRequest getUserId = new JsonObjectRequest
+                    (Request.Method.POST, url, getUserDataRequest, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try{
+                                AppProperties.setUserId(GroupsActivity.this, response.getLong("ID"));
+                                runOnUiThread(() -> downloadUserData());
 
-            @Override
-            public void onFailure(int httpResponseCode, Exception ex) {
-                // Handle a network error when fetching the user info data
-                mUserInfoJson.set(null);
-                runOnUiThread(() -> {
-                    downloadUserData();
-                    showSnackbar(getString(R.string.network_failure_message));
-                });
-            }
-        });
+                            }catch (JSONException e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                        }
+                    });
+            MySingleton.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
+        }
     }
 
     @MainThread
@@ -318,10 +295,11 @@ public class GroupsActivity extends AppCompatActivity {
                                         String adminName = group.getString("admin_firstname") + " " + group.getString("admin_lastname");
                                         String adminEmail = group.getString("admin_email");
                                         String bookName = group.getString("book_name");
+                                        String bookServerPath = group.getString("file");
 
                                         //add group
                                         if (AppDatabase.alreadyExists(GroupsDao.TABLE_NAME, "server_id="+groupId)){
-                                            groupsDao.insertData(name, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName);
+                                            groupsDao.insertData(name, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName, bookServerPath);
                                             setNewGroupNotifier(name);
                                         }
                                         //update group
@@ -331,33 +309,19 @@ public class GroupsActivity extends AppCompatActivity {
                                     }
 
 
-                                    //get incomplete assignment with closest due date
+                                    //get current active assignment
                                     if (group.getJSONObject("assignment")!=null){
-                                        JSONObject assignment = group.getJSONObject("assignment");
-                                        //ObjectMapper assignmentMapper = new ObjectMapper();
-
-                                       //AssignmentJson assignment = assignmentMapper.convertValue(group.getJSONObject("assignment"), AssignmentJson.class);
-
-                                        String path = "file";
-                                        AssignmentBean assignmentBean = new AssignmentBean(groupId, path);
+                                        AssignmentJson assignment = (AssignmentJson)group.getJSONObject("assignment");
 
                                         String complete = (assignment.getInt("complete")==1) ? AppProperties.YES : AppProperties.NO;
-                                        assignmentBean.setId(assignment.getLong("assignment_id"));
-                                        assignmentBean.setStartPage(assignment.getInt("start_page"));
-                                        assignmentBean.setEndPage(assignment.getInt("end_page"));
-                                        assignmentBean.setName(assignment.getString("assignment_name"));
-                                        assignmentBean.setReadingTime(assignment.getInt("reading_time"));
-                                        assignmentBean.setDueDate(assignment.getString("due_date"));
-                                        assignmentBean.setServerPath(assignment.getString("file"));
-                                        assignmentBean.setFileName(AppProperties.getFileNameFromPath(assignmentBean.getServerPath()));
 
-                                        assignmentArray.add(assignmentBean);
+                                        assignmentArray.add(assignment);
 
-                                        if (!assignmentsDao.checkRecExists(assignmentBean.getId())) {
-                                            assignmentsDao.insertData(assignmentBean.getName(), assignmentBean.getId(), assignmentBean.getGroupId(), AppProperties.YES, assignmentBean.getReadingTime(), assignment.getString("due_date"), complete, assignmentBean.getServerPath(), assignmentBean.getStartPage(), assignmentBean.getEndPage());
+                                        if (!assignmentsDao.checkRecExists(assignment.getServerId())) {
+                                            assignmentsDao.insertData(assignment.getName(), assignment.getServerId(), assignment.getGroupId(), AppProperties.YES, assignment.getReadingTime(), assignment.getDueDate(), complete, assignment.getStartPage(), assignment.getEndPage());
                                         }
                                         else
-                                            assignmentsDao.updateData(assignmentBean.getId(), assignmentBean.getName(), AppProperties.getCurrentDate(), AppProperties.YES, assignmentBean.getReadingTime(), assignment.getString("due_date"), assignmentBean.getServerPath());
+                                            assignmentsDao.updateData(assignment.getServerId(), assignment.getName(), AppProperties.YES, assignment.getReadingTime(), assignment.getDueDate(), assignment.getStartPage(), assignment.getEndPage());
                                     }
                                 }
 
@@ -399,15 +363,12 @@ public class GroupsActivity extends AppCompatActivity {
         assignmentGroupsMap = new HashMap<>();
 
         if (AppProperties.isDemoMode() && assignmentArray.size()>0){
-            for (AssignmentBean bean : assignmentArray){
+            for (AssignmentJson bean : assignmentArray){
                 assignmentGroupsMap.put(bean.getGroupId(), bean);
             }
         }
         else{
-            if (assignmentArray == null || assignmentArray.size() ==0)
-                assignmentArray = assignmentsDao.getAllAssignments();
-
-            for (AssignmentBean bean : assignmentArray){
+            for (AssignmentJson bean : assignmentArray){
                 assignmentGroupsMap.put(bean.getGroupId(), bean);
             }
         }

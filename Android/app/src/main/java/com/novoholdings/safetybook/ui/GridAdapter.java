@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.activities.AssignmentsActivity;
 import com.novoholdings.safetybook.beans.AssignmentBean;
+import com.novoholdings.safetybook.beans.AssignmentJson;
 import com.novoholdings.safetybook.beans.GroupBean;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.database.AssignmentsDao;
@@ -41,14 +42,14 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class GridAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<GroupBean> groupList;
-    private HashMap<Long, AssignmentBean> assignmentGroupMap;
+    private HashMap<Long, AssignmentJson> assignmentGroupMap;
     private AssignmentsDao assignmentsDao;
     private long lastDownload;
     private DownloadManager downloadManager;
-    private LongSparseArray<AssignmentBean> assignmentDownloadIdServerIdMap;
+    private LongSparseArray<AssignmentJson> assignmentDownloadIdServerIdMap;
 
 
-    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList, HashMap<Long, AssignmentBean> assignmentsList) {
+    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList, HashMap<Long, AssignmentJson> assignmentsList) {
         this.assignmentsDao = assignmentsDao;
         this.mContext = context;
         this.groupList = groupList;
@@ -105,9 +106,9 @@ public class GridAdapter extends BaseAdapter {
 
         final GroupBean group = getItem(position);
 
-        if (assignmentGroupMap!=null){
+        if (assignmentGroupMap!=null && assignmentGroupMap.size()>0){
 
-            final AssignmentBean assignment = assignmentGroupMap.get(group.getId());
+            final AssignmentJson assignment = assignmentGroupMap.get(group.getId());
 
             String currentChapter = assignment.getName();
             String completionStatus = (assignment.isComplete()) ? "Finished!" : "Incomplete";
@@ -116,23 +117,14 @@ public class GridAdapter extends BaseAdapter {
 
 
             if (!assignment.isComplete()){
+/*
+                Calendar calendar = Calendar.getInstance();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                calendar.setTime(simpleDateFormat.parse(assignment.getDueDate()));
+*/
+                String date = assignment.getDueDate();
+                dueDate.setText(date);
 
-                try{
-                    Calendar calendar = Calendar.getInstance();
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-                    calendar.setTime(simpleDateFormat.parse(assignment.getDueDateIso()));
-                    String date = assignment.getDueDateIso();
-                    dueDate.setText(date);
-
-                    if (!assignmentsDao.fileExists(assignment.getId())){
-                        //download file
-                        Uri uri = Uri.parse(AppProperties.DIR_SERVER_ROOT+assignment.getServerPath());
-                        startDownload(uri, assignment, group.getName());
-                    }
-
-                } catch (ParseException e){
-                    e.printStackTrace();
-                }
             }
             else {
                 dueDate.setVisibility(View.GONE);
@@ -165,6 +157,8 @@ public class GridAdapter extends BaseAdapter {
                 i.putExtra("adminName", group.getAdminName());
                 i.putExtra("adminEmail", group.getAdminEmail());
                 i.putExtra("groupName", group.getName());
+                i.putExtra("serverPath", group.getServerPath());
+                i.putExtra("localPath", group.getLocalPath());
                 mContext.startActivity(i);
             }
         });
@@ -190,7 +184,7 @@ public class GridAdapter extends BaseAdapter {
     };
 
 
-    public void startDownload(Uri uri, AssignmentBean assignment, String groupName) {
+    /*public void startDownload(Uri uri, AssignmentBean assignment, String groupName) {
 
         if (downloadManager==null)
             downloadManager = (DownloadManager)mContext.getSystemService(DOWNLOAD_SERVICE);
@@ -218,5 +212,5 @@ public class GridAdapter extends BaseAdapter {
                                 fileName));
 
         assignmentDownloadIdServerIdMap.append(lastDownload, assignment);
-    }
+    }*/
 }

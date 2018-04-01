@@ -22,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
@@ -31,15 +32,16 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.novoholdings.safetybook.BuildConfig;
 import com.novoholdings.safetybook.Manifest;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
-import com.okta.appauth.android.OktaAppAuth;
-
-import net.openid.appauth.AuthorizationException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,20 +58,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.acl.Group;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
-import com.novoholdings.safetybook.BuildConfig;
-import static android.content.Context.NOTIFICATION_SERVICE;
-import net.openid.appauth.AuthorizationException;
-import com.okta.appauth.android.*;
-import com.facebook.stetho.okhttp3.StethoInterceptor;
-import com.facebook.stetho.Stetho;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-
 
 public class LoginActivity extends AppCompatActivity{
 
@@ -86,7 +81,7 @@ public class LoginActivity extends AppCompatActivity{
     private GroupsDao groupsDao;
     private AssignmentsDao assignmentsDao;
 
-    private OktaAppAuth mOktaAuth;
+    private FirebaseAuth mAuth;
 
     NotificationCompat.Builder threeDayNotification, oneDayNotification, oneHourNotification, overdueNotification, newGroupNotifier, newAssignmentNotifier, testNotifier;
     private static final int threeDay = 5548;
@@ -97,12 +92,47 @@ public class LoginActivity extends AppCompatActivity{
     private static final int newAssignmentNotification = 5562;
     private static final int newTestNotify = 5588;
 
+    private static final int RC_SIGN_IN = 123;
+
+    // Choose authentication providers
+    List<AuthUI.IdpConfig> providers = Arrays.asList(
+            new AuthUI.IdpConfig.EmailBuilder().build());
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         updateChecker();
         setContentView(R.layout.activity_main);
         Stetho.initializeWithDefaults(this);
+
+        new OkHttpClient.Builder()
+                .addNetworkInterceptor  (new StethoInterceptor())
+                .build();
+
+        groupsDao = new GroupsDao(LoginActivity.this);
+        assignmentsDao = new AssignmentsDao(LoginActivity.this);
+
+        loginButton = (Button)findViewById(R.id.loginButton);
+        forgotPass = (Button) findViewById(R.id.forgetPass);
+
+        mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser()==null){
+
+            startActivityForResult(// Get an instance of AuthUI based on the default app
+                    AuthUI
+                            .getInstance()
+                            .createSignInIntentBuilder()
+                            .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
+                            .build(),
+                    RC_SIGN_IN);
+        }
+        else {
+            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
+            startActivity(i);
+        }
 
 //        forgotPass.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -130,18 +160,6 @@ public class LoginActivity extends AppCompatActivity{
 
         testNotifier = new NotificationCompat.Builder(this);
         testNotifier.setAutoCancel(true);
-    }
-
-    private void startAuth() {
-        Intent completionIntent = new Intent(this, GroupsActivity.class);
-        Intent cancelIntent = new Intent(this, LoginActivity.class);
-        cancelIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        mOktaAuth.login(
-                this,
-                PendingIntent.getActivity(this, 0, completionIntent, 0),
-                PendingIntent.getActivity(this, 0, cancelIntent, 0)
-        );
     }
 
     private class RequestGroups extends AsyncTask<String, String, String> {
@@ -474,31 +492,6 @@ public class LoginActivity extends AppCompatActivity{
 
                         loginButton = (Button)findViewById(R.id.loginButton);
                         forgotPass = (Button) findViewById(R.id.forgetPass);
-                        mOktaAuth = OktaAppAuth.getInstance(LoginActivity.this);
-
-                        if (mOktaAuth.isUserLoggedIn()){
-                            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
-                            startActivity(i);
-                        }
-                        else
-                            mOktaAuth.init(LoginActivity.this, new OktaAppAuth.OktaAuthListener() {
-                                @Override
-                                public void onSuccess() {
-                                    //handle successful initialization (display login button)
-                                    loginButton.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            startAuth();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onTokenFailure(@NonNull AuthorizationException e) {
-                                    //handle failed initialization
-                                    e.printStackTrace();
-                                }
-                            });
                     }
 
                 } catch (JSONException e) {
