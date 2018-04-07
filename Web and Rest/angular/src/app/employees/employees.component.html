@@ -1,4 +1,5 @@
-<div *ngIf="isLoggedIn==false">
+
+<div class=""container *ngIf="isLoggedIn==false">
 	<form name="userform" method="post" #formCtrl="ngForm">
 
 	  <label for="exampleInputEmail1">Email address</label>
@@ -8,11 +9,15 @@
 	  <input type="password" class="form-control" id="userPassword" [(ngModel)]="userPassword" required>
 
 	<div class="form-group">
-	   <button type="buton" class="btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()" [disabled]="formCtrl.form.invalid">
+	   <button type="buton" class="btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
 	   Login with Email
 	   </button>
 	</div>
 	</form>
+	<div *ngIf="isLoginError==true" class="alert alert-dismissible alert-danger">
+	  <button type="button" class="close" data-dismiss="alert">&times;</button>
+	  <p>{{loginErrorMessage}}</p>
+	</div>
 </div>
 <div class="container" *ngIf="isLoggedIn">
 

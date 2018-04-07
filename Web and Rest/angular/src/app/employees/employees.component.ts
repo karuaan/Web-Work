@@ -35,6 +35,9 @@ export class EmployeesComponent implements OnInit {
     userEmail: string;
     userPassword: string;
     isLoggedIn = false;
+	isLoginError = false;
+	loginErrorMessage = "";
+	
     testEmployee: Employee;
     employees: Employee[];
     groups: Group[];
@@ -93,6 +96,9 @@ export class EmployeesComponent implements OnInit {
 
         this.userEmail = '';
         this.userPassword = '';
+		this.isLoginError = false;
+		this.loginErrorMessage = "";
+		
         this.employees = [];
         this.groups = [];
         this.assignments = [];
@@ -864,10 +870,13 @@ export class EmployeesComponent implements OnInit {
         this.userPassword = 'tes';
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
-                console.log(res);
+                console.log(res['hk']);
                 this.isLoggedIn = true;
             })
-            .catch((err) => console.log('error: ' + err));
+            .catch((err) => {
+				loginErrorMessage = err;
+				isLoginError = true;
+			});
     }
 
     ngOnInit() {
