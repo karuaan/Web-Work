@@ -866,8 +866,6 @@ export class EmployeesComponent implements OnInit {
     }
 
     signInWithEmail() {
-        this.userEmail = 'thebesttestrest@test.rest';
-        this.userPassword = 'tes';
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
                 console.log(res['hk']);
