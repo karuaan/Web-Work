@@ -3,10 +3,10 @@
 	<form name="userform" method="post" #formCtrl="ngForm">
 
 	  <label for="exampleInputEmail1">Email address</label>
-	  <input type="email" class="form-control" id="userEmail" [(ngModel)]="userEmail" required>
+	  <input type="email" class="form-control" id="userEmail" [(ngModel)]="userEmail" required [ngModelOptions]="{standalone: true}">
 
 	  <label for="exampleInputPassword1">Password</label>
-	  <input type="password" class="form-control" id="userPassword" [(ngModel)]="userPassword" required>
+	  <input type="password" class="form-control" id="userPassword" [(ngModel)]="userPassword" required [ngModelOptions]="{standalone: true}">
 
 	<div class="form-group">
 	   <button type="buton" class="btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
