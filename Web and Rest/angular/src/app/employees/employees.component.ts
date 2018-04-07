@@ -94,8 +94,8 @@ export class EmployeesComponent implements OnInit {
         this.authService = authService;
         this.toastrService = toastrService;
 
-        this.userEmail = '';
-        this.userPassword = '';
+        this.userEmail = "";
+        this.userPassword = "";
 		this.isLoginError = false;
 		this.loginErrorMessage = "";
 		
@@ -874,8 +874,8 @@ export class EmployeesComponent implements OnInit {
                 this.isLoggedIn = true;
             })
             .catch((err) => {
-				loginErrorMessage = err;
-				isLoginError = true;
+				this.loginErrorMessage = err;
+				this.isLoginError = true;
 			});
     }
 
