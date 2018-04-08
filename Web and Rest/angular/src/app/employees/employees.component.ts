@@ -868,7 +868,7 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
-                console.log(res['hk']);
+				console.log(res);
                 this.isLoggedIn = true;
             })
             .catch((err) => {
