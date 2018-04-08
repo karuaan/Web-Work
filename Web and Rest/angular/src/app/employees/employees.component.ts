@@ -869,7 +869,9 @@ export class EmployeesComponent implements OnInit {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
 				this.employeesService.getAdminID(this.userEmail).then((res) => {
-					this.admin_id = res;
+					console.log(res);
+					console.log(res['ID']);
+					this.admin_id = res['ID'];
 					this.isLoggedIn = true;
 				})
 
