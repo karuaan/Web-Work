@@ -15,7 +15,7 @@ global.__basedir = __dirname;
 
 //const filesys = require('fs')
 ///*
-const debug = true;
+const debug = false;
 var con;
 
 if(!debug){
