@@ -76,4 +76,9 @@ export class EmployeesService {
         var response = this.http.post(this.restURL + '/send-invitation', data);
         return response;
     }
+	
+	getAdminID(email): Observable<Number>{
+		var response = this.http.post(this.restURL + '/getAdminID', {'email' : email});
+		return response;
+	}
 }

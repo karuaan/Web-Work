@@ -868,8 +868,11 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
-				console.log(res);
-                this.isLoggedIn = true;
+				this.employeesService.getAdminID(this.userEmail).then((res) => {
+					this.admin_id = res;
+					this.isLoggedIn = true;
+				})
+
             })
             .catch((err) => {
 				this.loginErrorMessage = err;

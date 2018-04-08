@@ -2300,6 +2300,17 @@ app.get('/androidVersionTable', function(req, res)
 	})
 })
 
+function getAdminID(email, callback){
+	con.query("SELECT ID FROM USERS WHERE USERS.IS_ADMIN=1 AND USERS.EMAIL=" + mysql.escape(email), function(err, rows){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, rows);
+		}
+	})
+}
+
 function getMasterTable(admin_id, callback){
 	
 	con.query(
@@ -2356,6 +2367,20 @@ app.post('/getMasterTable', function(req, res){
 			res.json(result);
 		}
 	})
+})
+
+
+
+app.post('/getAdminID', function(req, res){
+	getAdminID(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+	
 })
 
 //admin_oidc.on('ready', () => {
