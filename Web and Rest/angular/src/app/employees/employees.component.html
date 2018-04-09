@@ -39,8 +39,8 @@
 				<button *ngIf="selectedGroup && selectedGroup !== undefined"
                         type="button"
                         class="btn btn-info summary-button" data-toggle="modal" data-target="#addEmployeeModal">+ Add Employee</button>
-				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('assignments')" class="btn btn-info summary-button" id="assignmentButton">Assignments</div>
-				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('lessons')" class="btn btn-info summary-button" id="lessonButton">Lesson Plan</div>
+				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('assignments')" class="btn btn-info summary-button-tab" id="assignmentButton">Assignments</div>
+				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('lessons')" class="btn btn-info summary-button-tab" id="lessonButton">Lesson Plan</div>
 			</div>
 		</div>
 

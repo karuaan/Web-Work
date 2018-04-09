@@ -48,12 +48,28 @@
 }
 
 #summaryContainer {
+  margin: 0em;
+}
+
+#summaryContainer h5 {
   margin: 1em;
 }
 
 .summary-button {
-  margin: 0.5em 0em;
-  width: 14.5em;
+  padding: 1em;
+  outline: none;
+  margin: 1em;
+  min-width: 11em;
+}
+
+.summary-button-tab {
+  width: 100%;
+  padding: 1em;
+  background-color: #CCCCCC;
+  color: #000000;
+  border-radius: 0;
+  border: none;
+  margin-bottom: 1em;
 }
 
 #secondaryContainer {
@@ -88,8 +104,7 @@
 
 #assignmentButtonActive,
 #lessonButtonActive {
-  background-color: #1d95c6;
-  border-color: #1b8dbb;
+  background-color: #999999;
 }
 
 #lessonsContainer {
