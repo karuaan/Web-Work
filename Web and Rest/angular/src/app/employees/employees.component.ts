@@ -868,12 +868,13 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
-				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
+				console.log(res);
+				/* this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					console.log(res2);
 					console.log(res2['ID']);
 					this.admin_id = res2['ID'];
 					this.isLoggedIn = true;
-				})
+				}) */
 
             })
             .catch((err) => {
