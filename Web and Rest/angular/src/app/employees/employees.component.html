@@ -20,6 +20,15 @@
 </div>
 <div class="container" *ngIf="isLoggedIn">
 
+	<div class="user-info">
+		<div class="user-name">
+			{{userEmail}}
+		</div>
+		<div class="user-logout">
+			Logout
+		</div>
+	</div>
+
 	<div class="row" id="groupTabs">
 		<div class="btn-group btn-group-toggle" data-toggle="buttons">
 			<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
@@ -27,14 +36,6 @@
 			</label>
 			<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
 			<button type="button" class="btn btn-info" data-toggle="modal" data-target="#inviteAdminModal">Invite Admin</button>
-		</div>
-		<div class="user-info">
-			<div class="user-name">
-				{{userEmail}}
-			</div>
-			<div class="user-logout">
-				Logout
-			</div>
 		</div>
 	</div>
 
@@ -220,7 +221,7 @@
 							<td class="employee-delete"><p>X</p></td>
 							<td>{{employee.FIRST_NAME | pending}}</td>
 							<td>{{employee.LAST_NAME | pending}}</td>
-							<td>{{employee.EMAIL}}</td>
+							<td><a href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a></td>
 						</tr>
 					</table>
 				</div>

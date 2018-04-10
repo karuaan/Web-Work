@@ -22,6 +22,24 @@
   margin: 0em;
   padding: 0em;
 }
+
+
+.user-info {
+  text-align: right;
+  font-size: 1.25em;
+}
+
+.user-logout {
+  cursor: pointer;
+  transition: 0.2s ease-out all;
+  color: #000000;
+}
+
+.user-logout:hover {
+  color: #FFFFFF;
+  transition: 0.2s ease-out all;
+}
+
 .assignment-list--container{
     max-height: 100%;
 }
