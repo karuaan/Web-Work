@@ -1,5 +1,5 @@
 
-<div class=""container *ngIf="isLoggedIn==false">
+<div class=""container *ngIf="isLoggedIn==false" id="loginForm">
 	<form name="userform" method="post" #formCtrl="ngForm">
 
 	  <label for="exampleInputEmail1">Email address</label>
@@ -9,13 +9,13 @@
 	  <input type="password" class="form-control" id="userPassword" [(ngModel)]="userPassword" required [ngModelOptions]="{standalone: true}">
 
 	<div class="form-group">
-	   <button type="buton" class="btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
+	   <button id="loginButton" type="buton" class="btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
 	   Login with Email
 	   </button>
 	</div>
 	</form>
 	<div *ngIf="isLoginError==true" class="alert alert-danger">
-	  <p>{{loginErrorMessage}}</p>
+	  <p id="errorMessage">{{loginErrorMessage}}</p>
 	</div>
 </div>
 <div class="container" *ngIf="isLoggedIn">
@@ -27,6 +27,14 @@
 			</label>
 			<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
 			<button type="button" class="btn btn-info" data-toggle="modal" data-target="#inviteAdminModal">Invite Admin</button>
+		</div>
+		<div class="user-info">
+			<div class="user-name">
+				{{userEmail}}
+			</div>
+			<div class="user-logout">
+				Logout
+			</div>
 		</div>
 	</div>
 
@@ -54,8 +62,14 @@
 					<div *ngIf="assignments[0].NAME !== 'No assignments'" class="assignment-list--container">
 						<div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
 							<h5>{{assignment.NAME}}</h5>
-							Due {{assignment.DUE_DATE | date:'MM/dd/yyyy'}}
-							Available {{assignment.START_DATE | date:'MM/dd/yyyy'}}
+							<div>
+								<p class="assignment-date-range">Due</p>
+								<p class="assignment-date-range-date">{{assignment.DUE_DATE | date:'MM/dd/yyyy'}}</p>
+							</div>
+							<div>
+								<p class="assignment-date-range">Available</p>
+								<p class="assignment-date-range-date">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
+							</div>
 						</div>
 					</div>
 				</div>

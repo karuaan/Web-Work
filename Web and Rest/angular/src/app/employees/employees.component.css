@@ -1,3 +1,27 @@
+#loginForm {
+  width: 75%;
+  margin-top: 2.5em;
+  margin-left: 12.5%;
+  font-size: 1.5em;
+}
+
+#userEmail,
+#userPassword {
+  margin-bottom: 2em;
+  padding: 0.5em;
+  font-size: 1em;
+}
+
+#loginButton {
+  font-size: 1em;
+  margin-bottom: 2em;
+  padding: 0.5em;
+}
+
+#errorMessage {
+  margin: 0em;
+  padding: 0em;
+}
 .assignment-list--container{
     max-height: 100%;
 }
@@ -12,6 +36,9 @@
   box-sizing: border-box;
 }
 
+.container {
+  max-width: 100%;
+}
 #groupTabs {
   padding-top: 1em;
   border-bottom: solid black 0.2em;
@@ -58,8 +85,8 @@
 .summary-button {
   padding: 1em;
   outline: none;
-  margin: 1em;
-  min-width: 11em;
+  margin: 2em 1em;
+  min-width: 12em;
 }
 
 .summary-button-tab {
@@ -69,7 +96,7 @@
   color: #000000;
   border-radius: 0;
   border: none;
-  margin-bottom: 1em;
+  margin-bottom: 2em;
 }
 
 #secondaryContainer {
@@ -125,6 +152,15 @@
 .assignment-summary-selected,
 .assignment-summary:hover {
   background-color: #EEEEEE;
+}
+
+.assignment-date-range,
+.assignment-date-range-date {
+  display: inline-block;
+}
+
+.assignment-date-range-date {
+  float: right;
 }
 
 .empty-assignments {
@@ -247,7 +283,7 @@
 }
 
 .pdf-controller input {
-  width: calc(100% - 9em);
+  width: calc(100% - 11em);
 }
 
 @media (max-width: 1200px) {
