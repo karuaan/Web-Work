@@ -16,8 +16,8 @@ export class AuthService {
 	   return this._firebaseAuth.auth.signInWithEmailAndPassword(email, password);
 	}
 	signUpRegular(email){
-		firebase.auth.createUserWithEmail(email);
-		firebase.auth.currentUser.sendEmailVerification();
+		firebase.auth.createUser({'email': email});
+		//firebase.auth.currentUser.sendEmailVerification();
 	}  
 }
 
