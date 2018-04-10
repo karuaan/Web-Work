@@ -338,3 +338,22 @@
 .reading-time-input p {
   display: inline-block;
 }
+
+#mainContainer {
+  position: relative;
+}
+
+.pdf-controller {
+  height: 5em;
+}
+
+#thirdColumn {
+  position: relative;
+}
+
+pdf-viewer {
+  width:100%;
+  height: 100%;
+  overflow: auto;
+  position: absolute;
+}
