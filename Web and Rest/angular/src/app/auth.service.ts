@@ -5,15 +5,19 @@ import * as firebase from 'firebase/app';
 import { Observable } from 'rxjs/Observable';
 @Injectable()
 export class AuthService {
-  private user: Observable<firebase.User>;
-constructor(private _firebaseAuth: AngularFireAuth) { 
-      this.user = _firebaseAuth.authState;
-  }
-signInRegular(email, password) {
-	console.log(email);
-	console.log(password);
-   const credential = firebase.auth.EmailAuthProvider.credential( email, password );
-   return this._firebaseAuth.auth.signInWithEmailAndPassword(email, password);
-}  
+	private user: Observable<firebase.User>;
+	constructor(private _firebaseAuth: AngularFireAuth) { 
+		  this.user = _firebaseAuth.authState;
+	  }
+	signInRegular(email, password) {
+		console.log(email);
+		console.log(password);
+	   const credential = firebase.auth.EmailAuthProvider.credential( email, password );
+	   return this._firebaseAuth.auth.signInWithEmailAndPassword(email, password);
+	}
+	signUpRegular(email){
+		firebase.auth.createUserWithEmail(email);
+		firebase.auth.currentUser.sendEmailVerification();
+	}  
 }
 
