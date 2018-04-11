@@ -2244,11 +2244,6 @@ function emailToList(emailList, text, callback){
 			});
 		}
 	}
-	
-	
-	
-	
-	
 }
 
 app.post('/emailToList', function(req, res){
@@ -2282,6 +2277,24 @@ function getLatestVersion(callback)
 		}
 	
 	)
+}
+
+app.post('/androidVersionTable', function(req, res))
+{
+	getLatestVersion(function(err, rows))
+	{
+		if (err)
+		{
+			console.log(err);
+			res.json(err);
+		}
+
+		else 
+		{
+			console.log(rows);
+			res.json(rows);
+		}
+	}
 }
 
 app.get('/androidVersionTable', function(req, res)
