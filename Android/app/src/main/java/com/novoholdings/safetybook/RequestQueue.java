@@ -1,36 +1,32 @@
 package com.novoholdings.safetybook;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.util.LruCache;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
 /**
  * Created by James on 11/15/2017.
  */
 
-public class MySingleton {
-    private static MySingleton mInstance;
-    private RequestQueue mRequestQueue;
+public class RequestQueue {
+    private static RequestQueue mInstance;
+    private com.android.volley.RequestQueue mRequestQueue;
     private static Context mCtx;
 
-    private MySingleton(Context context) {
+    private RequestQueue(Context context) {
         mCtx = context;
         mRequestQueue = getRequestQueue();
     }
 
-    public static synchronized MySingleton getInstance(Context context) {
+    public static synchronized RequestQueue getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new MySingleton(context);
+            mInstance = new RequestQueue(context);
         }
         return mInstance;
     }
 
-    public RequestQueue getRequestQueue() {
+    public com.android.volley.RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
             // getApplicationContext() is key, it keeps you from leaking the
             // Activity or BroadcastReceiver if someone passes one in.

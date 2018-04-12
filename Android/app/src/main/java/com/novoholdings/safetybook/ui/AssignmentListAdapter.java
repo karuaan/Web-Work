@@ -34,8 +34,7 @@ public class AssignmentListAdapter extends RecyclerView.Adapter<AssignmentViewHo
 
         AssignmentBean assignmentBean = assignmentList.get(position);
 
-
-        return new AssignmentViewHolder(itemView, assignmentBean);
+        return new AssignmentViewHolder(mContext, itemView, assignmentBean);
     }
 
 
@@ -59,7 +58,7 @@ public class AssignmentListAdapter extends RecyclerView.Adapter<AssignmentViewHo
         else {
             viewHolder.itemView.setBackgroundColor(Color.WHITE);
         }
-        viewHolder.view.setOnClickListener(new View.OnClickListener() {
+      /*  viewHolder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 selectedPos = position;
@@ -67,7 +66,7 @@ public class AssignmentListAdapter extends RecyclerView.Adapter<AssignmentViewHo
                 notifyDataSetChanged();
             }
         });
-
+*/
 
     }
 

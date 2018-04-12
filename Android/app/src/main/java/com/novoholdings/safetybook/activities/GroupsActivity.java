@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.MainThread;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -23,18 +22,15 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
-import com.facebook.stetho.json.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.novoholdings.safetybook.MySingleton;
+import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.beans.AssignmentBean;
 import com.novoholdings.safetybook.beans.AssignmentJson;
 import com.novoholdings.safetybook.beans.GroupBean;
-import com.novoholdings.safetybook.beans.GroupJson;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.common.Utils;
 import com.novoholdings.safetybook.database.AppDatabase;
@@ -49,7 +45,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class GroupsActivity extends AppCompatActivity {
 
@@ -129,10 +124,7 @@ public class GroupsActivity extends AppCompatActivity {
 
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser!=null){
-            updateUI(currentUser);
-        }
-        else {
+        if (currentUser==null){
             Intent i = new Intent(GroupsActivity.this, LoginActivity.class);
             startActivity(i);
         }
@@ -163,7 +155,7 @@ public class GroupsActivity extends AppCompatActivity {
     private void fetchUserInfo(FirebaseUser currentUser) {
         //displayLoading(getString(R.string.user_info_loading));
         if (AppProperties.isDemoMode()){
-            runOnUiThread(() -> downloadUserData());
+            runOnUiThread(() -> downloadUserData(currentUser.getEmail()));
             return;
         }
         // Do whatever you need to do with the user info data
@@ -171,14 +163,14 @@ public class GroupsActivity extends AppCompatActivity {
 //        AppProperties.saveUserData(GroupsActivity.this, mUserInfoJson.get());
 
         //get user ID
-        String email = AppProperties.getUserEmail(GroupsActivity.this, null);
+        String email = AppProperties.getUserEmail(GroupsActivity.this, currentUser.getEmail());
         if (!AppProperties.isNull(email)){
 
             String url = AppProperties.DIR_SERVER_ROOT+"getUID";
             JSONObject getUserDataRequest = new JSONObject();
             try{
 
-                getUserDataRequest.put("user_email", "userE1@test.test");
+                getUserDataRequest.put("user_email", email);
             }catch (JSONException e){
                 e.printStackTrace();
             }
@@ -189,7 +181,7 @@ public class GroupsActivity extends AppCompatActivity {
                         public void onResponse(JSONObject response) {
                             try{
                                 AppProperties.setUserId(GroupsActivity.this, response.getLong("ID"));
-                                runOnUiThread(() -> downloadUserData());
+                                runOnUiThread(() -> downloadUserData(email));
 
                             }catch (JSONException e){
                                 e.printStackTrace();
@@ -201,7 +193,7 @@ public class GroupsActivity extends AppCompatActivity {
                             error.printStackTrace();
                         }
                     });
-            MySingleton.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
+            RequestQueue.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
         }
     }
 
@@ -231,7 +223,7 @@ public class GroupsActivity extends AppCompatActivity {
             studentWelcome.setText(name);
     }
 
-    private void downloadUserData(){
+    private void downloadUserData(String email){
 
         displayUserInfo();
 
@@ -253,9 +245,6 @@ public class GroupsActivity extends AppCompatActivity {
         }
 
         try{
-            //todo
-            String email = "userE1@test.test"; //AppProperties.getUserEmail(GroupsActivity.this, "test@test.test");
-
             JSONObject getUserDataRequest = new JSONObject();
             getUserDataRequest.put("email", email);
 
@@ -295,7 +284,7 @@ public class GroupsActivity extends AppCompatActivity {
                                         String adminName = group.getString("admin_firstname") + " " + group.getString("admin_lastname");
                                         String adminEmail = group.getString("admin_email");
                                         String bookName = group.getString("book_name");
-                                        String bookServerPath = group.getString("file");
+                                        String bookServerPath = group.getString("book_file");
 
                                         //add group
                                         if (AppDatabase.alreadyExists(GroupsDao.TABLE_NAME, "server_id="+groupId)){
@@ -351,7 +340,7 @@ public class GroupsActivity extends AppCompatActivity {
             };
 
             // Access the RequestQueue through your singleton class.
-            MySingleton.getInstance(this).addToRequestQueue(jsObjRequest);
+            RequestQueue.getInstance(this).addToRequestQueue(jsObjRequest);
         } catch (JSONException e){
             e.printStackTrace();
         }

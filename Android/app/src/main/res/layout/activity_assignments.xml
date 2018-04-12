@@ -54,7 +54,7 @@
 
         </LinearLayout>
 
-        <include
+            <include
             android:id="@+id/infoPane"
             layout="@layout/info_pane"
             android:layout_height="match_parent"

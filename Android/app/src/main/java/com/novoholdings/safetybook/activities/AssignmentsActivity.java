@@ -3,7 +3,6 @@ package com.novoholdings.safetybook.activities;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.NotificationManager;
@@ -16,14 +15,12 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Canvas;
-import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.constraint.solver.widgets.ConstraintTableLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -32,17 +29,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.LongSparseArray;
-import android.util.TimeUtils;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,10 +44,10 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.*;
-import com.novoholdings.safetybook.MySingleton;
-import com.novoholdings.safetybook.beans.AssignmentJson;
+import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.beans.AssignmentBean;
+import com.novoholdings.safetybook.beans.AssignmentJson;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.ui.AssignmentListAdapter;
@@ -78,19 +71,18 @@ import org.json.JSONObject;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.novoholdings.safetybook.common.AppProperties.YES;
 
 /**
  * Created by James on 11/25/2017.
  */
 
 public class AssignmentsActivity extends AppCompatActivity{
-    private String groupName, adminName, adminEmail, localFilePath, currentAssignmentPath;
-    private long groupId, userId, currentAssignmentId,  lastDownload=-1L;
-    private LongSparseArray<AssignmentBean> assignmentDownloadIdServerIdMap;
+    private String groupName, adminName, adminEmail, localFilePath, serverFilePath, fileName;
+    private long groupId, userId, currentAssignmentId,  bookDownload=-1L;
 
     private PDFView pdfView;
     private LinearLayout lastPageBottomBar;
@@ -103,15 +95,12 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     private ArrayList<AssignmentBean> assignmentsList;
 
-    ArrayList<Long> downloadList = new ArrayList<>();
-    boolean assignmentsDueSoon;
-
     AssignmentListAdapter adapter;
     RecyclerView recyclerView;
     View infoPane;
     Button startButton;
 
-    private boolean isFabShowing, lastPageReached, immersiveMode, readingStarted, readingFinished;
+    private boolean isFabShowing, lastPageReached, immersiveMode, readingStarted, readingFinished, assignmentsDueSoon;
     private FloatingActionButton fab;
     private int timeToRead;
 
@@ -162,9 +151,6 @@ public class AssignmentsActivity extends AppCompatActivity{
 
         setupRecycler();
 
-
-        localFilePath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName;
-
         //get assignments from local storage
         assignmentsDao = new AssignmentsDao(AssignmentsActivity.this);
         //assignmentsDao.insertData("Chapter Name", 1, groupId, YES, 900, "11-30-17T00:00.000Z", YES, "filename.pdf", 1, 10);
@@ -180,21 +166,23 @@ public class AssignmentsActivity extends AppCompatActivity{
 
         }
 
+        //if book is not downloaded, show download button
+        if (!AppProperties.isDemoMode())
+            checkBookFile();
+
+        //download new assignments
         downloadAssignmentMetadata();
 
         IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
 
         registerReceiver(onComplete, intentFilter);
 
-        //download new assignments
-        assignmentDownloadIdServerIdMap = new LongSparseArray<AssignmentBean>();
-        downloadList = new ArrayList<>();
 
         downloadManager =  (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         int check = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (check == PackageManager.PERMISSION_GRANTED) {
             //Do something
-        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+        } else {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1024);
         }
 
@@ -218,12 +206,52 @@ public class AssignmentsActivity extends AppCompatActivity{
     }
     private void getIntentExtras(){
         Bundle extras = getIntent().getExtras();
-        groupName = AppProperties.NVL(extras.getString("groupName"), "Not Found");
-        adminName = AppProperties.NVL(extras.getString("adminEmail"), "Not Found");
-        adminEmail = extras.getString("adminEmail");
-        groupId = extras.getLong("groupId");
-        groupId=extras.getLong("groupId");
-        userId = AppProperties.getUserId(AssignmentsActivity.this);
+        try{
+            groupName = AppProperties.NVL(extras.getString("groupName"), "Not Found");
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try{
+            adminName = AppProperties.NVL(extras.getString("adminEmail"), "Not Found");
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try{
+            adminEmail = extras.getString("adminEmail");
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try{
+            groupId = extras.getLong("groupId");
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try{
+            groupId=extras.getLong("groupId");
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try{
+            serverFilePath = extras.getString("serverPath");
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try{
+            localFilePath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName + "/" + AppProperties.getFileNameFromPath(serverFilePath);
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try{
+            userId = AppProperties.getUserId(AssignmentsActivity.this);
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
     }
     private void setupRecycler(){
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(AssignmentsActivity.this);
@@ -232,6 +260,28 @@ public class AssignmentsActivity extends AppCompatActivity{
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
                 linearLayoutManager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
+    }
+
+    private void checkBookFile(){
+        String localPath = localFilePath;
+
+        File file = new File(localPath);
+
+        if (!file.exists() && !AppProperties.isNull(serverFilePath)){
+            String message = "Download book";
+            chapterNameTV.setText(message);
+            Uri uri = Uri.parse(serverFilePath);
+
+            //set download button on click
+            startButton.setText(R.string.download);
+            startButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startDownload(uri, fileName);
+                }
+            });
+            startButton.setVisibility(View.VISIBLE);
+        }
     }
 
     private void downloadAssignmentMetadata(){
@@ -245,33 +295,21 @@ public class AssignmentsActivity extends AppCompatActivity{
             @Override
             public void onResponse(JSONArray response) {
                 for (int i = 0; i < response.length(); i++){
-                    /*try{
+                    try{
                         AssignmentJson assignment = (AssignmentJson)response.getJSONObject(i);
+                        String complete = (assignment.getCompletionStatus()==1) ? YES : AppProperties.NO;
 
-                        String path = assignment.getString("file");
-                        AssignmentBean assignmentBean = new AssignmentBean(groupId, path);
-
-                        String complete = (assignment.getCompletionStatus()==1) ? AppProperties.YES : AppProperties.NO;
-                        assignmentBean.setId(assignment.getServerId());
-                        assignmentBean.setStartPage(assignment.getStartPage());
-                        assignmentBean.setEndPage(assignment.getEndPage());
-                        assignmentBean.setName(assignment.getName());
-                        assignmentBean.setReadingTime(assignment.getReadingTime());
-                        assignmentBean.setDueDate(assignment.getDueDate());
-                        assignmentBean.setGroupId(groupId);
-                        assignmentBean.setComplete(assignment.getCompletionStatus()==1);
-
-                        if (!assignmentsDao.checkRecExists(assignmentBean.getId())){
-                            assignmentsDao.insertData(assignmentBean.getName(), assignment.getServerId(), groupId, AppProperties.YES, assignmentBean.getReadingTime(), assignment.getDueDate(), complete, assignmentBean.getServerPath(), assignment.getStartPage(), assignment.getEndPage());
-                            setNewAssignmentNotifier(assignmentBean.getName());
+                        if (!assignmentsDao.checkRecExists(assignment.getServerId())){
+                            assignmentsDao.insertData(assignment.getName(), assignment.getServerId(), groupId, YES, assignment.getReadingTime(), assignment.getDueDate(), complete, assignment.getStartPage(), assignment.getEndPage());
+                            setNewAssignmentNotifier(assignment.getName());
                         }
                         else {
-                            assignmentsDao.updateData(assignmentBean.getId(), assignmentBean.getName(), AppProperties.getCurrentDate(), AppProperties.YES, assignmentBean.getReadingTime(), assignment.getDueDate(), assignmentBean.getServerPath());
+                            assignmentsDao.updateData(assignment.getServerId(), assignment.getName(), YES, assignment.getReadingTime(), assignment.getDueDate(), assignment.getStartPage(), assignment.getEndPage());
                         }
 
                     }catch (JSONException e){
                         e.printStackTrace();
-                    }*/
+                    }
                 }
                 populateRecyclerView();
             }
@@ -283,7 +321,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         });
 
         // Access the RequestQueue through your singleton class.
-        MySingleton.getInstance(this).addToRequestQueue(assignmentsRequest);
+        RequestQueue.getInstance(this).addToRequestQueue(assignmentsRequest);
     }
 
     private void populateRecyclerView(){
@@ -301,7 +339,6 @@ public class AssignmentsActivity extends AppCompatActivity{
         findViewById(R.id.startButton).setVisibility(View.VISIBLE);
 
         currentAssignmentId = assignmentBean.getId();
-        currentAssignmentPath = assignmentBean.getServerPath();
 
         String label = getMinutes(assignmentBean.getReadingTime()) + ":" + getSeconds(assignmentBean.getReadingTime());
         String pageCount = assignmentBean.getPageCount() + " pages";
@@ -312,19 +349,17 @@ public class AssignmentsActivity extends AppCompatActivity{
         pageCountTV.setText(String.valueOf(pageCount));
         relativeDueDateTV.setText(days);
 
-        String localPath = AppProperties.NVL(assignmentBean.getLocalPath());
-
         if (AppProperties.isDemoMode())
             //set start button on click
             startButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startReading(assignmentBean.getFileName(), assignmentBean.getReadingTime());
+                    startReading("section1.pdf", assignmentBean.getReadingTime());
                 }
             });
         else{
 
-            File file = new File(localPath);
+            File file = new File(localFilePath);
 
             if (file.exists()){
                 //set start button on click
@@ -336,16 +371,14 @@ public class AssignmentsActivity extends AppCompatActivity{
                 });
             }
             else {
-                Uri uri = Uri.parse(assignmentBean.getServerPath());
-                String serverPath = assignmentBean.getServerPath();
-                String fileName = AppProperties.getFileNameFromPath(serverPath);
+                Uri uri = Uri.parse(serverFilePath);
 
                 //set download button on click
                 startButton.setText(R.string.download);
                 startButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startDownload(uri, fileName, assignmentBean);
+                        startDownload(uri, fileName);
                     }
                 });
             }
@@ -406,32 +439,30 @@ public class AssignmentsActivity extends AppCompatActivity{
             long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
 
             //is the assignment currently showing in the preview pane?
-            if (assignmentDownloadIdServerIdMap.get(referenceId) != null && assignmentDownloadIdServerIdMap.get(referenceId).getId() == currentAssignmentId){
-                File file = new File(currentAssignmentPath);
+            if (referenceId == bookDownload){
+                File file = new File(localFilePath);
                 //change start button appearance and behavior
-                startButton.setText("Start");
-                startButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startReading(file, assignmentDownloadIdServerIdMap.get(referenceId).getReadingTime());
-                    }
-                });
-                startButton.setEnabled(true);
-                assignmentDownloadIdServerIdMap.remove(referenceId);
+                checkBookFile();
+                if (file.exists()){
+                    startButton.setText("Start");
+                    startButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startReading(file, timeToRead);
+                        }
+                    });
+                    startButton.setEnabled(true);
+
+                }
             }
-
-// remove it from our list
-            downloadList.remove(referenceId);
-
-
             Toast toast = Toast.makeText(AssignmentsActivity.this,
-                    "Image Download Complete", Toast.LENGTH_LONG);
+                    "Download complete", Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP, 25, 400);
             toast.show();
         }
     };
 
-    public void startDownload(Uri uri, String fileName, AssignmentBean assignment) {
+    public void startDownload(Uri uri, String fileName) {
 
         startButton.setEnabled(false);
         startButton.setText("Downloading...");
@@ -440,20 +471,16 @@ public class AssignmentsActivity extends AppCompatActivity{
                 .getExternalStoragePublicDirectory(localFilePath)
                 .mkdirs();
 
-        lastDownload=
+        bookDownload=
                 downloadManager.enqueue(new DownloadManager.Request(uri)
                         .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI |
                                 DownloadManager.Request.NETWORK_MOBILE)
                         .setAllowedOverRoaming(false)
                         .setTitle(fileName)
-                        .setDescription("Safety Handbook Chapter")
+                        .setDescription(groupName)
                         .setVisibleInDownloadsUi(true)
                         .setDestinationInExternalPublicDir(localFilePath,
                                 fileName));
-
-        assignmentDownloadIdServerIdMap.append(lastDownload, assignment);
-
-        downloadList.add(lastDownload);
     }
 
     //todo remove
@@ -527,7 +554,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         JsonObjectRequest postComplete = new JsonObjectRequest(Request.Method.POST, url, body, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                assignmentsDao.updateData(currentAssignmentId, null, AppProperties.getCurrentDate(), AppProperties.YES, 0, null, null);
+                assignmentsDao.updateData(currentAssignmentId, null, YES, 0, null, 0, 0);
                 Toast.makeText(AssignmentsActivity.this, "Reading progress synchronized", Toast.LENGTH_LONG).show();
             }
         }, new Response.ErrorListener() {
@@ -551,7 +578,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                         .show();
             }
         });
-        MySingleton.getInstance(AssignmentsActivity.this).addToRequestQueue(postComplete);
+        RequestQueue.getInstance(AssignmentsActivity.this).addToRequestQueue(postComplete);
     }
 
     public void startReading(File file, int timeToRead){
@@ -627,9 +654,8 @@ public class AssignmentsActivity extends AppCompatActivity{
                                 .setPositiveButton("Download", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        //todo download assignment
-                                        Uri uri = Uri.parse(assignmentBean.getServerPath());
-                                        startDownload(uri, file.getName(), assignmentBean);
+                                        Uri uri = Uri.parse(serverFilePath);
+                                        startDownload(uri, file.getName());
                                     }
                                 })
                                 .setNeutralButton("Contact", new DialogInterface.OnClickListener() {
@@ -896,10 +922,12 @@ public class AssignmentsActivity extends AppCompatActivity{
     @Override
     protected void onSaveInstanceState(Bundle outState){
         outState.putBoolean("isReading", readingStarted);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState.getBoolean("isReading")){
             hideAssignmentMenu(true);
         }

@@ -112,7 +112,7 @@ public class PdfListFragment extends Fragment {
         groupId=extras.getLong("groupId");
 
         assignmentsDao = new AssignmentsDao(getContext());
-        assignmentsDao.insertData("Chapter Name", 1, groupId, YES, 900, "11-30-17T00:00.000Z", YES, "filename.pdf", 1, 10);
+       // assignmentsDao.insertData("Chapter Name", 1, groupId, YES, 900, "11-30-17T00:00.000Z", YES, "filename.pdf", 1, 10);
         assignmentsList = assignmentsDao.getAssignments(groupId);
 
 
