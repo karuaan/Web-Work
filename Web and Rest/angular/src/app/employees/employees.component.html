@@ -17,6 +17,7 @@
 	<div *ngIf="isLoginError==true" class="alert alert-danger">
 		<p id="errorMessage">{{loginErrorMessage}}</p>
 	</div>
+	<button (click)="testAddUser()">TEST sign up!</button>
 </div>
 <div class="container" *ngIf="isLoggedIn">
 

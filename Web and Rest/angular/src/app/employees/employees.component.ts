@@ -871,8 +871,14 @@ export class EmployeesComponent implements OnInit {
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					console.log(res2);
 					console.log(res2['ID']);
-					this.admin_id = res2['ID'];
-					this.isLoggedIn = true;
+					if(res2['ID'] == undefined){
+						this.loginErrorMessage = "YOU ARE NOT AN ADMIN! THIS TRANSGRESSION HAS BEEN REPORTED!";
+						this.isLoginError = true;
+					}
+					else{
+						this.admin_id = res2['ID'];
+						this.isLoggedIn = true;
+					}
 				})
 
             })
@@ -881,6 +887,10 @@ export class EmployeesComponent implements OnInit {
 				this.isLoginError = true;
 			});
     }
+	
+	testAddUser(){
+		this.authService.signUpRegular("ggoldsht@stevens.edu");
+	}
 
     ngOnInit() {
 
