@@ -23,6 +23,8 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 
+import { AngularFirestoreModule } from 'angularfire2/firestore';
+
 import { AuthService } from './auth.service';
 
 @NgModule({
@@ -42,6 +44,7 @@ import { AuthService } from './auth.service';
 	PdfViewerModule,
 	AngularFireModule.initializeApp(environment.firebase, 'angular-auth-firebase'),
     AngularFireDatabaseModule,
+	AngularFirestoreModule,
     AngularFireAuthModule
   ],
   providers: [EmployeesService,BookService,AuthService],

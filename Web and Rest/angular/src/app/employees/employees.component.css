@@ -1,3 +1,44 @@
+#loginForm {
+  width: 75%;
+  margin-top: 2.5em;
+  margin-left: 12.5%;
+  font-size: 1.5em;
+}
+
+#userEmail,
+#userPassword {
+  margin-bottom: 2em;
+  padding: 0.5em;
+  font-size: 1em;
+}
+
+#loginButton {
+  font-size: 1em;
+  margin-bottom: 2em;
+  padding: 0.5em;
+}
+
+#errorMessage {
+  margin: 0em;
+  padding: 0em;
+}
+
+.user-info {
+  text-align: right;
+  font-size: 1.25em;
+}
+
+.user-logout {
+  cursor: pointer;
+  transition: 0.2s ease-out all;
+  color: #000000;
+}
+
+.user-logout:hover {
+  color: #FFFFFF;
+  transition: 0.2s ease-out all;
+}
+
 .assignment-list--container{
     max-height: 100%;
 }
@@ -8,8 +49,13 @@
 .lessons tr.invalid {
     border: 2px solid red !important;
 }
+
 * {
   box-sizing: border-box;
+}
+
+.container {
+  max-width: 100%;
 }
 
 #groupTabs {
@@ -48,12 +94,28 @@
 }
 
 #summaryContainer {
+  margin: 0em;
+}
+
+#summaryContainer h5 {
   margin: 1em;
 }
 
 .summary-button {
-  margin: 0.5em 0em;
-  width: 14.5em;
+  padding: 1em;
+  outline: none;
+  margin: 2em 1em;
+  min-width: 12em;
+}
+
+.summary-button-tab {
+  width: 100%;
+  padding: 1em;
+  background-color: #CCCCCC;
+  color: #000000;
+  border-radius: 0;
+  border: none;
+  margin-bottom: 2em;
 }
 
 #secondaryContainer {
@@ -88,8 +150,7 @@
 
 #assignmentButtonActive,
 #lessonButtonActive {
-  background-color: #1d95c6;
-  border-color: #1b8dbb;
+  background-color: #999999;
 }
 
 #lessonsContainer {
@@ -112,10 +173,18 @@
   background-color: #EEEEEE;
 }
 
+.assignment-date-range,
+.assignment-date-range-date {
+  display: inline-block;
+}
+
+.assignment-date-range-date {
+  float: right;
+}
+
 .empty-assignments {
   padding: 1em;
   border-bottom: solid black 0.2em;
-
 }
 
 .col-xl-2 {
@@ -232,7 +301,7 @@
 }
 
 .pdf-controller input {
-  width: calc(100% - 9em);
+  width: calc(100% - 11em);
 }
 
 @media (max-width: 1200px) {
@@ -268,4 +337,60 @@
 .reading-time-input input,
 .reading-time-input p {
   display: inline-block;
+}
+
+#mainContainer {
+  position: relative;
+}
+
+.pdf-controller {
+  height: 5em;
+}
+
+#thirdColumn {
+  position: relative;
+}
+
+pdf-viewer {
+  width:100%;
+  height: 100%;
+  overflow: auto;
+  position: absolute;
+}
+
+@media (min-width: 1000px) {
+  .col-xl-2 {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 16.6666666667%;
+    flex: 0 0 16.6666666667%;
+    max-width: 16.6666666667%;
+  }
+
+  .col-xl-4 {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 33.3333333333%;
+    flex: 0 0 33.3333333333%;
+    max-width: 33.3333333333%;
+  }
+
+  .col-xl-6 {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 50%;
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .col-xl-8 {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 66.6666666667%;
+    flex: 0 0 66.6666666667%;
+    max-width: 66.6666666667%;
+  }
+
+  .col-xl-10 {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 83.3333333333%;
+    flex: 0 0 83.3333333333%;
+    max-width: 83.3333333333%;
+  }
 }

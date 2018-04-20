@@ -37,7 +37,7 @@ export class EmployeesComponent implements OnInit {
     isLoggedIn = false;
 	isLoginError = false;
 	loginErrorMessage = "";
-	
+
     testEmployee: Employee;
     employees: Employee[];
     groups: Group[];
@@ -98,7 +98,7 @@ export class EmployeesComponent implements OnInit {
         this.userPassword = "";
 		this.isLoginError = false;
 		this.loginErrorMessage = "";
-		
+
         this.employees = [];
         this.groups = [];
         this.assignments = [];
@@ -452,7 +452,7 @@ export class EmployeesComponent implements OnInit {
             dataEmployee
         ).subscribe((res: any) => {
 
-    console.log('this.employees',this.employees);
+          console.log('this.employees',this.employees);
 
             if (res.employees && res.employees.length > 0 && res.employees[0].ID) {
                 this.employeeForm.reset();
@@ -689,17 +689,18 @@ export class EmployeesComponent implements OnInit {
         }
     }
 
-
     incrementPage() {
         console.log(this.pdfCurrentPage)
         this.pdfCurrentPage = String(Number(this.pdfCurrentPage) + 1);
-        console.log(this.pdfCurrentPage)
+        console.log(this.pdfCurrentPage);
+
     }
 
     decrementPage() {
         console.log(this.pdfCurrentPage)
         this.pdfCurrentPage = String(Number(this.pdfCurrentPage) - 1);
-        console.log(this.pdfCurrentPage)
+        console.log(this.pdfCurrentPage);
+
     }
 
     setStartPage() {
@@ -827,7 +828,6 @@ export class EmployeesComponent implements OnInit {
                 document.getElementById('thirdColumn').className = 'col-xl-8';
             }
         } else if (selected === "lessons") {
-            console.log(this.books);
             this.viewAssignments = false;
             assignmentButton.id = 'assignmentButton';
             if (this.viewLessons) {
@@ -838,8 +838,8 @@ export class EmployeesComponent implements OnInit {
             } else {
                 this.viewLessons = true;
                 lessonButton.id = 'lessonButtonActive';
-                document.getElementById('secondColumn').className = 'col-xl-7';
-                document.getElementById('thirdColumn').className = 'col-xl-3';
+                document.getElementById('secondColumn').className = 'col-xl-6';
+                document.getElementById('thirdColumn').className = 'col-xl-4';
             }
         }
     }
@@ -871,8 +871,14 @@ export class EmployeesComponent implements OnInit {
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					console.log(res2);
 					console.log(res2['ID']);
-					this.admin_id = res2['ID'];
-					this.isLoggedIn = true;
+					if(res2['ID'] == undefined){
+						this.loginErrorMessage = "YOU ARE NOT AN ADMIN! THIS TRANSGRESSION HAS BEEN REPORTED!";
+						this.isLoginError = true;
+					}
+					else{
+						this.admin_id = res2['ID'];
+						this.isLoggedIn = true;
+					}
 				})
 
             })
@@ -881,6 +887,10 @@ export class EmployeesComponent implements OnInit {
 				this.isLoginError = true;
 			});
     }
+	
+	testAddUser(){
+		this.authService.signUpRegular("ggoldsht@stevens.edu");
+	}
 
     ngOnInit() {
 

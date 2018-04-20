@@ -2244,11 +2244,6 @@ function emailToList(emailList, text, callback){
 			});
 		}
 	}
-	
-	
-	
-	
-	
 }
 
 app.post('/emailToList', function(req, res){
@@ -2281,8 +2276,43 @@ function getLatestVersion(callback)
 			}
 		}
 	
-	)
+	);
 }
+
+function updateVersionAPK(versionNumber, versionUrl, callback)
+{
+	con.query
+	("INSERT INTO ANDROID_VERSION(version_number, version_url) VALUES (" + mysql.escape(versionNumber) + ',' + mysql.escape(versionUrl)")", function(err, rows)
+	{
+		if (err)
+		{
+			callback(err, null);
+		}
+
+		else
+		{
+			callback(null, rows);
+		}
+	});
+}
+
+app.post('/androidVersionTable', function(req, res)
+{
+	updateVersionAPK(req.body.versionNumber, req.body.versionUrl, function(err, result)
+	{
+		if (err)
+		{
+			console.log(err);
+			res.json(err);
+		}
+
+		else 
+		{
+			console.log(result);
+			res.json(result);
+		}
+	});
+})
 
 app.get('/androidVersionTable', function(req, res)
 {
@@ -2297,7 +2327,7 @@ app.get('/androidVersionTable', function(req, res)
 		{
 			res.json(rows);
 		}
-	})
+	});
 })
 
 function getAdminID(email, callback){
