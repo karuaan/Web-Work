@@ -1,0 +1,8 @@
+- remove file path attributes from assignment table and object
+- add file path attributes to group table and object
+- add notes attribute to assignment table and object
+- add color highlights to assignment list
+- make sure only assignments with start dates before today are populating
+- let user choose app theme
+- sign out
+- test mark as read

@@ -576,24 +576,23 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                   assignment.TIME_TO_COMPLETE
                ];
           }
-                con.query(insertQuery, insertAttrs,function (err,rows) {
-                   console.log('rows',rows);
-                   if (!err){
-                       resolve({
-                           status : true,
-                           data : Object.assign(assignment,{
-                               ID : rows.insertId
-                           })
-                       });
-                   }else{
-                       resolve({
-                           status : false,
-                           data : null,
-                       });
-                   }
-               });
-          }
-        });
+          con.query(insertQuery, insertAttrs,function (err,rows) {
+             console.log('rows',rows);
+             if (!err){
+                 resolve({
+                     status : true,
+                     data : Object.assign(assignment,{
+                         ID : rows.insertId
+                     })
+                 });
+             }else{
+                 resolve({
+                     status : false,
+                     data : null,
+                 });
+             }
+         });
+          });
       }
 
 

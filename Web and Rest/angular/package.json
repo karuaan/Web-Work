@@ -25,6 +25,7 @@
     "@angular/platform-browser-dynamic": "^5.2.0",
     "@angular/router": "^5.2.0",
     "@okta/okta-angular": "^0.1.0",
+    "@firebase/app": "^0.1.10",
     "angular-pdfjs-viewer": "^2.0.1",
     "angularfire2": "^5.0.0-rc.6.0",
     "core-js": "^2.4.1",

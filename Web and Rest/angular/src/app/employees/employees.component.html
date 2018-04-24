@@ -83,6 +83,7 @@
 
 					<div class="lesson-header">
 						<h4>Lessons</h4>
+						<button type="button" (click)="getLessonPlan()">Generate Lesson Plan</button>
 					</div>
 
                     <div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">

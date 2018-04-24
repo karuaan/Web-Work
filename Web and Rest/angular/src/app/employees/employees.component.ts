@@ -28,6 +28,7 @@ export class EmployeesComponent implements OnInit {
         employee_status: [],
         book_lessons: [],
         selectedBook: null,
+        selectedLessonPlan: null,
         selectedLesson: null,
         selectedAssignment: null,
     };
@@ -133,7 +134,8 @@ export class EmployeesComponent implements OnInit {
                                         "START_DATE": null,
                                         "DUE_DATE": null,
                                         "book_id": -1,
-                                        "lesson_id": -1
+                                        "lesson_id": -1,
+                                        "NOTES": ""
                                     }];
                     this.selectedAssignment = assignments[0];
                                     if (this.selectedGroup && this.selectedAssignment){
@@ -361,6 +363,7 @@ export class EmployeesComponent implements OnInit {
         const dataForm = {
             assignment_id: null,
             NAME: name,
+            NOTES: this.assignmentForm.notes,
             LESSON_ID: this.assignmentForm.lesson_id,
             GROUP_ID: this.selectedGroup.ID,
             DUE_DATE: this.assignmentForm.due_date,
@@ -375,9 +378,8 @@ export class EmployeesComponent implements OnInit {
                 console.log('res',res);
                 if (res.status && res.data && res.data.ID) {
 
-                    var assign;
-                    if (dataForm.NOTES){
-                        assign: Assignment = {
+                    let notes = dataForm.NOTES;
+                    let assign: Assignment = {
                             NAME: name,
                             lesson_id: dataForm.LESSON_ID,
                             book_id: this.dataObj.selectedLesson.BOOK_ID,
@@ -386,18 +388,7 @@ export class EmployeesComponent implements OnInit {
                             NOTES: this.assignmentForm.notes,
                             assignment_id : res.data.ID
                         };
-                    }
-                    else{
-                        assign: Assignment = {
-                            NAME: name,
-                            lesson_id: dataForm.LESSON_ID,
-                            book_id: this.dataObj.selectedLesson.BOOK_ID,
-                            DUE_DATE: this.assignmentForm.due_date,
-                            NOTES: "",
-                            START_DATE: this.assignmentForm.start_date,
-                            assignment_id : res.data.ID
-                        };
-                    }
+                    
                     console.log('NEW assignMENT', assign);
 
                     if (this.assignments.length > 0 && this.assignments[0].assignment_id == -1){
@@ -445,6 +436,15 @@ export class EmployeesComponent implements OnInit {
             this.dataObj.selectedBook.LESSONS.push(new Lesson(null, '', this.dataObj.selectedBook.ID, null, null, ''));
         } else {
             this.toastrService.warning('Lesson', 'Please select book');
+        }
+    }
+
+    createLesson(title, pageStart, pageEnd): void {
+        if (this.dataObj.selectedBook){
+            if (!this.dataObj.selectedBook.LESSONS){
+                this.dataObj.selectedBook.LESSONS = [];
+            }
+            //this.dataObj.selectedBook.LESSONS.push(new Lesson(null, title, this.dataObj.selectedBook.ID, pageStart, pageEnd, this.selectedGroup.ID))
         }
     }
 
@@ -599,6 +599,7 @@ export class EmployeesComponent implements OnInit {
                             "NAME": "No assignments",
                             "START_DATE": null,
                             "DUE_DATE": null,
+                            "NOTES": "",
                             "book_id": -1,
                             "lesson_id": -1
                         }];
@@ -620,34 +621,100 @@ export class EmployeesComponent implements OnInit {
         console.log('onPdfLoadError event', event);
     }
 
-    generateLessonPlan(pdf: PDFDocumentProxy){ // get all pages text
+    generateLessonPlan(pdf: PDFDocumentProxy){ 
+    // loop through table of contents to automatically generate a lesson plan for a newly uploaded book
         if (this.newBookAdded){
 
             var maxPages = pdf.numPages;
             var countPromises = []; // collecting all page promises
             for (var j = 1; j <= maxPages; j++) {
-            var page = pdf.getPage(j);
+                var page = pdf.getPage(j);
 
-            var txt = "";
-            countPromises.push(page.then(function(page) { // add page promise
-                var textContent = page.getTextContent();
-                return textContent.then(function(text){ // return content promise
-                    return text.items.map(function (s) { return s.str; }).join(''); // value page text 
+                var txt = "";
+                countPromises.push(page.then(function(page) { // add page promise
+                    var textContent = page.getTextContent();
+                    return textContent.then(function(text){ // return content promise
+                        return text.items.map(function (s) { return s.str; }); // value page text 
 
-                });
-            }));
+                    });
+                }));
             }
             // Wait for all pages and join text
             return Promise.all(countPromises).then(function (texts) {
+                let titleRegex = /(\d+\.?\d*)[\s\–]+(\w+(\-| |\(|\))*)+/g,
+                titleSecondLineRegex = /^(?!Section)((\D\s*\w+)(\-| )*)+/g,
+                elipsesRegex = /^( *\.){2,}/g,
+                pageNumberRegex = /^\d+ ?(?!\.)/;
+                let lessons = [];
+                let lesson = {};
+                let title = "";
+                let lessonFinished = false, endOfIndex = false, indexStarted = false;
+                for (var i = 0; i < texts.length; i++){
+                    //scan pages
+                    if (endOfIndex){
+                        break;
+                    }
+                    for (var j = 0; j < texts[i].length; j++){
+                        //scan word groups
+                        let textSnippet = texts[i][j];
 
-            return texts.join('');
+                        //console.log(lessons);
+                        if (textSnippet == "TABLE OF CONTENTS"){
+                            indexStarted = true;
+                        }
+                        else if (textSnippet == "Index"){
+                            endOfIndex = true;
+                        }
+                        else if (indexStarted){
+
+                            if (lessonFinished){
+                               //lesson object complete
+                                lessons.push(lesson);
+                                lesson = new Object();
+                                lessonFinished = false;
+                            }
+                            if (titleRegex.test(textSnippet)){
+                                //section title found
+                                title = "Section " + textSnippet.match(titleRegex);
+                                while (title.endsWith(' ')){
+                                    title = title.substring(0,title.length-1);
+                                }
+
+                                lesson['title'] = title;
+
+                            }
+                            else if (titleSecondLineRegex.test(textSnippet)){
+                                //second line in title found
+                                lesson['title'] += " " + textSnippet.match(titleSecondLineRegex);
+                            }
+                            else if (pageNumberRegex.test(textSnippet)){
+                                //start page found
+                                while (textSnippet.endsWith(' ')){
+                                    textSnippet = textSnippet.substring(0, textSnippet.length-1);
+                                }
+
+                                lesson['startPage'] = parseInt(textSnippet);
+                                lessonFinished = true;
+                                if (lessons.length>1){
+                                    //set end page of the previous lesson in the list
+                                  lessons[lessons.length-1].endPage = (lesson['startPage'] == lessons[lessons.length-1].startPage) ? lesson['startPage'] : lesson['startPage']-1;
+                                  if (endOfIndex){
+                                    break;
+                                  }
+                                }
+                            }
+
+                        }
+                    }
+                }
+
 
             });
         }
     }
 
     getLessonPlan(){
-
+        return this
     }
     onChangeBook(event) {
         let book = this.dataObj.books.filter((item) => item.ID == this.selectedBook);
@@ -818,6 +885,7 @@ export class EmployeesComponent implements OnInit {
                 this.assignments = [{
                     "assignment_id": -1,
                     "NAME": "No assignments",
+                    "NOTES": "",
                     "START_DATE": null,
                     "DUE_DATE": null,
                     "book_id": -1,

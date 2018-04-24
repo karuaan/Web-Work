@@ -60,26 +60,6 @@ var mailOptions = {
 	text: 'Test text'
 }
 
-function onAdminLoginOkta(adminOktaId, callback){
-
-	con.query(
-"SELECT * FROM USERS INNER JOIN"+
-"	(SELECT ID as group_id, USER_ID as user_id, ADMIN_ID as admin_id"+
-"	FROM GROUPS WHERE GROUPS.ADMIN_ID IN"+
-"		(SELECT ID as admin_id --Gets the admin id for the admin based on okta"+
-"		FROM USERS"+
-"		WHERE USERS.OKTA_ID=[adminOktaId] "+
-"		AND IS_ADMIN=1)"+
-"	) as groups_table"+
-"ON USERS.ID = groups_table.user_id",
-	function(err, rows){
-		if(err){
-
-		}
-	}
-	)
-
-}
 
 function onAdminLogin(adminId, callback){
 
@@ -1689,7 +1669,7 @@ function getLatestVersion(callback)
 function updateVersionAPK(versionNumber, versionUrl, callback)
 {
 	con.query
-	("INSERT INTO ANDROID_VERSION(version_number, version_url) VALUES (" + mysql.escape(versionNumber) + ',' + mysql.escape(versionUrl)")", function(err, rows)
+	("INSERT INTO ANDROID_VERSION(version_number, version_url) VALUES (" + mysql.escape(versionNumber) + ',' + mysql.escape(versionUrl) +")", function(err, rows)
 	{
 		if (err)
 		{
