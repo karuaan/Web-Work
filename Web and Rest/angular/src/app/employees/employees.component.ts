@@ -889,7 +889,7 @@ export class EmployeesComponent implements OnInit {
     }
 	
 	testAddUser(){
-		this.authService.signUpRegular("ggoldsht@stevens.edu");
+		this.authService.signUpRegular("ggoldsht@stevens.edu", "");
 	}
 
     ngOnInit() {
