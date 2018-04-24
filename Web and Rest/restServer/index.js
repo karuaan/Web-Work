@@ -283,29 +283,6 @@ const user_oidc = new ExpressOIDC({
 app.use(cors());
 app.use(validator());
 
-//Example of sending mail with the nodemailer library
-/*
-app.get('/login', /*admin_oidc.ensureAuthenticated(), function(req, res){
-
-
-	var bookQuery = con.query('SELECT * FROM USERS WHERE IS_ADMIN = true', function(err, rows, fields) {
-
-			if(!err){
-				if(rows){
-					console.log(rows)
-					//callback(null, rows);
-				}
-			}
-			else{
-				//callback(err, null);
-				console.log(err);
-			}
-
-		});
-
-	res.json({'message': 'Success!'})
-})
-*/
 app.get('/email/test', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	transporter.sendMail(mailOptions, function(error, info){
 		if(error){
@@ -316,7 +293,7 @@ app.get('/email/test', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 			console.log(info);
 			res.json(info);
 		}
-	})
+	});
 });
 
 app.get('/read-pdf', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
@@ -333,18 +310,6 @@ app.get('/read-pdf', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 		}
 	});
 });
-
-app.get('/testgroupthing', function(req, res){
-	con.query("SELECT * FROM GROUPS", function(err, rows){
-		console.log(rows);
-		res.json("gotcha")
-
-	});
-})
-
-//function 
-
-//app.post('/get')
 
 function getLessons(callback){
     con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
@@ -379,76 +344,7 @@ app.get('/getlessons', function(req, res){
 			res.json(result)
 		}
 	})
-})
-
-function getLessonPlan(group_id, book_id, callback){
-	con.query("SELECT NAME, PAGE_START, PAGE_END, PDF_FILE FROM LESSONS JOIN ASSIGNMENTS WHERE LESSONS.ID=ASSIGNMENTS.LESSON_ID WHERE BOOK_ID="+ mysql.escape(book_id)+" AND GROUP_ID=" + mysql.escape(group_id), function(err, rows){
-		if(err){
-			callback(err, null);
-		}
-		else{
-			if(rows[0] === undefined){
-				callback({"error": "no lesson plan with those parameters"}, null);
-			}
-			else{
-				callback(null, rows);
-			}
-		}
-	})
-}
-
-app.post("/getlessonplan", function(req, res){
-	getLessonPlan(req.body.group_id, req.body.book_id, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	})
-})
-
-function getStatus(group_id, assignment_id, callback){
-	var complete = [];
-	var incomplete = [];
-	con.query("SELECT IS_COMPLETE, EMPLOYEE_ID FROM STATUS JOIN USERS ON STATUS.EMPLOYEE_ID=USERS.ID WHERE STATUS.GROUP_ID=" + mysql.escape(group_id) + " AND STATUS.ASSIGNMENT_ID=" + mysql.escape(assignment_id),
-		function(err, rows){
-			if(err){
-				callback(err, null)
-			}
-			else{
-				if(rows[0]===undefined){
-					callback({"error": "No user/assignment combination"}, null)
-				}
-				else{
-					rows.forEach(function(element, index, array){
-						if(Number(element.IS_COMPLETE[0]) == 0){
-							incomplete.push(element.EMPLOYEE_ID);
-						}
-						else{
-							complete.push(element.EMPLOYEE_ID);
-						}
-					})
-					callback(null, {
-						"complete": complete,
-						"incomplete": incomplete
-					});
-				}
-			}
-		}
-	)
-}
-
-app.post("/getstatus", function(req, res){
-	getStatus(req.body.group_id, req.body.assignment_id, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	})
-})
+});
 
 //Done
 function getBooksQuery(callback){
@@ -678,14 +574,14 @@ function addBook(name, filename, callback){
 
 }
 //Done
-function addLesson(book_id, start_page, end_page, name, filepath, callback){
+function addLesson(plan_id, book_id, start_page, end_page, name, filepath, callback){
 	console.log('A1');
 	con.query("SELECT * FROM LESSONS WHERE LESSONS.NAME=" + mysql.escape(name) + " AND LESSONS.BOOK_ID=" + mysql.escape(book_id), function(err, rows){
 		if(!err){
 			console.log('B2')
 			if(rows[0] === undefined){
 				console.log('C3');
-				con.query("INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE) VALUES (" + mysql.escape(book_id) + ", "   + mysql.escape(start_page) + ", "  + mysql.escape(end_page) + ", "  + mysql.escape(name) + ", "  + mysql.escape(filepath) +")", function(err2, result){
+				con.query("INSERT INTO LESSONS (LESSON_PLAN_ID, BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE) VALUES (" + mysql.escape(book_id) + ", "   + mysql.escape(start_page) + ", "  + mysql.escape(end_page) + ", "  + mysql.escape(name) + ", "  + mysql.escape(filepath) +")", function(err2, result){
 					console.log('D4');
 					if(!err2){
 						/* con.commit(function(err3){
@@ -741,11 +637,11 @@ function insertLessonAssignment(id,assignment){
 }
 
 //Dpme
-function addAssignment(lesson_id, group_id, due_date, time_to_complete){
+function addAssignment(lesson_id, group_id, due_date, time_to_complete, notes){
 	con.query("SELECT * FROM ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID=" + mysql.escape(lesson_id) + " AND ASSIGNMENT.GROUP_ID=" + mysql.escape(group_id), function(err, rows){
 		if(!err){
 			if(row[0] === undefined){
-				con.query("INSERT INTO ASSIGNMENTS (LESSON_ID, GROUP_ID, DUE_DATE, TIME_TO_COMPLETE) VALUES (" + mysql.escape(lesson_id) + ", "   + mysql.escape(group_id) + ", "  + mysql.escape(due_date) + ", "  + mysql.escape(time_to_complete)+")", function(err2, result){
+				con.query("INSERT INTO ASSIGNMENTS (LESSON_ID, GROUP_ID, DUE_DATE, TIME_TO_COMPLETE, NOTES) VALUES (" + mysql.escape(lesson_id) + ", "   + mysql.escape(group_id) + ", "  + mysql.escape(due_date) + ", "  + mysql.escape(time_to_complete)+", " + mysql.escape(notes)+")", function(err2, result){
 					if(!err2){
 						con.commit(function(err3){
 							if(err3){con.rollback(function(){callback(err3, null)})}
@@ -790,7 +686,7 @@ function addGroup(admin_id, user_ids, name, callback){
 				console.log(errNew);
 				console.log(rowsNew);
 				console.log("-+-");
-			})
+			});
 			//DANGER ^^^^^^ WILL NEED TO BE REPLACED BY OKTA CALLS
 			
 		}
@@ -802,51 +698,28 @@ function addGroup(admin_id, user_ids, name, callback){
 		//callback(null, null);
 		///*
 		con.query("SELECT MAX(ID) as group_id FROM GROUPS", function(error, result){
-		if(error){callback(error, null)}
-		else{
-		console.log(result);
-
-		usr_ids.forEach(function(value, index, arr){arr[index] = [Number(result[0].group_id+1), Number(admin_id), Number(value.ID), name]});
-		console.log(usr_ids);
-		con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [usr_ids], function(err, rows){
-			if(!err){
-				con.commit(function(err2){
-					if(err2){con.rollback(function(){callback(err2, null)})}
-					else{callback(null, rows)}
-				});
-			}
+			if(error){callback(error, null)}
 			else{
-				callback(err, null)
-			}
-		})
+				console.log(result);
 
-		}
+				usr_ids.forEach(function(value, index, arr){arr[index] = [Number(result[0].group_id+1), Number(admin_id), Number(value.ID), name]});
+				console.log(usr_ids);
+				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [usr_ids], function(err, rows){
+					if(!err){
+						con.commit(function(err2){
+							if(err2){con.rollback(function(){callback(err2, null)})}
+							else{callback(null, rows)}
+						});
+					}
+					else{
+						callback(err, null)
+					}
+				})
+
+			}
 		});
 	});//*/
 	});
-	/*
-	con.query("SELECT MAX(ID) as group_id FROM GROUPS", function(error, result){
-		if(error){callback(error, null)}
-		else{
-		console.log(result);
-
-		user_ids.forEach(function(value, index, arr){arr[index] = [Number(result[0].group_id+1), Number(admin_id), Number(value), name]});
-		console.log(user_ids);
-		con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err, rows){
-			if(!err){
-				con.commit(function(err2){
-					if(err2){con.rollback(function(){callback(err2, null)})}
-					else{callback(null, rows)}
-				});
-			}
-			else{
-				callback(err, null)
-			}
-		})
-
-		}
-	});
-	//*/
 
 }
 //Change so that users not in the system get invited
@@ -893,24 +766,11 @@ function updateGroupStatus(group_id, user_ids, callback){
 		con.query("INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?", [retList], function(err2, rows2){
 			console.log(rows2);
 			callback(null, rows2);
-		})
-		/*
-		user_ids.forEach(function(value2, index2, arr2){
-			
-			
-			
-		});*/
-		
+		});
 
 	});
 	
 }
-
-app.get('/test/groupStatus', function(req, res){
-	updateGroupStatus(1, [[1, 1, 1, 1],[2, 2, 2, 2],[3, 3, 3, 3]], function(err, result){
-		res.json(result);
-	})
-})
 
 function addUserRecursive(f_name, l_name, email_arr, user_ids, count, callback){
 	
@@ -1094,16 +954,6 @@ function getGroup(userid, groupid, callback){
 	}
 	})
 }
-
-app.get('/testNg', function(req, res){
-	res.json(
-		{
-			first_name: 'Jim',
-			last_name: 'Jimson',
-			email: 'Jim@Jim.Jim'
-		}
-	);
-})
 
 app.get('/test/emailgroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 
@@ -1364,76 +1214,14 @@ app.post('/update/status', /*user_oidc.ensureAuthenticated(),*/ function(req, re
 			if(!res.headersSent){res.json(result)}else{}
 		}
 	})
-})
+});
 
-//Done
-app.post('/new/assignment', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-
-	let assignmentData = req.body
-	addAssignment(assignmentData.name, assignmentData.lesson_id, assignmentData.group_id, assignmentData.due_date, assignmentData.time_to_complete, assignmentData.start_date, function(err, result){
-		if(err){
-			console.log(err)
-			res.json(err)
-		}
-		else{
-			emailNewAssignment(assignmentData.group_id, function(err2, result2){
-				if(err2){
-					res.json(err2)
-				}
-				else{
-					res.json(result2)
-				}
-			})
-			//if(!res.headersSent){res.json(result)}else{}
-		}
-	})
-
-})
-//Done
-app.post('/add/togroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	let groupData = req.body
-	addToGroup(groupData.group_id, groupData.user_ids, function(err, result){
-		if(err){
-			console.log(err);
-			res.json(err);
-		}
-		else{
-			if(!res.headersSent){res.json(result)}else{};
-		}
-	})
-})
-//Done
-app.post('/new/group', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	let groupData = req.body
-	addGroup(groupData.admin_id, groupData.user_ids, groupData.group_name, function(err, result){
-		if(err){
-			console.log(err);
-			res.json(err);
-		}
-		else{
-			if(!res.headersSent){res.json(result)}else{};
-		}
-	})
-})
 app.use(express.static('public'));
 
 app.get('/', (req, res) => res.json(req.body));
 //For debug
 app.get('/code', (req, res) => res.sendFile('index.js', {root: __dirname}));
-//Done
-app.get('/test/getgroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 
-	getGroup(26, 5, function(err, result){
-		if(err){
-			console.log(err);
-			res.json(err);
-		}
-		else{
-			if(!res.headersSent){res.json(result)}else{}
-		}
-	});
-
-});
 //Echo
 app.post('/', (req, res) => res.json(req.body));
 
@@ -1511,7 +1299,8 @@ app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	let lessonData = req.body
 	console.log(lessonData)
-	addLesson(lessonData.book_id, 
+	addLesson(lessonData.plan_id,
+			lessonData.book_id, 
 			lessonData.start_page, 
 			lessonData.end_page, 
 			lessonData.name, 
@@ -1546,34 +1335,6 @@ app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ fun
 	}).then(function(data) {
 		res.json(data);
 	});
-
-	// res.json(data);
-
-	// var response = {
-	// 	is_new : employeeDataRes.is_new,
-	// 	status : employeeDataRes.status,
-	// 	data : employeeDataRes.data,
-	// 	employee_statuses_res : null,
-	// 	group : null
-	// };
-
-	// if(employeeDataRes.status && employeeDataRes.data.ID){
-	// 	// assign current group if not assign
-	// 	response.group =  await BookService.insertGroup({
-	// 		USER_ID : employeeDataRes.data.ID,
-	// 		ADMIN_ID : admin_id,
-	// 		NAME : req.body.group_name,
-	// 		ID : req.params.groupId
-	// 	});
-
-	// 	response.employee_statuses_res =  await BookService.attachAssignmentToEmployeeByGroup({
-	// 		GROUP_ID : req.params.groupId,
-	// 		EMPLOYEE_ID : employeeDataRes.data.ID
-	// 	});
-
-	// }else{
-	// 	res.json(response);
-	// }
 
 });
 
@@ -1667,171 +1428,6 @@ app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ functi
 	});
 });
 
-app.post('/get/group', /*user_oidc.ensureAuthenticated(),*/ function(req, res){
-	let userData = req.body
-	getGroup(userData.user_id, userData.group_id, function(err, result){
-		if(err){
-			console.log(err);
-			res.json(err);
-		}
-		else{
-			if(!res.headersSent){res.json(result)}else{};
-		}
-	});
-});
-
-app.delete('/userByEmail', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	deleteUserByEmail(req.body.email, function(err, result){
-		if(err){
-			res.json(err)
-		}
-		else{
-			if(!res.headersSent){res.json(result)}else{};
-		}
-	})
-
-})
-
-app.post('/new/user', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	let userData = req.body;
-	addUser(userData.first_name, userData.last_name, userData.email, function(err, result){
-		///*
-		if(err){
-			console.log(err);
-			res.json(err);
-		}
-		else{
-			var options = {
-				url: 'https://dev-383846.oktapreview.com/api/v1/users?activate=true',
-				method: 'post',
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': 'application/json',
-					'Authorization': 'SSWS 00Sf_mZYUteEpe-evfHB0U9Wqi1bag9rLSZirF9qU4'
-				},
-				json: {
-					"profile": {
-						"firstName": userData.first_name,
-						"lastName": userData.last_name,
-						"email": userData.email,
-						"login": userData.email
-					},
-					"groupIds": [
-						"00gdd1390y9VL6Dki0h7"
-					]
-				}
-			};
-/*
-			request(options, function(err, httpr, body){
-				console.log(err)
-				console.log(body)
-				if(err){
-					res.json(err)
-				}
-				else{
-					res.json(body)
-				}
-			})*/
-			//if(!res.headersSent){res.json(result)}else{};
-		}
-	});
-});
-app.post('/new/adminOkta', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	let userData = req.body;
-
-	var options = {
-		url: 'https://dev-383846.oktapreview.com/api/v1/users?activate=true',
-		method: 'post',
-		family: 4,
-		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json',
-			'Authorization': 'SSWS 00Sf_mZYUteEpe-evfHB0U9Wqi1bag9rLSZirF9qU4'
-		},
-		json: {
-			"profile": {
-				"firstName": userData.first_name,
-				"lastName": userData.last_name,
-				"email": userData.email,
-				"login": userData.email
-			},
-			"groupIds": [
-				"00gdd1390y9VL6Dki0h7",
-				"00gdd1385jAAcutid0h7"
-			]
-		}
-	};
-
-	request(options, function(err1, httpr, body){
-		console.log(err1)
-		console.log(body)
-		if(err1){
-			res.json(err1)
-		}
-		else{
-			admin_functions.addAdmin(con, userData.first_name, userData.last_name, userData.email, body.id, function(err2, result){
-			// /*
-				if(err2){
-					console.log(err2);
-					res.json(err2);
-				}//*/
-				else{
-					res.json(result);
-				}
-			});
-		}
-	});
-});
-app.post('/new/userOkta', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	let userData = req.body;
-
-	var options = {
-				url: 'https://dev-383846.oktapreview.com/api/v1/users?activate=true',
-				method: 'post',
-				family: 4,
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': 'application/json',
-					'Authorization': 'SSWS 00Sf_mZYUteEpe-evfHB0U9Wqi1bag9rLSZirF9qU4'
-				},
-				json: {
-					"profile": {
-						"firstName": userData.first_name,
-						"lastName": userData.last_name,
-						"email": userData.email,
-						"login": userData.email
-					},
-					"groupIds": [
-						"00gdd1390y9VL6Dki0h7"
-					]
-				}
-			}
-
-	request(options, function(err1, httpr, body){
-		console.log(err1)
-		console.log(body)
-		if(err1){
-			res.json(err1)
-		}
-		else{
-			if(body.errorCode===undefined){
-				admin_functions.addUser(con, userData.first_name, userData.last_name, userData.email, body.id, function(err2, result){
-					if(err2){
-						console.log(err2);
-						res.json(err2);
-					}
-					else{
-						if(!res.headersSent){res.json(result)}else{};
-					}
-				});
-			}
-			else{
-				if(!res.headersSent){res.json(body)}else{};
-			}
-		}
-	});
-});
-
 function getAssignments(group_id, callback){
 	con.query("SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, ASSIGNMENTS.NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
 	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
@@ -1867,19 +1463,6 @@ app.post('/getassignments', function(req, res){
 		}
 	});
 });
-
-app.get('/getassignments', function(req, res){
-	getAssignments(1, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	});
-});
-
-
 
 function getEmployees(group_id, callback){
 	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL FROM USERS JOIN GROUPS ON USERS.ID=GROUPS.USER_ID WHERE GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
@@ -1939,63 +1522,6 @@ app.post('/getemployeesstatus', function(req, res){
 			res.json(result);
 		}
 	})
-});
-
-app.get('/getemployeesstatus', function(req, res){
-	getEmployeesStatus(1, 1, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	})
-});
-
-app.post('/new/admin', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	let userData = req.body;
-	addAdmin(userData.first_name, userData.last_name, userData.email, function(err, result){
-		///*
-		if(err){
-			console.log(err);
-			res.json(err);
-		}//*/
-		else{
-			var options = {
-				url: 'https://dev-383846.oktapreview.com/api/v1/users?activate=true',
-				method: 'post',
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': 'application/json',
-					'Authorization': 'SSWS 00Sf_mZYUteEpe-evfHB0U9Wqi1bag9rLSZirF9qU4'
-				},
-				json: {
-					"profile": {
-						"firstName": userData.first_name,
-						"lastName": userData.last_name,
-						"email": userData.email,
-						"login": userData.email
-					},
-					"groupIds": [
-						"00gdd1390y9VL6Dki0h7",
-						"00gdd1385jAAcutid0h7"
-					]
-				}
-			};
-
-			request(options, function(err, httpr, body){
-				console.log(err)
-				console.log(body)
-				if(err){
-					res.json(err)
-				}
-				else{
-					res.json(body)
-				}
-			});
-			//if(!res.headersSent){res.json(result)}else{};
-		}
-	});
 });
 
 function getUID(user_email, callback){
@@ -2072,35 +1598,10 @@ app.post('/getAssignmentsUser', function(req, res){
 
 });
 
-app.delete('/logout', function(req, res){
-	
-	var options = {
-				url: 'https://dev-383846.oktapreview.com/api/v1/sessions/' + req.body.sessionId,
-				method: 'delete',
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': 'application/json',
-					'Authorization': 'SSWS 00Sf_mZYUteEpe-evfHB0U9Wqi1bag9rLSZirF9qU4'
-				}
-			};
-
-			request(options, function(err, httpr, body){
-				console.log(err)
-				console.log(body)
-				if(err){
-					res.json(err)
-				}
-				else{
-
-				}
-			});
-	
-});
-
 // added new group call to get the list of groups created by that admin id
 app.post('/getgroups',function(req,res){
 
-console.log(req.body.admin_id)
+	console.log(req.body.admin_id)
 	con.query("SELECT DISTINCT ID, NAME FROM GROUPS WHERE ADMIN_ID = "+mysql.escape(req.body.admin_id)+";",function(err,data,fields){
 		if(!err){
 			res.json(data);
@@ -2108,100 +1609,6 @@ console.log(req.body.admin_id)
 	});
 
 });
-if(false){
-app.post('/login', /*user_oidc.ensureAuthenticated(),*/ function(req, res){
-	console.log(req.body.email)
-	console.log(req.body.password)
-	
-	var options = {
-				url: 'https://dev-383846.oktapreview.com/api/v1/authn',
-				method: 'post',
-				headers: {
-					'Accept': 'application/json',
-					'Content-Type': 'application/json',
-					'Authorization': 'SSWS 00Sf_mZYUteEpe-evfHB0U9Wqi1bag9rLSZirF9qU4'
-				},
-				json: {
-					username: req.body.email,
-					password: req.body.password
-				}
-			};
-
-			request(options, function(err, httpr, body){
-				console.log(err)
-				console.log(body)
-				if(err){
-					res.json(err)
-				}
-				else{
-					if(body.errorSummary===undefined){
-						con.query("SELECT * FROM USERS WHERE EMAIL=" + mysql.escape(req.body.email),
-							function(err2, rows){
-								if(err2){
-									res.json(err2);
-								}
-								else{
-									console.log({"status": "success",
-											"user_data": {
-												"first_name": rows[0].FIRST_NAME,
-												"last_name": rows[0].LAST_NAME,
-												"admin_id": rows[0].ID,
-											}
-									});
-									res.json({"status": "success",
-											"user_data": {
-												"first_name": rows[0].FIRST_NAME,
-												"last_name": rows[0].LAST_NAME,
-												"admin_id": rows[0].ID,
-											}
-									});
-								}
-							});
-						
-					}
-					else{
-						res.json(body.errorSummary);
-					}
-				}
-			});
-});
-}
-else{
-app.post('/login', function(req, res){
-	res.json({"status": "success",
-			"user_data": {
-				"first_name": "Greg",
-				"last_name": "Goldshteyn",
-				"admin_id": 1,
-			}
-	});
-});
-}
-
-function getBooksAndLessons(callback){
-	con.query('SELECT BOOKS.ID as book_id, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name, '+
-	'LESSONS.ID as lesson_id, LESSONS.PDF_FILE as lesson_path, LESSONS.NAME as lesson_name, '+
-	'LESSONS.START_PAGE, LESSONS.END_PAGE FROM LESSONS JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID',
-		function(err, rows){
-			if(err){
-				callback(err, null);
-			}
-			else{
-				callback(null, rows);
-			}
-		});
-}
-
-app.get('/getBooksAndLessons', function(req, res){
-	getBooksAndLessons(function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result)
-		}
-	});
-})
 
 app.post('/getGroupsUser', function(req, res){
 	getGroups2(req.body.user_email, function(err, results){
@@ -2376,17 +1783,6 @@ function getMasterTable(admin_id, callback){
 		}
 	);
 }
-
-app.get('/test/getMasterTable', function(req, res){
-	getMasterTable(3, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	})
-})
 
 app.post('/getMasterTable', function(req, res){
 	getMasterTable(req.body.admin_id, function(err, result){

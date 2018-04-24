@@ -10,6 +10,7 @@ import {Lesson} from '../lesson';
 import {BookService} from "../book.service";
 import {FormControl, FormGroup, FormBuilder} from '@angular/forms';
 import {ToastrService} from 'ngx-toastr';
+import {PDFDocumentProxy, PDFProgressData} from 'ng2-pdf-viewer';
 import {AuthService} from '../auth.service';
 
 declare var $: any;
@@ -36,6 +37,7 @@ export class EmployeesComponent implements OnInit {
     userPassword: string;
     isLoggedIn = false;
 	isLoginError = false;
+    newBookAdded = false;
 	loginErrorMessage = "";
 
     testEmployee: Employee;
@@ -322,6 +324,7 @@ export class EmployeesComponent implements OnInit {
                         this.dataObj.books.push(newBook);
                         this.selectedBook = newBook.ID;
                         this.dataObj.selectedBook = newBook;
+                        this.newBookAdded = true;
                         this.updatePdfBookPreview();
                         this.dataObj.selectedLesson = null;
                     }
@@ -364,18 +367,37 @@ export class EmployeesComponent implements OnInit {
             START_DATE: this.assignmentForm.start_date,
             TIME_TO_COMPLETE: this.assignmentForm.time_to_complete
         };
+
+        if (this.assignmentForm.notes && this.assignmentForm.notes != ""){
+            dataForm['NOTES'] = this.assignmentForm.notes;
+        }
         this.bookService.saveAssignment(this.assignmentForm.lesson_id, dataForm).subscribe((res: any) => {
                 console.log('res',res);
                 if (res.status && res.data && res.data.ID) {
 
-                    const assign: Assignment = {
-                        NAME: name,
-                        lesson_id: dataForm.LESSON_ID,
-                        book_id: this.dataObj.selectedLesson.BOOK_ID,
-                        DUE_DATE: this.assignmentForm.due_date,
-                        START_DATE: this.assignmentForm.start_date,
-                        assignment_id : res.data.ID
-                    };
+                    var assign;
+                    if (dataForm.NOTES){
+                        assign: Assignment = {
+                            NAME: name,
+                            lesson_id: dataForm.LESSON_ID,
+                            book_id: this.dataObj.selectedLesson.BOOK_ID,
+                            DUE_DATE: this.assignmentForm.due_date,
+                            START_DATE: this.assignmentForm.start_date,
+                            NOTES: this.assignmentForm.notes,
+                            assignment_id : res.data.ID
+                        };
+                    }
+                    else{
+                        assign: Assignment = {
+                            NAME: name,
+                            lesson_id: dataForm.LESSON_ID,
+                            book_id: this.dataObj.selectedLesson.BOOK_ID,
+                            DUE_DATE: this.assignmentForm.due_date,
+                            NOTES: "",
+                            START_DATE: this.assignmentForm.start_date,
+                            assignment_id : res.data.ID
+                        };
+                    }
                     console.log('NEW assignMENT', assign);
 
                     if (this.assignments.length > 0 && this.assignments[0].assignment_id == -1){
@@ -598,6 +620,35 @@ export class EmployeesComponent implements OnInit {
         console.log('onPdfLoadError event', event);
     }
 
+    generateLessonPlan(pdf: PDFDocumentProxy){ // get all pages text
+        if (this.newBookAdded){
+
+            var maxPages = pdf.numPages;
+            var countPromises = []; // collecting all page promises
+            for (var j = 1; j <= maxPages; j++) {
+            var page = pdf.getPage(j);
+
+            var txt = "";
+            countPromises.push(page.then(function(page) { // add page promise
+                var textContent = page.getTextContent();
+                return textContent.then(function(text){ // return content promise
+                    return text.items.map(function (s) { return s.str; }).join(''); // value page text 
+
+                });
+            }));
+            }
+            // Wait for all pages and join text
+            return Promise.all(countPromises).then(function (texts) {
+
+            return texts.join('');
+
+            });
+        }
+    }
+
+    getLessonPlan(){
+
+    }
     onChangeBook(event) {
         let book = this.dataObj.books.filter((item) => item.ID == this.selectedBook);
         if (book.length > 0) {

@@ -3,6 +3,7 @@ export class Assignment {
 	NAME: string;
 	START_DATE: Date;
 	DUE_DATE: Date;
+	NOTES: string;
 	book_id: number;
 	lesson_id: number;
 	employees?: any[] = [];

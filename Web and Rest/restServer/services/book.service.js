@@ -545,16 +545,38 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
        const insertLessonAssignment = (assignment) => {
         return new Promise(async (resolve, reject) => {
-            var insertQuery = "INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, START_DATE,TIME_TO_COMPLETE)" +
+          var insertQuery;
+          if (assignment.NOTES){
+            insertQuery = "INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, START_DATE,TIME_TO_COMPLETE, NOTES)" +
+                " VALUES (?,?,?,?,?,?,?)";
+          }
+          else{
+            insertQuery = "INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, START_DATE,TIME_TO_COMPLETE)" +
                 " VALUES (?,?,?,?,?,?)";
-                con.query(insertQuery,[
+          }
+          var insertions;
+          if (assignment.NOTES && assignment.NOTES != ""){
+            insertAttrs = [
+                  assignment.NAME,
+                  assignment.LESSON_ID,
+                  assignment.GROUP_ID,
+                  assignment.DUE_DATE,
+                  assignment.START_DATE,
+                  assignment.TIME_TO_COMPLETE,
+                  assignment.NOTES
+               ];
+          }
+          else{
+            insertAttrs = [
                   assignment.NAME,
                   assignment.LESSON_ID,
                   assignment.GROUP_ID,
                   assignment.DUE_DATE,
                   assignment.START_DATE,
                   assignment.TIME_TO_COMPLETE
-               ],function (err,rows) {
+               ];
+          }
+                con.query(insertQuery, insertAttrs,function (err,rows) {
                    console.log('rows',rows);
                    if (!err){
                        resolve({
@@ -570,6 +592,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                        });
                    }
                });
+          }
         });
       }
 

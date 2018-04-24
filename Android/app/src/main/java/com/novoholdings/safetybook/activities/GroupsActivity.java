@@ -141,7 +141,6 @@ public class GroupsActivity extends AppCompatActivity {
 
         fetchUserInfo(currentUser);
 
-
         int check = ActivityCompat.checkSelfPermission(GroupsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (check == PackageManager.PERMISSION_GRANTED) {
             //Do something
