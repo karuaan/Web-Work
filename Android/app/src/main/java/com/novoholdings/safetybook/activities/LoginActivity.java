@@ -96,7 +96,7 @@ public class LoginActivity extends AppCompatActivity{
 
     // Choose authentication providers
     List<AuthUI.IdpConfig> providers = Arrays.asList(
-            new AuthUI.IdpConfig.EmailBuilder().build());
+            new AuthUI.IdpConfig.EmailBuilder().setAllowNewAccounts(false).build());
 
 
 
@@ -120,11 +120,13 @@ public class LoginActivity extends AppCompatActivity{
         mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser()==null){
-
+            AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
+            emailBuilder.setAllowNewAccounts(false);
             startActivityForResult(// Get an instance of AuthUI based on the default app
                     AuthUI
                             .getInstance()
                             .createSignInIntentBuilder()
+                            .setAvailableProviders(providers)
                             .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
                             .build(),
                     RC_SIGN_IN);
