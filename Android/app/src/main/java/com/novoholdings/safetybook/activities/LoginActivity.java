@@ -37,7 +37,6 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.novoholdings.safetybook.BuildConfig;
-import com.novoholdings.safetybook.Manifest;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.database.AssignmentsDao;
@@ -439,7 +438,7 @@ public class LoginActivity extends AppCompatActivity{
     {
         int currentVersionNumber = BuildConfig.VERSION_CODE;
 
-        String  url = AppProperties.DIR_SERVER_ROOT+"update/versionNumber";
+        String  url = AppProperties.DIR_SERVER_ROOT+"/androidVersionTable";
 
         JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             public void onResponse(JSONObject response)
