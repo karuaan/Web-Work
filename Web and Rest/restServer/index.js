@@ -1669,7 +1669,7 @@ function getLatestVersion(callback)
 function updateVersionAPK(versionNumber, versionUrl, callback)
 {
 	con.query
-	("INSERT INTO ANDROID_VERSION(version_number, version_url) VALUES (" + mysql.escape(versionNumber) + ',' + mysql.escape(versionUrl) +")", function(err, rows)
+	("INSERT INTO ANDROID_VERSION(version_number, version_url) VALUES ("mysql.escape(versionNumber) + ',' + mysql.escape(versionUrl) +")", function(err, rows)
 	{
 		if (err)
 		{

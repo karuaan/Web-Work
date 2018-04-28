@@ -106,61 +106,12 @@ public class LoginActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
         Stetho.initializeWithDefaults(this);
 
-        new OkHttpClient.Builder()
-                .addNetworkInterceptor  (new StethoInterceptor())
-                .build();
-
-        groupsDao = new GroupsDao(LoginActivity.this);
-        assignmentsDao = new AssignmentsDao(LoginActivity.this);
-
-        loginButton = (Button)findViewById(R.id.loginButton);
-        forgotPass = (Button) findViewById(R.id.forgetPass);
-
-        mAuth = FirebaseAuth.getInstance();
-
-        if (mAuth.getCurrentUser()==null){
-            AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
-            emailBuilder.setAllowNewAccounts(false);
-            startActivityForResult(// Get an instance of AuthUI based on the default app
-                    AuthUI
-                            .getInstance()
-                            .createSignInIntentBuilder()
-                            .setAvailableProviders(providers)
-                            .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
-                            .build(),
-                    RC_SIGN_IN);
-        }
-        else {
-            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
-            startActivity(i);
-        }
-
 //        forgotPass.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
 //                Intent forgetPass = new Intent(LoginActivity.this, ForgetPassActivity.class);
 //                startActivity(forgetPass);
 //            }
-
-        threeDayNotification = new NotificationCompat.Builder(this);
-        threeDayNotification.setAutoCancel(true);
-
-        oneDayNotification = new NotificationCompat.Builder(this);
-        oneDayNotification.setAutoCancel(true);
-
-        oneHourNotification = new NotificationCompat.Builder(this);
-        oneHourNotification.setAutoCancel(true);
-
-        overdueNotification = new NotificationCompat.Builder(this);
-
-        newGroupNotifier = new NotificationCompat.Builder(this);
-        newGroupNotifier.setAutoCancel(true);
-
-        newAssignmentNotifier = new NotificationCompat.Builder(this);
-        newAssignmentNotifier.setAutoCancel(true);
-
-        testNotifier = new NotificationCompat.Builder(this);
-        testNotifier.setAutoCancel(true);
     }
 
     private class RequestGroups extends AsyncTask<String, String, String> {
@@ -282,165 +233,11 @@ public class LoginActivity extends AppCompatActivity{
         }
     }
 
-    public void setThreeDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 3 days. Don't be late!";
-
-        threeDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        threeDayNotification.setTicker(message);
-        threeDayNotification.setWhen(System.currentTimeMillis());
-        threeDayNotification.setContentTitle(titleText);
-        threeDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        threeDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.notify(threeDay, threeDayNotification.build());
-    }
-
-    public void setOneDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 day. Don't be late!";
-
-        oneDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneDayNotification.setTicker(message);
-        oneDayNotification.setWhen(System.currentTimeMillis());
-        oneDayNotification.setContentTitle(titleText);
-        oneDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneDay, oneDayNotification.build());
-    }
-
-    public void setOneHourNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        oneHourNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneHourNotification.setTicker(message);
-        oneHourNotification.setWhen(System.currentTimeMillis());
-        oneHourNotification.setContentTitle(titleText);
-        oneHourNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneHourNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneHour, oneHourNotification.build());
-    }
-
-    public void setOverdueNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        overdueNotification.setSmallIcon(R.drawable.ic_assignment);
-        overdueNotification.setTicker(message);
-        overdueNotification.setWhen(System.currentTimeMillis());
-        overdueNotification.setContentTitle(titleText);
-        overdueNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        overdueNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(overdueNotifi, overdueNotification.build());
-    }
-
-    public void setNewGroupNotifier(String name)
-    {
-        String message = "Welcome to your new group!";
-        String titleText = "Welcome!";
-        String notifierText = "You have been added to Group " + name;
-
-        newGroupNotifier.setSmallIcon(R.drawable.ic_group_name);
-        newGroupNotifier.setTicker(message);
-        newGroupNotifier.setWhen(System.currentTimeMillis());
-        newGroupNotifier.setContentTitle(titleText);
-        newGroupNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newGroupNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newGroupNotification, newGroupNotifier.build());
-    }
-
-    public void setNewAssignmentNotifier(String groupName)
-    {
-        String message = "New Assignment has been added!";
-        String titleText = "New Assignment!";
-        String notifierText = "Assignment has been added to Group " + groupName;
-
-        newAssignmentNotifier.setSmallIcon(R.drawable.ic_assignment);
-        newAssignmentNotifier.setTicker(message);
-        newAssignmentNotifier.setWhen(System.currentTimeMillis());
-        newAssignmentNotifier.setContentTitle(titleText);
-        newAssignmentNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newAssignmentNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newAssignmentNotification, newAssignmentNotifier.build());
-    }
-
-    public void setTestNotifier()
-    {
-        String message = "You are now in the Groups Page!";
-        String titleText = "Groups Page";
-        String notifierText = "This is the groups page!";
-
-        testNotifier.setSmallIcon(R.drawable.ic_assignment);
-        testNotifier.setTicker(message);
-        testNotifier.setWhen(System.currentTimeMillis());
-        testNotifier.setContentTitle(titleText);
-        testNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        testNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newTestNotify, testNotifier.build());
-    }
-
     private void updateChecker()
     {
         int currentVersionNumber = BuildConfig.VERSION_CODE;
 
-        String  url = AppProperties.DIR_SERVER_ROOT+"/androidVersionTable";
+        String  url = AppProperties.DIR_SERVER_ROOT+"getLatestVersion";
 
         JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             public void onResponse(JSONObject response)
@@ -484,15 +281,30 @@ public class LoginActivity extends AppCompatActivity{
 
                     else
                     {
-                        new OkHttpClient.Builder()
-                                .addNetworkInterceptor  (new StethoInterceptor())
-                                .build();
+                        loginButton = (Button)findViewById(R.id.loginButton);
+                        forgotPass = (Button) findViewById(R.id.forgetPass);
+
+                        mAuth = FirebaseAuth.getInstance();
+
+                        if (mAuth.getCurrentUser()==null){
+                            AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
+                            emailBuilder.setAllowNewAccounts(false);
+                            startActivityForResult(// Get an instance of AuthUI based on the default app
+                                    AuthUI
+                                            .getInstance()
+                                            .createSignInIntentBuilder()
+                                            .setAvailableProviders(providers)
+                                            .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
+                                            .build(),
+                                    RC_SIGN_IN);
+                        }
+                        else {
+                            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
+                            startActivity(i);
+                        }
 
                         groupsDao = new GroupsDao(LoginActivity.this);
                         assignmentsDao = new AssignmentsDao(LoginActivity.this);
-
-                        loginButton = (Button)findViewById(R.id.loginButton);
-                        forgotPass = (Button) findViewById(R.id.forgetPass);
                     }
 
                 } catch (JSONException e) {
