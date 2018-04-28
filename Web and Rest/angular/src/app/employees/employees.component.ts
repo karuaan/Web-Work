@@ -991,7 +991,7 @@ export class EmployeesComponent implements OnInit {
 					console.log(res2);
 					console.log(res2['ID']);
 					if(res2['ID'] == undefined){
-						this.loginErrorMessage = "YOU ARE NOT AN ADMIN! THIS TRANSGRESSION HAS BEEN REPORTED!";
+						this.loginErrorMessage = "You are not an admin";
 						this.isLoginError = true;
 					}
 					else{
