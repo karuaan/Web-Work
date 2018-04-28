@@ -106,15 +106,6 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     private CountDownTimer countDownTimer;
 
-    NotificationCompat.Builder threeDayNotification, oneDayNotification, oneHourNotification, overdueNotification, newGroupNotifier, newAssignmentNotifier;
-    private static final int threeDay = 5548;
-    private static final int oneDay = 5546;
-    private static final int oneHour = 5542;
-    private static final int overdueNotifi = 5524;
-    private static final int newGroupNotification = 5584;
-    private static final int newAssignmentNotification = 5562;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
