@@ -11,6 +11,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -65,7 +67,7 @@ import java.util.List;
 
 import okhttp3.OkHttpClient;
 
-public class LoginActivity extends AppCompatActivity{
+public class LoginActivity extends AppCompatActivity {
 
     private Button loginButton;
     private Button forgotPass;
@@ -82,15 +84,6 @@ public class LoginActivity extends AppCompatActivity{
 
     private FirebaseAuth mAuth;
 
-    NotificationCompat.Builder threeDayNotification, oneDayNotification, oneHourNotification, overdueNotification, newGroupNotifier, newAssignmentNotifier, testNotifier;
-    private static final int threeDay = 5548;
-    private static final int oneDay = 5546;
-    private static final int oneHour = 5542;
-    private static final int overdueNotifi = 5524;
-    private static final int newGroupNotification = 5584;
-    private static final int newAssignmentNotification = 5562;
-    private static final int newTestNotify = 5588;
-
     private static final int RC_SIGN_IN = 123;
 
     // Choose authentication providers
@@ -98,42 +91,32 @@ public class LoginActivity extends AppCompatActivity{
             new AuthUI.IdpConfig.EmailBuilder().setAllowNewAccounts(false).build());
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        updateChecker();
-        setContentView(R.layout.activity_main);
-        Stetho.initializeWithDefaults(this);
 
-        new OkHttpClient.Builder()
-                .addNetworkInterceptor  (new StethoInterceptor())
-                .build();
+        if (isOnline() == true) {
+            updateChecker();
+        } else {
+            loginButton = (Button) findViewById(R.id.loginButton);
+            forgotPass = (Button) findViewById(R.id.forgetPass);
 
-        groupsDao = new GroupsDao(LoginActivity.this);
-        assignmentsDao = new AssignmentsDao(LoginActivity.this);
+            mAuth = FirebaseAuth.getInstance();
 
-        loginButton = (Button)findViewById(R.id.loginButton);
-        forgotPass = (Button) findViewById(R.id.forgetPass);
-
-        mAuth = FirebaseAuth.getInstance();
-
-        if (mAuth.getCurrentUser()==null){
-            AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
-            emailBuilder.setAllowNewAccounts(false);
-            startActivityForResult(// Get an instance of AuthUI based on the default app
-                    AuthUI
-                            .getInstance()
-                            .createSignInIntentBuilder()
-                            .setAvailableProviders(providers)
-                            .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
-                            .build(),
-                    RC_SIGN_IN);
-        }
-        else {
-            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
-            startActivity(i);
-        }
+            if (mAuth.getCurrentUser() == null) {
+                AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
+                emailBuilder.setAllowNewAccounts(false);
+                startActivityForResult(// Get an instance of AuthUI based on the default app
+                        AuthUI
+                                .getInstance()
+                                .createSignInIntentBuilder()
+                                .setAvailableProviders(providers)
+                                .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
+                                .build(),
+                        RC_SIGN_IN);
+            }
+            setContentView(R.layout.activity_main);
+            Stetho.initializeWithDefaults(this);
 
 //        forgotPass.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -141,435 +124,266 @@ public class LoginActivity extends AppCompatActivity{
 //                Intent forgetPass = new Intent(LoginActivity.this, ForgetPassActivity.class);
 //                startActivity(forgetPass);
 //            }
+        }
 
-        threeDayNotification = new NotificationCompat.Builder(this);
-        threeDayNotification.setAutoCancel(true);
+        private class RequestGroups extends AsyncTask<String, String, String> {
+            private ProgressDialog pd = new ProgressDialog(LoginActivity.this);
+            InputStream inputStream = null;
+            String result = "";
 
-        oneDayNotification = new NotificationCompat.Builder(this);
-        oneDayNotification.setAutoCancel(true);
+            @Override
+            protected void onPreExecute() {
+                pd.setMessage("Downloading your data...");
+                pd.show();
+                pd.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        RequestGroups.this.cancel(true);
+                    }
+                });
 
-        oneHourNotification = new NotificationCompat.Builder(this);
-        oneHourNotification.setAutoCancel(true);
+                super.onPreExecute();
+            }
 
-        overdueNotification = new NotificationCompat.Builder(this);
 
-        newGroupNotifier = new NotificationCompat.Builder(this);
-        newGroupNotifier.setAutoCancel(true);
+            @Override
+            protected String doInBackground(String... params) {
 
-        newAssignmentNotifier = new NotificationCompat.Builder(this);
-        newAssignmentNotifier.setAutoCancel(true);
+                HttpURLConnection connection = null;
+                BufferedReader reader = null;
 
-        testNotifier = new NotificationCompat.Builder(this);
-        testNotifier.setAutoCancel(true);
-    }
+                try {
+                    URL url = new URL(params[0]);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setReadTimeout(10000);
+                    connection.setConnectTimeout(15000);
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    connection.setDoInput(true);
+                    connection.setDoOutput(true);
 
-    private class RequestGroups extends AsyncTask<String, String, String> {
-        private ProgressDialog pd = new ProgressDialog(LoginActivity.this);
-        InputStream inputStream = null;
-        String result = "";
 
-        @Override
-        protected void onPreExecute() {
-            pd.setMessage("Downloading your data...");
-            pd.show();
-            pd.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    List<AbstractMap.SimpleEntry> json = new ArrayList<AbstractMap.SimpleEntry>();
+                    json.add(new AbstractMap.SimpleEntry("email", "test@test.test"));
+
+
+                    OutputStream os = connection.getOutputStream();
+                    BufferedWriter writer = new BufferedWriter(
+                            new OutputStreamWriter(os, "UTF-8"));
+                    writer.write(getQuery(json));
+                    writer.flush();
+                    writer.close();
+                    os.close();
+
+
+                    connection.connect();
+
+
+                    InputStream stream = connection.getInputStream();
+
+                    reader = new BufferedReader(new InputStreamReader(stream));
+
+                    StringBuffer buffer = new StringBuffer();
+                    String line = "";
+
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line + "\n");
+                        Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+
+                    }
+
+                    return buffer.toString();
+
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (connection != null) {
+                        connection.disconnect();
+                    }
+                    try {
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return null;
+
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                if (pd.isShowing()) {
+                    pd.dismiss();
+                }
+            }
+
+            private String getQuery(List<AbstractMap.SimpleEntry> params) throws UnsupportedEncodingException {
+                StringBuilder result = new StringBuilder();
+                boolean first = true;
+
+                for (AbstractMap.SimpleEntry pair : params) {
+                    if (first)
+                        first = false;
+                    else
+                        result.append("&");
+
+                    result.append(URLEncoder.encode((String) pair.getKey(), "UTF-8"));
+                    result.append("=");
+                    result.append(URLEncoder.encode((String) pair.getValue(), "UTF-8"));
+                }
+
+                return result.toString();
+            }
+        }
+
+        private void updateChecker()
+        {
+            int currentVersionNumber = BuildConfig.VERSION_CODE;
+
+            String url = AppProperties.DIR_SERVER_ROOT + "androidVersionTable";
+
+            JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                public void onResponse(JSONObject response) {
+                    try {
+                        int latestVersionNumber = response.getInt("version_number");
+                        Uri downloadUrl = (Uri) response.get("version_url");
+
+                        if (currentVersionNumber != latestVersionNumber) {
+                            AlertDialog.Builder downloadAlert = new AlertDialog.Builder(LoginActivity.this);
+                            downloadAlert.setTitle("Update Available.")
+                                    .setMessage("Please download the latest update to continue using Safety Book Reader.")
+                                    .setPositiveButton("Download", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            downloadUpdate(downloadUrl);
+
+                                            checkIfInstalled(latestVersionNumber);
+
+                                        }
+                                    })
+                                    .setNegativeButton("Update Later", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                            intent.putExtra("EXIT", true);
+                                            startActivity(intent);
+
+                                            if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
+                                                finish();
+                                            }
+                                        }
+                                    })
+                                    .show();
+                        } else {
+                            loginButton = (Button) findViewById(R.id.loginButton);
+                            forgotPass = (Button) findViewById(R.id.forgetPass);
+
+                            mAuth = FirebaseAuth.getInstance();
+
+                            if (mAuth.getCurrentUser() == null) {
+                                AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
+                                emailBuilder.setAllowNewAccounts(false);
+                                startActivityForResult(// Get an instance of AuthUI based on the default app
+                                        AuthUI
+                                                .getInstance()
+                                                .createSignInIntentBuilder()
+                                                .setAvailableProviders(providers)
+                                                .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
+                                                .build(),
+                                        RC_SIGN_IN);
+                            } else {
+                                Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
+                                startActivity(i);
+                            }
+
+                            groupsDao = new GroupsDao(LoginActivity.this);
+                            assignmentsDao = new AssignmentsDao(LoginActivity.this);
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }, new Response.ErrorListener() {
                 @Override
-                public void onCancel(DialogInterface dialog) {
-                    RequestGroups.this.cancel(true);
+                public void onErrorResponse(VolleyError error) {
+                    AlertDialog.Builder alert = new AlertDialog.Builder(LoginActivity.this);
+                    alert.setTitle("Could not check for updates.")
+                            .setMessage(error.getMessage() + "\n\nPlease check your network connection and try again.")
+                            .setPositiveButton("Try Again.", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    updateChecker();
+                                }
+                            })
+                            .setNegativeButton("Later", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    intent.putExtra("EXIT", true);
+                                    startActivity(intent);
+
+                                    if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
+                                        finish();
+                                    }
+                                }
+                            })
+                            .show();
                 }
             });
 
-            super.onPreExecute();
+            Volley.newRequestQueue(this).add(getComplete);
         }
 
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-
-            try {
-                URL url = new URL(params[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setReadTimeout(10000);
-                connection.setConnectTimeout(15000);
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-                connection.setDoInput(true);
-                connection.setDoOutput(true);
-
-
-
-                List<AbstractMap.SimpleEntry> json = new ArrayList<AbstractMap.SimpleEntry>();
-                json.add(new AbstractMap.SimpleEntry("email", "test@test.test"));
-
-
-                OutputStream os = connection.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(getQuery(json));
-                writer.flush();
-                writer.close();
-                os.close();
-
-
-                connection.connect();
-
-
-                InputStream stream = connection.getInputStream();
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
-                }
-
-                return buffer.toString();
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
-
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            if (pd.isShowing()) {
-                pd.dismiss();
-            }
-        }
-
-        private String getQuery(List<AbstractMap.SimpleEntry> params) throws UnsupportedEncodingException
+        private void downloadUpdate(Uri uri)
         {
-            StringBuilder result = new StringBuilder();
-            boolean first = true;
-
-            for (AbstractMap.SimpleEntry pair : params)
-            {
-                if (first)
-                    first = false;
-                else
-                    result.append("&");
-
-                result.append(URLEncoder.encode((String)pair.getKey(), "UTF-8"));
-                result.append("=");
-                result.append(URLEncoder.encode((String)pair.getValue(), "UTF-8"));
-            }
-
-            return result.toString();
+            downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            Long reference = downloadManager.enqueue(request);
         }
-    }
 
-    public void setThreeDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 3 days. Don't be late!";
+        private void checkIfInstalled( int latestVersionNumber)
+        {
+            int checkedVersionNumber = BuildConfig.VERSION_CODE;
 
-        threeDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        threeDayNotification.setTicker(message);
-        threeDayNotification.setWhen(System.currentTimeMillis());
-        threeDayNotification.setContentTitle(titleText);
-        threeDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        threeDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.notify(threeDay, threeDayNotification.build());
-    }
-
-    public void setOneDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 day. Don't be late!";
-
-        oneDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneDayNotification.setTicker(message);
-        oneDayNotification.setWhen(System.currentTimeMillis());
-        oneDayNotification.setContentTitle(titleText);
-        oneDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneDay, oneDayNotification.build());
-    }
-
-    public void setOneHourNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        oneHourNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneHourNotification.setTicker(message);
-        oneHourNotification.setWhen(System.currentTimeMillis());
-        oneHourNotification.setContentTitle(titleText);
-        oneHourNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneHourNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneHour, oneHourNotification.build());
-    }
-
-    public void setOverdueNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        overdueNotification.setSmallIcon(R.drawable.ic_assignment);
-        overdueNotification.setTicker(message);
-        overdueNotification.setWhen(System.currentTimeMillis());
-        overdueNotification.setContentTitle(titleText);
-        overdueNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        overdueNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(overdueNotifi, overdueNotification.build());
-    }
-
-    public void setNewGroupNotifier(String name)
-    {
-        String message = "Welcome to your new group!";
-        String titleText = "Welcome!";
-        String notifierText = "You have been added to Group " + name;
-
-        newGroupNotifier.setSmallIcon(R.drawable.ic_group_name);
-        newGroupNotifier.setTicker(message);
-        newGroupNotifier.setWhen(System.currentTimeMillis());
-        newGroupNotifier.setContentTitle(titleText);
-        newGroupNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newGroupNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newGroupNotification, newGroupNotifier.build());
-    }
-
-    public void setNewAssignmentNotifier(String groupName)
-    {
-        String message = "New Assignment has been added!";
-        String titleText = "New Assignment!";
-        String notifierText = "Assignment has been added to Group " + groupName;
-
-        newAssignmentNotifier.setSmallIcon(R.drawable.ic_assignment);
-        newAssignmentNotifier.setTicker(message);
-        newAssignmentNotifier.setWhen(System.currentTimeMillis());
-        newAssignmentNotifier.setContentTitle(titleText);
-        newAssignmentNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newAssignmentNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newAssignmentNotification, newAssignmentNotifier.build());
-    }
-
-    public void setTestNotifier()
-    {
-        String message = "You are now in the Groups Page!";
-        String titleText = "Groups Page";
-        String notifierText = "This is the groups page!";
-
-        testNotifier.setSmallIcon(R.drawable.ic_assignment);
-        testNotifier.setTicker(message);
-        testNotifier.setWhen(System.currentTimeMillis());
-        testNotifier.setContentTitle(titleText);
-        testNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        testNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newTestNotify, testNotifier.build());
-    }
-
-    private void updateChecker()
-    {
-        int currentVersionNumber = BuildConfig.VERSION_CODE;
-
-        String  url = AppProperties.DIR_SERVER_ROOT+"/androidVersionTable";
-
-        JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            public void onResponse(JSONObject response)
-            {
-                try
-                {
-                    int latestVersionNumber = response.getInt("version_number");
-                    Uri downloadUrl = (Uri) response.get("version_url");
-
-                    if (currentVersionNumber != latestVersionNumber) {
-                        AlertDialog.Builder downloadAlert = new AlertDialog.Builder(LoginActivity.this);
-                        downloadAlert.setTitle("Update Available.")
-                                .setMessage("Please download the latest update to continue using Safety Book Reader.")
-                                .setPositiveButton("Download", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i)
-                                    {
-                                       downloadUpdate(downloadUrl);
-
-                                       checkIfInstalled(latestVersionNumber);
-
-                                    }
-                                })
-                                .setNegativeButton("Update Later", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i)
-                                    {
-                                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        intent.putExtra("EXIT", true);
-                                        startActivity(intent);
-
-                                        if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false))
-                                        {
-                                            finish();
-                                        }
-                                    }
-                                })
-                                .show();
-                    }
-
-                    else
-                    {
-                        new OkHttpClient.Builder()
-                                .addNetworkInterceptor  (new StethoInterceptor())
-                                .build();
-
-                        groupsDao = new GroupsDao(LoginActivity.this);
-                        assignmentsDao = new AssignmentsDao(LoginActivity.this);
-
-                        loginButton = (Button)findViewById(R.id.loginButton);
-                        forgotPass = (Button) findViewById(R.id.forgetPass);
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error)
-            {
-                AlertDialog.Builder alert = new AlertDialog.Builder(LoginActivity.this);
-                alert.setTitle("Could not check for updates.")
-                        .setMessage(error.getMessage()+"\n\nPlease check your network connection and try again.")
-                        .setPositiveButton("Try Again.", new DialogInterface.OnClickListener() {
+            if (checkedVersionNumber != latestVersionNumber) {
+                AlertDialog.Builder installAlert = new AlertDialog.Builder(LoginActivity.this);
+                installAlert.setTitle("Please Install.")
+                        .setMessage("Please go to your download manager and install the latest application update.")
+                        .setNeutralButton("OK.", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                updateChecker();
-                            }
-                        })
-                        .setNegativeButton("Later", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
+                            public void onClick(DialogInterface dialogInterface, int i) {
                                 Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 intent.putExtra("EXIT", true);
                                 startActivity(intent);
 
-                                if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false))
-                                {
+                                if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
                                     finish();
                                 }
                             }
                         })
                         .show();
             }
-        });
+        }
 
-        Volley.newRequestQueue(this).add(getComplete);
-    }
-
-    private void downloadUpdate(Uri uri )
-    {
-        downloadManager = (DownloadManager)getSystemService(Context.DOWNLOAD_SERVICE);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        Long reference = downloadManager.enqueue(request);
-    }
-
-    private void checkIfInstalled(int latestVersionNumber)
-    {
-        int checkedVersionNumber = BuildConfig.VERSION_CODE;
-
-        if (checkedVersionNumber != latestVersionNumber)
+        public boolean isOnline()
         {
-            AlertDialog.Builder installAlert = new AlertDialog.Builder(LoginActivity.this);
-            installAlert.setTitle("Please Install.")
-                    .setMessage("Please go to your download manager and install the latest application update.")
-                    .setNeutralButton("OK.", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i)
-                        {
-                            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            intent.putExtra("EXIT", true);
-                            startActivity(intent);
-
-                            if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false))
-                            {
-                                finish();
-                            }
-                        }
-                    })
-                    .show();
+            ConnectivityManager cm =
+                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
+            return netInfo != null && netInfo.isConnectedOrConnecting();
         }
     }
-
-
 }

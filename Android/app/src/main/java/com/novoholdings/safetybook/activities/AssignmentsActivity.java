@@ -106,15 +106,6 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     private CountDownTimer countDownTimer;
 
-    NotificationCompat.Builder threeDayNotification, oneDayNotification, oneHourNotification, overdueNotification, newGroupNotifier, newAssignmentNotifier;
-    private static final int threeDay = 5548;
-    private static final int oneDay = 5546;
-    private static final int oneHour = 5542;
-    private static final int overdueNotifi = 5524;
-    private static final int newGroupNotification = 5584;
-    private static final int newAssignmentNotification = 5562;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -185,24 +176,6 @@ public class AssignmentsActivity extends AppCompatActivity{
         } else {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1024);
         }
-
-        threeDayNotification = new NotificationCompat.Builder(this);
-        threeDayNotification.setAutoCancel(true);
-
-        oneDayNotification = new NotificationCompat.Builder(this);
-        oneDayNotification.setAutoCancel(true);
-
-        oneHourNotification = new NotificationCompat.Builder(this);
-        oneHourNotification.setAutoCancel(true);
-
-        overdueNotification = new NotificationCompat.Builder(this);
-        overdueNotification.setAutoCancel(false);
-
-        newGroupNotifier = new NotificationCompat.Builder(this);
-        newGroupNotifier.setAutoCancel(true);
-
-        newAssignmentNotifier = new NotificationCompat.Builder(this);
-        newAssignmentNotifier.setAutoCancel(true);
     }
     private void getIntentExtras(){
         Bundle extras = getIntent().getExtras();
@@ -301,7 +274,6 @@ public class AssignmentsActivity extends AppCompatActivity{
 
                         if (!assignmentsDao.checkRecExists(assignment.getServerId())){
                             assignmentsDao.insertData(assignment.getName(), assignment.getServerId(), groupId, YES, assignment.getReadingTime(), assignment.getDueDate(), complete, assignment.getStartPage(), assignment.getEndPage());
-                            setNewAssignmentNotifier(assignment.getName());
                         }
                         else {
                             assignmentsDao.updateData(assignment.getServerId(), assignment.getName(), YES, assignment.getReadingTime(), assignment.getDueDate(), assignment.getStartPage(), assignment.getEndPage());
@@ -1179,138 +1151,6 @@ public class AssignmentsActivity extends AppCompatActivity{
             public void run() {
             }
         }, 3000);
-    }
-
-    public void setThreeDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 3 days. Don't be late!";
-
-        threeDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        threeDayNotification.setTicker(message);
-        threeDayNotification.setWhen(System.currentTimeMillis());
-        threeDayNotification.setContentTitle(titleText);
-        threeDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        threeDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.notify(threeDay, threeDayNotification.build());
-    }
-
-    public void setOneDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 day. Don't be late!";
-
-        oneDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneDayNotification.setTicker(message);
-        oneDayNotification.setWhen(System.currentTimeMillis());
-        oneDayNotification.setContentTitle(titleText);
-        oneDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneDay, oneDayNotification.build());
-    }
-
-    public void setOneHourNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        oneHourNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneHourNotification.setTicker(message);
-        oneHourNotification.setWhen(System.currentTimeMillis());
-        oneHourNotification.setContentTitle(titleText);
-        oneHourNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneHourNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneHour, oneHourNotification.build());
-    }
-
-    public void setOverdueNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        overdueNotification.setSmallIcon(R.drawable.ic_assignment);
-        overdueNotification.setTicker(message);
-        overdueNotification.setWhen(System.currentTimeMillis());
-        overdueNotification.setContentTitle(titleText);
-        overdueNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        overdueNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(overdueNotifi, overdueNotification.build());
-    }
-
-    public void setNewGroupNotifier(String name)
-    {
-        String message = "Welcome to your new group!";
-        String titleText = "Welcome!";
-        String notifierText = "You have been added to Group " + name;
-
-        newGroupNotifier.setSmallIcon(R.drawable.ic_group_name);
-        newGroupNotifier.setTicker(message);
-        newGroupNotifier.setWhen(System.currentTimeMillis());
-        newGroupNotifier.setContentTitle(titleText);
-        newGroupNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newGroupNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newGroupNotification, newGroupNotifier.build());
-    }
-
-    public void setNewAssignmentNotifier(String groupName)
-    {
-        String message = "New Assignment has been added!";
-        String titleText = "New Assignment!";
-        String notifierText = "Assignment has been added to Group " + groupName;
-
-        newAssignmentNotifier.setSmallIcon(R.drawable.ic_assignment);
-        newAssignmentNotifier.setTicker(message);
-        newAssignmentNotifier.setWhen(System.currentTimeMillis());
-        newAssignmentNotifier.setContentTitle(titleText);
-        newAssignmentNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newAssignmentNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newAssignmentNotification, newAssignmentNotifier.build());
     }
 
 }

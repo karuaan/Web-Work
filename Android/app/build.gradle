@@ -67,6 +67,7 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-core:2.7.3'
     api 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
     api 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
+    api 'com.github.javiersantos:AppUpdater:2.6.5'
 }
 
 
