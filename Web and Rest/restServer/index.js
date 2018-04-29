@@ -1651,7 +1651,7 @@ function getLatestVersion(callback)
 {
 	con.query
 	(
-		"select version_url FROM ANDROID_VERSION WHERE version_number IN (SELECT MAX(version_number) FROM ANDROID_VERSION)", function (err, rows)
+		"select version_number, version_url FROM ANDROID_VERSION WHERE version_number IN (SELECT MAX(version_number) FROM ANDROID_VERSION)", function (err, rows)
 		{
 			if (err)
 			{
