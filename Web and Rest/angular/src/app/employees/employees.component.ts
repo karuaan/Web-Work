@@ -989,13 +989,13 @@ export class EmployeesComponent implements OnInit {
             .then((res) => {
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					console.log(res2);
-					console.log(res2['ID']);
-					if(res2['ID'] == undefined){
+					console.log(res2[0]['ID']);
+					if(res2[0]['ID'] == undefined){
 						this.loginErrorMessage = "You are not an admin";
 						this.isLoginError = true;
 					}
 					else{
-						this.admin_id = res2['ID'];
+						this.admin_id = res2[0]['ID'];
 						this.isLoggedIn = true;
 					}
 				})
