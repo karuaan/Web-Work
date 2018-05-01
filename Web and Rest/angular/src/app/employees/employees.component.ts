@@ -49,6 +49,7 @@ export class EmployeesComponent implements OnInit {
     potentialAssignments: Lesson[];
     lessons: Lesson[];
     selectedAssignment: Assignment;
+    selectedAssignmentCompletion: string;
     admin_id = 3;
     assignment_id: 1;
     pdfCurrentPage: string;
@@ -155,6 +156,23 @@ export class EmployeesComponent implements OnInit {
                                             this.selectedAssignment.assignment_id
                                         ).subscribe(employees => {
                                             this.employees = employees;
+
+                                            let complete = 0;
+                                            let total = employees.length;
+                                            for(let i = 0; i < employees.length; i++) {
+                                              console.log(employees[i]);
+                                              if(employees[i].IS_COMPLETE !== null) {
+                                                if(employees[i].IS_COMPLETE.data[0] === 1) {
+                                                  complete = complete + 1;
+                                                }
+                                              }
+                                            }
+
+                                            if(complete === 0) {
+                                              this.selectedAssignmentCompletion = 0 + "%";
+                                            } else {
+                                              this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
+                                            }
                                         });
                                     }
                 }
@@ -388,7 +406,7 @@ export class EmployeesComponent implements OnInit {
                             NOTES: this.assignmentForm.notes,
                             assignment_id : res.data.ID
                         };
-                    
+
                     console.log('NEW assignMENT', assign);
 
                     if (this.assignments.length > 0 && this.assignments[0].assignment_id == -1){
@@ -621,7 +639,7 @@ export class EmployeesComponent implements OnInit {
         console.log('onPdfLoadError event', event);
     }
 
-    generateLessonPlan(pdf: PDFDocumentProxy){ 
+    generateLessonPlan(pdf: PDFDocumentProxy){
     // loop through table of contents to automatically generate a lesson plan for a newly uploaded book
         if (this.newBookAdded){
 
@@ -634,7 +652,7 @@ export class EmployeesComponent implements OnInit {
                 countPromises.push(page.then(function(page) { // add page promise
                     var textContent = page.getTextContent();
                     return textContent.then(function(text){ // return content promise
-                        return text.items.map(function (s) { return s.str; }); // value page text 
+                        return text.items.map(function (s) { return s.str; }); // value page text
 
                     });
                 }));
@@ -864,7 +882,6 @@ export class EmployeesComponent implements OnInit {
         if (group.ID == this.selectedGroup.ID) {
             return;
         }
-        console.log(group.ID);
         this.selectedGroup = group;
         this.employeesService.getAssignments(group.ID).subscribe(data2 => {
             if (!data2['err']) {
@@ -877,7 +894,23 @@ export class EmployeesComponent implements OnInit {
                     this.selectedAssignment = data2[0];
                     this.employeesService.getEmployees(this.selectedGroup.ID, this.selectedAssignment.assignment_id).subscribe(data3 => {
                         this.employees = data3;
-                        console.log(data3[0]);
+
+                        let complete = 0;
+                        let total = data3.length;
+                        for(let i = 0; i < data3.length; i++) {
+                          console.log(data3[i]);
+                          if(data3[i].IS_COMPLETE !== null) {
+                            if(data3[i].IS_COMPLETE.data[0] === 1) {
+                              complete = complete + 1;
+                            }
+                          }
+                        }
+
+                        if(complete === 0) {
+                          this.selectedAssignmentCompletion = 0 + "%";
+                        } else {
+                          this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
+                        }
 
                     });
                 }
@@ -895,6 +928,23 @@ export class EmployeesComponent implements OnInit {
                 this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
                     this.employees = data3;
                     console.log(data3[0]);
+
+                    let complete = 0;
+                    let total = data3.length;
+                    for(let i = 0; i < data3.length; i++) {
+                      console.log(data3[i]);
+                      if(data3[i].IS_COMPLETE !== null) {
+                        if(data3[i].IS_COMPLETE.data[0] === 1) {
+                          data3 = complete + 1;
+                        }
+                      }
+                    }
+
+                    if(complete === 0) {
+                      this.selectedAssignmentCompletion = 0 + "%";
+                    } else {
+                      this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
+                    }
 
                 });
             }
@@ -975,7 +1025,22 @@ export class EmployeesComponent implements OnInit {
         this.selectedAssignment = assignment;
         this.employeesService.getEmployees(this.selectedGroup.ID, assignment.assignment_id).subscribe(data3 => {
             this.employees = data3;
-            //console.log(data3[0]);
+
+            let complete = 0;
+            let total = data3.length;
+            for(let i = 0; i < data3.length; i++) {
+              if(data3[i].IS_COMPLETE !== null) {
+                if(data3[i].IS_COMPLETE.data[0] === 1) {
+                  complete = complete + 1;
+                }
+              }
+            }
+
+            if(complete === 0) {
+              this.selectedAssignmentCompletion = 0 + "%";
+            } else {
+              this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
+            }
 
         });
     }
@@ -985,31 +1050,24 @@ export class EmployeesComponent implements OnInit {
     }
 
     signInWithEmail() {
-        this.authService.signInRegular(this.userEmail, this.userPassword)
-            .then((res) => {
-				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
-					console.log(res2);
-					console.log(res2['ID']);
-					if(res2['ID'] == undefined){
-						this.loginErrorMessage = "You are not an admin";
-						this.isLoginError = true;
-					}
-					else{
-						this.admin_id = res2['ID'];
-						this.isLoggedIn = true;
-					}
-				})
-
-            })
-            .catch((err) => {
-				this.loginErrorMessage = err;
-				this.isLoginError = true;
-			});
-    }
-	
-	testAddUser(){
-		this.authService.signUpRegular("ggoldsht@stevens.edu", "");
-	}
+      this.authService.signInRegular(this.userEmail, this.userPassword).then((res) => {
+	       this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
+           if(res2[0]['ID'] == undefined) {
+             this.loginErrorMessage = "You are not an admin";
+             this.isLoginError = true;
+           } else {
+             this.admin_id = res2[0]['ID'];
+             this.isLoggedIn = true;
+           }
+         })
+       }).catch((err) => {
+         this.loginErrorMessage = err;
+         this.isLoginError = true;
+       });
+     }
+     testAddUser(){
+		     this.authService.signUpRegular("ggoldsht@stevens.edu", "");
+	   }
 
     ngOnInit() {
 
