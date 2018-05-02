@@ -1413,7 +1413,7 @@ function getAssignments(group_id, callback){
 	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
 	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
 //	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
-	"WHERE GROUP_ID=" + mysql.escape(group_id),
+	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id),
 		function(err, rows){
 			if(err){
 				console.log(err);
