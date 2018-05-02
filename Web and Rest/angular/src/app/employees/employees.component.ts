@@ -40,6 +40,7 @@ export class EmployeesComponent implements OnInit {
 	isLoginError = false;
     newBookAdded = false;
 	loginErrorMessage = "";
+	admin_pass = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -581,10 +582,10 @@ export class EmployeesComponent implements OnInit {
             this.toastrService.warning('Invite', 'Enter Email address');
             return;
         }
-		password = this.makepass();
+		this.admin_password = this.makepass();
         const inviteData = {
             email: this.inviteAdminForm.value.email,
-			pass: password
+			pass: this.admin_password
         };
 
         this.employeesService.sendInvitation(inviteData).subscribe((res: any) => {
