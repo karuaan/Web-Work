@@ -442,3 +442,28 @@ pdf-viewer {
 .alert-danger p {
   margin: 0;
 }
+
+.due-title, .due-value {
+  display: inline-block;
+  margin: 0;
+  padding: 0.5em;
+}
+
+.due-title {
+  float: left;
+}
+
+.due-value {
+  float: right;
+}
+
+.due-holder {
+  font-size: 1.2em;
+  width: 100%;
+  display: block;
+  height: 2.5em;
+}
+
+#thirdColumn {
+  min-height: 55em;
+}

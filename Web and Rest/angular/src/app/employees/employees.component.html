@@ -54,8 +54,15 @@
 					<div *ngIf="assignments[0].NAME !== 'No assignments'" class="assignment-list--container">
 						<div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
 							<h5>{{assignment.NAME}}</h5>
-							Due {{assignment.DUE_DATE | date:'MM/dd/yyyy'}}
-							Available {{assignment.START_DATE | date:'MM/dd/yyyy'}}
+							<button class="btn btn-sm btn-success" (click)="removeAssignment(assignment)" style="width: 100%">
+								<i class="fa fa-check"></i> Remove Assignment
+							</button>
+							<div class="due-holder">
+								<p class="due-title">Due: </p><p class="due-value">{{assignment.DUE_DATE | date:'MM/dd/yyyy'}}</p>
+							</div>
+							<div class="due-holder">
+								<p class="due-title">Available: </p><p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -132,6 +139,7 @@
 
                                                            </button>
 
+																													<!--
                                                            <button class="btn btn-sm btn-success"
                                                                    *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)"
                                                            (click)="removeAssignment(lesson)">
@@ -139,6 +147,7 @@
                                                                <i class="fa fa-check"></i> Remove Assignment
 
                                                            </button>
+																												 -->
 
                                                            <button class="btn btn-sm btn-info" data-toggle="modal"
                                                                    (click)="selectLesson(lesson)"
@@ -153,7 +162,7 @@
                                            </table>
                     </div>
 
-                    <button (click)="addLesson()" class="btn btn-primary ">+ Add Lession</button>
+                    <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
                     <button (click)="saveLessions()" class="btn btn-primary ">Save</button>
 					<!--<button type="button" class="btn btn-info" id="addLessonButton" data-toggle="modal" data-target="#newLessonModal">+ Add</button>-->
 				</div>
@@ -167,12 +176,12 @@
 					<div id="groupActions">
 						<div class="row">
 							<div class="icon-text">
-								<div class="icon"><img src="assets/pngs/hourglass.png" /></div>
-								<div class="text">{{selectedAssignment.TIME_TO_COMPLETE}}</div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/hourglass.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignment.TIME_TO_COMPLETE}}</div>
 							</div>
 							<div class="icon-action">
-								<div class="icon"><img src="assets/pngs/ic_picture_as_pdf_48px.png" /></div>
-								<div class="text">PDF</div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/ic_picture_as_pdf_48px.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">PDF</div>
 							</div>
 							<div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>
@@ -181,12 +190,12 @@
 						</div>
 						<div class="row">
 							<div class="icon-text">
-								<div class="icon"><img src="assets/pngs/calendar.png" /></div>
-								<div class="text">{{selectedAssignment.DUE_DATE| date : "MM/dd/yyyy"}}</div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/calendar.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignment.DUE_DATE| date : "MM/dd/yyyy"}}</div>
 							</div>
 							<div class="icon-text">
-								<div class="icon"><img src="assets/pngs/cs-cc-party.png" /></div>
-								<div class="text">{{selectedAssignmentCompletion}}</div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/cs-cc-party.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignmentCompletion}}</div>
 							</div>
 							<div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>

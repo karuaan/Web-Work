@@ -176,7 +176,6 @@ export class EmployeesComponent implements OnInit {
                                         });
                                     }
                 }
-
             });
         });
     }
@@ -588,11 +587,10 @@ export class EmployeesComponent implements OnInit {
         });
     }
 
-    removeAssignment(lesson) {
-        console.log('lesson',lesson);
+    removeAssignment(assignment) {
         this.bookService.removeAssignmentFromGroup({
             GROUP_ID: this.selectedGroup.ID,
-            LESSON_ID : lesson.ID
+            LESSON_ID : assignment.lesson_id
         }).subscribe((res : any) => {
             if (res.data && res.data.deleted_assignments && res.data.deleted_assignments.length > 0) {
                 const assignmentIds = res.data.deleted_assignments.filter((item: any) => {
@@ -623,7 +621,11 @@ export class EmployeesComponent implements OnInit {
                         }];
                         this.selectedAssignment = this.assignments[0];
                     }
-                    lesson.removeAssingGroup(this.selectedGroup.ID);
+                    for(let j = 0; j < this.dataObj.selectedBook.LESSONS.length; j++) {
+                      if(this.dataObj.selectedBook.LESSONS[j].ID === assignment.lesson_id) {
+                        this.dataObj.selectedBook.LESSONS[j].removeAssingGroup(this.selectedGroup.ID);
+                      }
+                    }
                 }
             }
 
@@ -639,98 +641,88 @@ export class EmployeesComponent implements OnInit {
         console.log('onPdfLoadError event', event);
     }
 
-    generateLessonPlan(pdf: PDFDocumentProxy){
-    // loop through table of contents to automatically generate a lesson plan for a newly uploaded book
-        if (this.newBookAdded){
-
-            var maxPages = pdf.numPages;
-            var countPromises = []; // collecting all page promises
-            for (var j = 1; j <= maxPages; j++) {
-                var page = pdf.getPage(j);
-
-                var txt = "";
-                countPromises.push(page.then(function(page) { // add page promise
-                    var textContent = page.getTextContent();
-                    return textContent.then(function(text){ // return content promise
-                        return text.items.map(function (s) { return s.str; }); // value page text
-
-                    });
-                }));
-            }
-            // Wait for all pages and join text
-            return Promise.all(countPromises).then(function (texts) {
-                let titleRegex = /(\d+\.?\d*)[\s\–]+(\w+(\-| |\(|\))*)+/g,
-                titleSecondLineRegex = /^(?!Section)((\D\s*\w+)(\-| )*)+/g,
-                elipsesRegex = /^( *\.){2,}/g,
-                pageNumberRegex = /^\d+ ?(?!\.)/;
-                let lessons = [];
-                let lesson = {};
-                let title = "";
-                let lessonFinished = false, endOfIndex = false, indexStarted = false;
-                for (var i = 0; i < texts.length; i++){
-                    //scan pages
-                    if (endOfIndex){
-                        break;
-                    }
-                    for (var j = 0; j < texts[i].length; j++){
-                        //scan word groups
-                        let textSnippet = texts[i][j];
-
-                        //console.log(lessons);
-                        if (textSnippet == "TABLE OF CONTENTS"){
-                            indexStarted = true;
-                        }
-                        else if (textSnippet == "Index"){
-                            endOfIndex = true;
-                        }
-                        else if (indexStarted){
-
-                            if (lessonFinished){
-                               //lesson object complete
-                                lessons.push(lesson);
-                                lesson = new Object();
-                                lessonFinished = false;
-                            }
-                            if (titleRegex.test(textSnippet)){
-                                //section title found
-                                title = "Section " + textSnippet.match(titleRegex);
-                                while (title.endsWith(' ')){
-                                    title = title.substring(0,title.length-1);
-                                }
-
-                                lesson['title'] = title;
-
-                            }
-                            else if (titleSecondLineRegex.test(textSnippet)){
-                                //second line in title found
-                                lesson['title'] += " " + textSnippet.match(titleSecondLineRegex);
-                            }
-                            else if (pageNumberRegex.test(textSnippet)){
-                                //start page found
-                                while (textSnippet.endsWith(' ')){
-                                    textSnippet = textSnippet.substring(0, textSnippet.length-1);
-                                }
-
-                                lesson['startPage'] = parseInt(textSnippet);
-                                lessonFinished = true;
-                                if (lessons.length>1){
-                                    //set end page of the previous lesson in the list
-                                  lessons[lessons.length-1].endPage = (lesson['startPage'] == lessons[lessons.length-1].startPage) ? lesson['startPage'] : lesson['startPage']-1;
-                                  if (endOfIndex){
-                                    break;
-                                  }
-                                }
-                            }
-
-                        }
-                    }
-                }
-
-
+    generateLessonPlan(pdf: PDFDocumentProxy) {
+      let self = this;
+      // loop through table of contents to automatically generate a lesson plan for a newly uploaded book
+      if (this.newBookAdded) {
+        var maxPages = pdf.numPages;
+        var countPromises = []; // collecting all page promises
+        for (var j = 1; j <= maxPages; j++) {
+          var page = pdf.getPage(j);
+          var txt = "";
+          countPromises.push(page.then(function(page) { // add page promise
+            var textContent = page.getTextContent();
+            return textContent.then(function(text) { // return content promise
+              return text.items.map(function (s) { return s.str; }); // value page text
             });
+          }));
         }
+        // Wait for all pages and join text
+        return Promise.all(countPromises).then(function (texts) {
+          if (!self.dataObj.selectedBook.LESSONS) {
+              self.dataObj.selectedBook.LESSONS = [];
+          }
+          let titleRegex = /(\d+\.?\d*)[\s\–]+(\w+(\-| |\(|\))*)+/g,
+              titleSecondLineRegex = /^(?!Section)((\D\s*\w+)(\-| )*)+/g,
+              elipsesRegex = /^( *\.){2,}/g,
+              pageNumberRegex = /^\d+ ?(?!\.)/;
+          let lessons = [];
+          let lesson = Lesson;
+          let title = "";
+          let lessonFinished = false, endOfIndex = false, indexStarted = false;
+          for (var i = 0; i < texts.length; i++) {
+            //scan pages
+            if (endOfIndex) {
+              break;
+            }
+            for (var j = 0; j < texts[i].length; j++) {
+              //scan word groups
+              let textSnippet = texts[i][j];
+              if (textSnippet == 'TABLE OF CONTENTS') {
+                indexStarted = true;
+              } else if (textSnippet == "Index") {
+                endOfIndex = true;
+              } else if (indexStarted) {
+                if (lessonFinished) {
+                  //lesson object complete
+                  lessons.push(lesson);
+                  lesson = new Object();
+                  lessonFinished = false;
+                }
+                if (titleRegex.test(textSnippet)) {
+                  //section title found
+                  title = "Section " + textSnippet.match(titleRegex);
+                  while (title.endsWith(' ')) {
+                    title = title.substring(0,title.length-1);
+                  }
+                  lesson['title'] = title;
+                } else if (titleSecondLineRegex.test(textSnippet)) {
+                  //second line in title found
+                  lesson['title'] += " " + textSnippet.match(titleSecondLineRegex);
+                } else if (pageNumberRegex.test(textSnippet)) {
+                  //start page found
+                  while (textSnippet.endsWith(' ')) {
+                    textSnippet = textSnippet.substring(0, textSnippet.length-1);
+                  }
+                  lesson['startPage'] = parseInt(textSnippet);
+                  lessonFinished = true;
+                  if (lessons.length>1) {
+                    //set end page of the previous lesson in the list
+                    lessons[lessons.length-1].endPage = (lesson['startPage'] == lessons[lessons.length-1].startPage) ? lesson['startPage'] : lesson['startPage']-1;
+                    if (endOfIndex) {
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          for(let i = 0; i < lessons.length; i++) {
+            self.dataObj.selectedBook.LESSONS.push(new Lesson(null, lessons[i].title, self.dataObj.selectedBook.ID, lessons[i].startPage, lessons[i].endPage, ''));
+          }
+        });
+      }
     }
-
     getLessonPlan(){
         return this
     }
@@ -821,21 +813,16 @@ export class EmployeesComponent implements OnInit {
         if (this.dataObj.selectedBook.LESSONS){
             const lessionIds = this.dataObj.selectedBook.LESSONS.filter((item) => item.is_checked == true && item.ID != null).map(item => item.ID);
             this.dataObj.selectedBook.LESSONS = this.dataObj.selectedBook.LESSONS.filter((item) => item.is_checked == false);
-            console.log('deleted',lessionIds);
         }
     }
 
     incrementPage() {
-        console.log(this.pdfCurrentPage)
         this.pdfCurrentPage = String(Number(this.pdfCurrentPage) + 1);
-        console.log(this.pdfCurrentPage);
 
     }
 
     decrementPage() {
-        console.log(this.pdfCurrentPage)
         this.pdfCurrentPage = String(Number(this.pdfCurrentPage) - 1);
-        console.log(this.pdfCurrentPage);
 
     }
 
@@ -854,9 +841,6 @@ export class EmployeesComponent implements OnInit {
     }
 
     emailConfirm() {
-        console.log("Email")
-        console.log(this.modalEmails);
-        console.log(this.emailContents);
         this.employeesService.email(this.modalEmails, this.emailContents).subscribe(data => {
 
         });
@@ -927,12 +911,10 @@ export class EmployeesComponent implements OnInit {
                 this.selectedAssignment = this.assignments[0];
                 this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
                     this.employees = data3;
-                    console.log(data3[0]);
 
                     let complete = 0;
                     let total = data3.length;
                     for(let i = 0; i < data3.length; i++) {
-                      console.log(data3[i]);
                       if(data3[i].IS_COMPLETE !== null) {
                         if(data3[i].IS_COMPLETE.data[0] === 1) {
                           data3 = complete + 1;
@@ -1059,6 +1041,9 @@ export class EmployeesComponent implements OnInit {
              this.admin_id = res2[0]['ID'];
              this.isLoggedIn = true;
            }
+           setTimeout(() => {
+                this.viewSwitch('assignments');
+              });
          })
        }).catch((err) => {
          this.loginErrorMessage = err;
