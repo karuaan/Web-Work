@@ -10,6 +10,7 @@ import {Lesson} from './lesson';
 export class BookService {
 
     _api: any;
+	restURL: string;
 
   constructor(private http: HttpClient) {
     this.setConfig();
@@ -65,7 +66,7 @@ export class BookService {
       return this.http.get<Lesson[]>(`${this.restURL}/books/${bookId}/lessons`);
   }
 
-  setConfig(): void {
+/*   setConfig(): void {
       if (DEBUG_MODE) {
            this._api = API_CONFIG.development;
       } else {
@@ -75,6 +76,6 @@ export class BookService {
 
   getConfig(): any {
       return this._api;
-  }
+  } */
 
 }

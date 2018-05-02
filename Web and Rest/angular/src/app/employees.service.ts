@@ -66,14 +66,14 @@ export class EmployeesService {
 	  var response = this.http.post<Group[]>(this.restURL + '/getgroups', {'admin_id': admin_id});
 	  return response;
   }
-
+/* 
   setConfig(): void {
        if (DEBUG_MODE) {
             this.restURL = API_CONFIG.development.endpoint;
        } else {
             this.restURL = API_CONFIG.production.endpoint;
        }
-   }
+   } */
 
     sendInvitation(data): any {
         var response = this.http.post(this.restURL + '/send-invitation', data);
