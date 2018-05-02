@@ -148,6 +148,21 @@
   }
 }
 
+#assignmentButton,
+#lessonButton,
+#assignmentButtonActive,
+#lessonButtonActive {
+  background: #CCCCCC;
+  outline: none;
+  font-size: 1.5em;
+  padding: 0.5em;
+  width: 100%;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-align: center;
+  cursor: pointer;
+  margin: 0.5em 0em;
+}
 #assignmentButtonActive,
 #lessonButtonActive {
   background-color: #999999;
@@ -393,4 +408,70 @@ pdf-viewer {
     flex: 0 0 83.3333333333%;
     max-width: 83.3333333333%;
   }
+}
+
+@media (min-width: 1000px) {
+  #secondaryContainer {
+    border-left: solid black 0.2em;
+    border-right: solid black 0.2em;
+  }
+}
+
+@media (min-width: 1000px) {
+  .date-header {
+    border-top: none;
+  }
+}
+
+.login-form {
+  padding: 1em;
+  font-size: 1.5em;
+}
+
+.login-button {
+  padding: 0.5em;
+  font-size: 1.5em;
+}
+
+.alert-danger {
+  margin: 0em 1em;
+  font-size: 1.5em;
+  padding: 0.5em;
+}
+
+.alert-danger p {
+  margin: 0;
+}
+
+.due-title, .due-value {
+  display: inline-block;
+  margin: 0;
+  padding: 0.5em;
+}
+
+.due-title {
+  float: left;
+}
+
+.due-value {
+  float: right;
+}
+
+.due-holder {
+  font-size: 1.2em;
+  width: 100%;
+  display: block;
+  height: 2.5em;
+}
+
+#thirdColumn {
+  min-height: 55em;
+}
+
+#deleteLessonButton {
+  display: none;
+}
+
+#deleteLessonButton.show {
+  display: inline-block;
 }

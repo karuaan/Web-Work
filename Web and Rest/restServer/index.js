@@ -36,7 +36,7 @@ else{
 		{host: "localhost",
         multipleStatements: true,
 		user: "root", password: "root",
-		port: "3306", 
+		port: "3306",
 		database: "node_webworkers"}
 	)
 }
@@ -120,7 +120,7 @@ app.use(function (req, res, next) {
 
     // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Range');
-	
+
 	res.setHeader('Access-Control-Expose-Headers', 'Accept-Ranges,Content-Encoding,Content-Length,Content-Range');
 
     // Set to true if you need the website to include cookies in the requests sent
@@ -663,7 +663,7 @@ function addLesson(plan_id, book_id, start_page, end_page, name, filepath, callb
 							}
 						}); */
 						callback(null, result);
-						
+
 					}
 					else{
 						callback(err2, null)
@@ -752,7 +752,7 @@ function addGroup(admin_id, user_ids, name, callback){
 			//console.log(poppedRows);
 			//console.log(usr_mails);
 			let new_users = usr_mails.filter(x => !popped_rows.includes(x)).map(x => [x]);
-			
+
 			con.query("INSERT INTO USERS (EMAIL) VALUES ?", [new_users], function(errNew, rowsNew){
 				console.log("-+-");
 				console.log(errNew);
@@ -760,7 +760,7 @@ function addGroup(admin_id, user_ids, name, callback){
 				console.log("-+-");
 			});
 			//DANGER ^^^^^^ WILL NEED TO BE REPLACED BY OKTA CALLS
-			
+
 		}
 		con.query("SELECT ID FROM USERS WHERE EMAIL IN (" + mysql.escape(usr_mails) + ");", function(err2, rows2){
 		var usr_ids = rows2;
@@ -827,25 +827,25 @@ function addToGroup(group_id, user_ids, callback){
 function updateGroupStatus(group_id, user_ids, callback){
 	var retList = []
 	con.query("SELECT DISTINCT ASSIGNMENT_ID FROM STATUS WHERE STATUS.GROUP_ID=" + mysql.escape(group_id), function(err3, rows3){
-	
+
 		rows3.forEach(function(value, index, arr){
 			for(var i = 0; i < user_ids.length; ++i){
 				retList.push([Number(group_id), Number(user_ids[i][2]), Number(value.ASSIGNMENT_ID), Number(0)]);
 			}
 		});
-		
-		
+
+
 		con.query("INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?", [retList], function(err2, rows2){
 			console.log(rows2);
 			callback(null, rows2);
 		});
 
 	});
-	
+
 }
 
 function addUserRecursive(f_name, l_name, email_arr, user_ids, count, callback){
-	
+
 	if(count < 1){
 		callback({'error' : 'number of new users = 0'}, null)
 	}
@@ -871,7 +871,7 @@ function addUserRecursive(f_name, l_name, email_arr, user_ids, count, callback){
 			}
 		});
 	}
-	
+
 }
 
 function addToGroupByEmail(group_id, user_emails, callback){
@@ -888,7 +888,7 @@ function addToGroupByEmail(group_id, user_emails, callback){
 			}
 			else{
 				con.query("SELECT ID, EMAIL FROM USERS WHERE USERS.EMAIL=" + mysql.escape(user_emails), function(err1, rows1){
-					
+
 					if(err1){
 						callback(err1, null)
 					}
@@ -900,49 +900,49 @@ function addToGroupByEmail(group_id, user_emails, callback){
 								return mails.indexOf( el ) < 0;
 							});
 							console.log(new_users)
-							
+
 							addUserRecursive("", "", new_users, user_ids, new_users.length, function(errA, rowsA){
-								
+
 								if(errA){
 									callback(errA, null);
 								}
 								else{
 									console.log('2EEEE');
 									console.log(user_ids);
-								
+
 								//TODO - get ids from emails
-								
+
 								user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
-								
+
 								console.log(user_ids);
-								
+
 								con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
 									if(!err2){
 										console.log('11111');
 										console.log(user_ids);
 										updateGroupStatus(group_id, user_ids, function(err3, result){
-										
+
 											con.commit(function(err4){
 												if(err4){con.rollback(function(){callback(err4, null)})}
 												else{
-													
-													
+
+
 													console.log(result);
 													callback(null, result)
-													
+
 													}
 											});
-										
+
 										});
 									}
 									else{callback(err2,null)}
 								});
 								}
-								
+
 							})
-							
+
 							/* promise1 = new Promise(function(){
-								
+
 								for(var j = 0; j < new_users.length; ++j){
 									addUser("", "", new_users[j], function(er, ro){
 										console.log('33333');
@@ -950,47 +950,47 @@ function addToGroupByEmail(group_id, user_emails, callback){
 										user_ids.push(Number(ro.insertId));
 									})
 								}
-								
+
 							}) */
 						}
 						else{
-						
-						
+
+
 					console.log('22222');
 					console.log(user_ids);
-				
+
 				//TODO - get ids from emails
-				
+
 				user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
-				
+
 				console.log(user_ids);
-				
+
 				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
 					if(!err2){
 						console.log('11111');
 						console.log(user_ids);
 						updateGroupStatus(group_id, user_ids, function(err3, result){
-						
+
 							con.commit(function(err4){
 								if(err4){con.rollback(function(){callback(err4, null)})}
 								else{
-									
-									
+
+
 									console.log(result);
 									callback(null, result)
-									
+
 									}
 							});
-						
+
 						});
 					}
 					else{callback(err2,null)}
 				});
-				
+
 						}
-				
+
 				}
-					
+
 				})
 			}
 		}
@@ -1356,7 +1356,7 @@ app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 					res.json(result);
 				});
 
-               
+
             }catch (e){
                 res.status(200).json({
                       status : 'fail',
@@ -1372,11 +1372,11 @@ app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res)
 	let lessonData = req.body
 	console.log(lessonData)
 	addLesson(lessonData.plan_id,
-			lessonData.book_id, 
-			lessonData.start_page, 
-			lessonData.end_page, 
-			lessonData.name, 
-			"", 
+			lessonData.book_id,
+			lessonData.start_page,
+			lessonData.end_page,
+			lessonData.name,
+			"",
 			function(err, result){
 		if(err){
 			console.log(err);
@@ -1412,7 +1412,7 @@ app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ fun
 
 app.post('/groups/save', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 
-	// temp admin id 3 
+	// temp admin id 3
 
 	if(!req.body.NAME){
 		res.json({
@@ -1421,11 +1421,11 @@ app.post('/groups/save', /*admin_oidc.ensureAuthenticated(),*/ function(req, res
 			data : null
 		});
 	}
-	
+
 	if(req.body.employees.length > 0){
 		BookService.saveGroup(req.body).then((data) => {
 			res.json(data);
-		});	
+		});
 	}
 	else{
 		res.json({
@@ -1447,7 +1447,7 @@ app.post('/send-invitation', /*admin_oidc.ensureAuthenticated(),*/ function(req,
 	res.json({
 		message : 'Invitation send successfull'
 	})
-	
+
 
 });
 
@@ -1501,11 +1501,11 @@ app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ functi
 });
 
 function getAssignments(group_id, callback){
-	con.query("SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, ASSIGNMENTS.NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
+	con.query("SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
 	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
-	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+ 
+	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
 //	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
-	"WHERE GROUP_ID=" + mysql.escape(group_id),
+	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id),
 		function(err, rows){
 			if(err){
 				console.log(err);
@@ -1635,7 +1635,7 @@ function getAssignmentsUser(user_id, group_id, callback){
 //	'WHERE USERS.ID='+mysql.escape(user_id) + ' ' +
 //	'AND GROUPS.ID='+mysql.escape(group_id)
 		, function(err, rows){
-		
+
 		if(err){
 			callback(err, null)
 		}
@@ -1732,14 +1732,14 @@ app.get('/getGroupsUser', function(req, res){
 })
 
 function emailToList(emailList, text, callback){
-	
+
 	var mailOptions = {
 		from: 'libertyelevatorreader@gmail.com',
 		to: emailList,
 		subject: 'Update from Liberty Reader!',
 		'text': text
 	};
-	
+
 	if(emailList === undefined){
 		callback({'error': 'emails undefined'}, null);
 	}
@@ -1768,7 +1768,7 @@ app.post('/emailToList', function(req, res){
 		if(err){
 			console.log(err);
 			res.json(err);
-			
+
 		}
 		else{
 			console.log(result);
@@ -1787,12 +1787,16 @@ function getLatestVersion(callback)
 			{
 				callback(err, null);
 			}
+<<<<<<< HEAD
 			else if (rows.length>=1) 
+=======
+			else
+>>>>>>> f1625bbb15bee6ecfe8a11fe47453d02fb38caa4
 			{
 				callback(null, rows[0]);
 			}
 		}
-	
+
 	);
 }
 
@@ -1823,7 +1827,7 @@ app.post('/androidVersionTable', function(req, res)
 			res.json(err);
 		}
 
-		else 
+		else
 		{
 			console.log(result);
 			res.json(result);
@@ -1840,7 +1844,7 @@ app.get('/androidVersionTable', function(req, res)
 			res.json(err);
 		}
 
-		else 
+		else
 		{
 			res.json(rows);
 		}
@@ -1859,7 +1863,7 @@ function getAdminID(email, callback){
 }
 
 function getMasterTable(admin_id, callback){
-	
+
 	con.query(
 		"SELECT " +
 		  "GROUP_USER_TABLE.USER_ID AS USER_ID, " +
@@ -1916,7 +1920,7 @@ app.post('/getAdminID', function(req, res){
 			res.json(result);
 		}
 	})
-	
+
 })
 
 //admin_oidc.on('ready', () => {
