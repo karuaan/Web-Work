@@ -686,7 +686,7 @@ export class EmployeesComponent implements OnInit {
                 if (lessonFinished) {
                   //lesson object complete
                   lessons.push(lesson);
-                  lesson = new Object();
+                  lesson = new any Object();
                   lessonFinished = false;
                 }
                 if (titleRegex.test(textSnippet)) {

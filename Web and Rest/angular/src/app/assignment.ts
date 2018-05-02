@@ -7,5 +7,5 @@ export class Assignment {
 	book_id: number;
 	lesson_id: number;
 	employees?: any[] = [];
-	TIME_TO_COMPLETE: Object;
+	/*TIME_TO_COMPLETE: Object;*/
 }
