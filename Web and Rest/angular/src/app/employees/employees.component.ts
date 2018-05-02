@@ -1049,9 +1049,15 @@ export class EmployeesComponent implements OnInit {
     }
 
     deleteLessons() {
-      console.log(this.dataObj.selectedBook.LESSONS);
+      let saved = [];
+      for(let i = 0; i < this.dataObj.selectedBook.LESSONS.length; i++) {
+        if(!this.dataObj.selectedBook.LESSONS[i].is_checked) {
+          saved.push(this.dataObj.selectedBook.LESSONS[i]);
+        }
+      }
 
-      console.log('deleteLessons done');
+      this.dataObj.selectedBook.LESSONS = saved;
+
     }
 
     signInWithEmail() {
