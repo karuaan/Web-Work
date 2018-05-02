@@ -667,7 +667,7 @@ export class EmployeesComponent implements OnInit {
               elipsesRegex = /^( *\.){2,}/g,
               pageNumberRegex = /^\d+ ?(?!\.)/;
           let lessons = [];
-          let lesson = Lesson;
+          let lesson = null;
           let title = "";
           let lessonFinished = false, endOfIndex = false, indexStarted = false;
           for (var i = 0; i < texts.length; i++) {
@@ -686,7 +686,7 @@ export class EmployeesComponent implements OnInit {
                 if (lessonFinished) {
                   //lesson object complete
                   lessons.push(lesson);
-                  lesson = new any Object();
+                  lesson = new Object();
                   lessonFinished = false;
                 }
                 if (titleRegex.test(textSnippet)) {
@@ -917,7 +917,7 @@ export class EmployeesComponent implements OnInit {
                     for(let i = 0; i < data3.length; i++) {
                       if(data3[i].IS_COMPLETE !== null) {
                         if(data3[i].IS_COMPLETE.data[0] === 1) {
-                          data3 = complete + 1;
+                          complete = complete + 1;
                         }
                       }
                     }
