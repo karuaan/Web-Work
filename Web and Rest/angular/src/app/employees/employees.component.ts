@@ -1073,7 +1073,7 @@ export class EmployeesComponent implements OnInit {
 					}
 					else{
 						this.admin_id = res2[0]['ID'];
-						console.log(admin_id)
+						console.log(this.admin_id)
 						this.onAdminLogin(3);
 						this.isLoggedIn = true;
 					}
