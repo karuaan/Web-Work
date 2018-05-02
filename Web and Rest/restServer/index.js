@@ -1939,7 +1939,7 @@ app.post('/inviteAdmin', function(req, res){
 				from: 'libertyelevatorreader@gmail.com',
 				to: [req.body.email],
 				subject: 'You have been added to Liberty Elevator Reader app!',
-				text: 'Please login using your email address and this temporary password: ' + req.body.pass;
+				text: 'Please login using your email address and this temporary password: ' + req.body.pass
 			}
 			transporter.sendMail(mailOptions, function(error, info){
 				if(error){
