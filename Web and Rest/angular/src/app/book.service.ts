@@ -13,7 +13,7 @@ export class BookService {
 	restURL: string;
 
   constructor(private http: HttpClient) {
-    this.setConfig();
+    //this.setConfig();
 	this.restURL = environment.restURL;
   }
 
