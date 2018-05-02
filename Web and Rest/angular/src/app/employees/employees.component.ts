@@ -124,11 +124,11 @@ export class EmployeesComponent implements OnInit {
     }
 	
 	onAdminLogin(admin_id){
-		employeesService.getGroups(admin_id).subscribe(groups => {
+		this.employeesService.getGroups(admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
 
-            employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
+            this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
 
                 if (assignments && assignments.hasOwnProperty('err')){
                     this.assignments = [{
@@ -142,7 +142,7 @@ export class EmployeesComponent implements OnInit {
                                     }];
                     this.selectedAssignment = assignments[0];
                                     if (this.selectedGroup && this.selectedAssignment){
-                                        employeesService.getEmployees(
+                                        this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
                                             -1
                                         ).subscribe(employees => {
@@ -153,7 +153,7 @@ export class EmployeesComponent implements OnInit {
                     this.assignments = assignments;
                     this.selectedAssignment = assignments[0];
                                     if (this.selectedGroup && this.selectedAssignment){
-                                        employeesService.getEmployees(
+                                        this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
                                             this.selectedAssignment.assignment_id
                                         ).subscribe(employees => {
@@ -1075,7 +1075,7 @@ export class EmployeesComponent implements OnInit {
 					}
 					else{
 						this.admin_id = res2[0]['ID'];
-						onAdminLogin(this.admin_id);
+						this.onAdminLogin(this.admin_id);
 						this.isLoggedIn = true;
 					}
 				})
