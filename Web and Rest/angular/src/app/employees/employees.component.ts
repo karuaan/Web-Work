@@ -50,7 +50,7 @@ export class EmployeesComponent implements OnInit {
     lessons: Lesson[];
     selectedAssignment: Assignment;
     selectedAssignmentCompletion: string;
-    admin_id = 3;
+    admin_id = -1;
     assignment_id: 1;
     pdfCurrentPage: string;
     pdfStartPage: Number;
@@ -120,9 +120,11 @@ export class EmployeesComponent implements OnInit {
         this.transformResponseAndPopulate();
 
         document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
-
-
-        employeesService.getGroups(this.admin_id).subscribe(groups => {
+		
+    }
+	
+	onAdminLogin(admin_id){
+		employeesService.getGroups(admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
 
@@ -178,7 +180,6 @@ export class EmployeesComponent implements OnInit {
                 }
             });
         });
-    }
 
     transformLessonModel(tempLession: Lesson) {
         return new Lesson(
@@ -1067,11 +1068,13 @@ export class EmployeesComponent implements OnInit {
 					console.log(res2);
 					console.log(res2[0]['ID']);
 					if(res2[0]['ID'] == undefined){
-						this.loginErrorMessage = "You are not an admin";
-						this.isLoginError = true;
+						//this.loginErrorMessage = "You are not an admin";
+						//this.isLoginError = true;
+						this.isLoggedIn = true;
 					}
 					else{
 						this.admin_id = res2[0]['ID'];
+						onAdminLogin(this.admin_id);
 						this.isLoggedIn = true;
 					}
 				})
