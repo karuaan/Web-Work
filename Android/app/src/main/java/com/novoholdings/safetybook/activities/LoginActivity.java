@@ -40,7 +40,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.novoholdings.safetybook.BuildConfig;
 import com.novoholdings.safetybook.R;
+import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.common.AppProperties;
+import com.novoholdings.safetybook.common.AppSharedPreference;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
 
@@ -63,7 +65,9 @@ import java.security.acl.Group;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 
@@ -90,30 +94,25 @@ public class LoginActivity extends AppCompatActivity {
     List<AuthUI.IdpConfig> providers = Arrays.asList(
             new AuthUI.IdpConfig.EmailBuilder().setAllowNewAccounts(false).build());
 
+    RequestQueue requestQueue;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestQueue = RequestQueue.getInstance(this);
 
-        if (isOnline() == true) {
-            updateChecker();
-        } else {
+//        if (isOnline() == true) {
+//            updateChecker();
+//        } else
+    {
             loginButton = (Button) findViewById(R.id.loginButton);
             forgotPass = (Button) findViewById(R.id.forgetPass);
 
             mAuth = FirebaseAuth.getInstance();
 
             if (mAuth.getCurrentUser() == null) {
-                AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
-                emailBuilder.setAllowNewAccounts(false);
-                startActivityForResult(// Get an instance of AuthUI based on the default app
-                        AuthUI
-                                .getInstance()
-                                .createSignInIntentBuilder()
-                                .setAvailableProviders(providers)
-                                .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
-                                .build(),
-                        RC_SIGN_IN);
+                getLoginScreen();
             }
             setContentView(R.layout.activity_main);
             Stetho.initializeWithDefaults(this);
@@ -126,7 +125,7 @@ public class LoginActivity extends AppCompatActivity {
 //            }
         }
 
-        private class RequestGroups extends AsyncTask<String, String, String> {
+         class RequestGroups extends AsyncTask<String, String, String> {
             private ProgressDialog pd = new ProgressDialog(LoginActivity.this);
             InputStream inputStream = null;
             String result = "";
@@ -241,6 +240,7 @@ public class LoginActivity extends AppCompatActivity {
                 return result.toString();
             }
         }
+    }
 
         private void updateChecker()
         {
@@ -299,8 +299,7 @@ public class LoginActivity extends AppCompatActivity {
                                                 .build(),
                                         RC_SIGN_IN);
                             } else {
-                                Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
-                                startActivity(i);
+                               nextScreen();
                             }
 
                             groupsDao = new GroupsDao(LoginActivity.this);
@@ -385,5 +384,83 @@ public class LoginActivity extends AppCompatActivity {
             NetworkInfo netInfo = cm.getActiveNetworkInfo();
             return netInfo != null && netInfo.isConnectedOrConnecting();
         }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN){
+           // Log.d("ff", "onActivityResult: "+data.getDataString());
+            getDetailsFromServer();
+
+        }
     }
+
+    private void getLoginScreen(){
+        AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
+        emailBuilder.setAllowNewAccounts(false);
+        startActivityForResult(// Get an instance of AuthUI based on the default app
+                AuthUI
+                        .getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
+                        .build(),
+                RC_SIGN_IN);
+
+    }
+
+
+    private void getDetailsFromServer(){
+        Map<String,String> params = new HashMap<>();
+        params.put("email",mAuth.getCurrentUser().getEmail());
+        params.put("firebase_token", AppSharedPreference.getData(this,AppSharedPreference.FIREBASE_TOKEN,""));
+        JsonObjectRequest objectRequest = new JsonObjectRequest(Method.POST,"http://localhost:3000/getUserDetails", new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if(response!=null){
+                    try {
+                        AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_ID,response.getString("ID"));
+                        AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_FIRSTNAME,response.getString("FIRST_NAME"));
+                        AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_LAST_NAME,response.getString("LAST_NAME"));
+                        nextScreen();
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        mAuth.signOut();
+                        Toast.makeText(LoginActivity.this, "Something went wrong try again", Toast.LENGTH_SHORT).show();
+                        getLoginScreen();
+                    }
+
+
+                }else {
+                    mAuth.signOut();
+                    Toast.makeText(LoginActivity.this, "Something went wrong try again", Toast.LENGTH_SHORT).show();
+                    getLoginScreen();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                mAuth.signOut();
+                Toast.makeText(LoginActivity.this, "Unable to sign in try again", Toast.LENGTH_SHORT).show();
+                getLoginScreen();
+            }
+        });
+
+        requestQueue.addToRequestQueue(objectRequest);
+
+
+    }
+
+    private void nextScreen(){
+        Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
+        startActivity(i);
+        finish();
+
+    }
+
+
 }
+

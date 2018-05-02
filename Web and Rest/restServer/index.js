@@ -1787,11 +1787,8 @@ function getLatestVersion(callback)
 			{
 				callback(err, null);
 			}
-<<<<<<< HEAD
 			else if (rows.length>=1) 
-=======
-			else
->>>>>>> f1625bbb15bee6ecfe8a11fe47453d02fb38caa4
+			//else
 			{
 				callback(null, rows[0]);
 			}
@@ -1920,6 +1917,42 @@ app.post('/getAdminID', function(req, res){
 			res.json(result);
 		}
 	})
+
+})
+
+app.post('/getUserDetails', function(req,res){
+	if (req.body.hasOwnProperty("email") && req.body.hasOwnProperty("firebase_token")){
+			con.query("update  USERS  set FIREBASE_ID = '"+ req.body.firebase_token+"' WHERE EMAIL = '"+req.body.email+"';");
+
+			con.query("SELECT * FROM USERS WHERE EMAIL='"+req.body.email+"';", function(err, rows){
+			if(err){
+				res.json(err);
+			}else if (rows.length === 0){
+				res.status(204);
+				res.send('No user found');
+
+			}
+			else{
+				res.json(rows[0]);
+			}
+		})
+
+	}else {
+		res.status(302);
+		res.send('Bad request');
+
+	}
+
+
+
+	// con.query("SELECT * FROM USERS WHERE EMAIL=" + mysql.escape(req.body.email), function(err, rows){
+	// 	if(err){
+	// 		callback(err, null);
+	// 	}
+	// 	else{
+	// 		callback(null, rows);
+	// 	}
+	// })
 
 })
 

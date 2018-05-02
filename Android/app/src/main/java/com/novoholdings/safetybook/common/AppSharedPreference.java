@@ -10,6 +10,11 @@ import android.content.SharedPreferences;
 public class AppSharedPreference {
 
     private static final String PREF_NAME="SafetyBookReaderApp";
+    public static final String FIREBASE_TOKEN="FirebaseToken";
+    public static final String USER_EMAIL="Email";
+    public static final String USER_ID="ID";
+    public static final String USER_FIRSTNAME="FirstName";
+    public static final String USER_LAST_NAME="LastName";
 
     public static void putData(Context ct , String key , String value)
     {
