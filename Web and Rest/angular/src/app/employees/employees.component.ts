@@ -40,7 +40,7 @@ export class EmployeesComponent implements OnInit {
 	isLoginError = false;
     newBookAdded = false;
 	loginErrorMessage = "";
-	admin_pass = "";
+	admin_password = "";
 
     testEmployee: Employee;
     employees: Employee[];
