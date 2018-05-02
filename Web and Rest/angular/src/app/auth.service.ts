@@ -15,7 +15,7 @@ export class AuthService {
   }
 
   signUpRegular(email: string, password : string) {
-    this.firebaseAuth
+    return this.firebaseAuth
       .auth
       .createUserWithEmailAndPassword(email, password);  
   }
