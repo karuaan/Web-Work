@@ -76,7 +76,7 @@ export class EmployeesService {
    } */
 
     sendInvitation(data): any {
-        var response = this.http.post(this.restURL + '/send-invitation', data);
+        var response = this.http.post(this.restURL + '/inviteAdmin', data);
         return response;
     }
 	

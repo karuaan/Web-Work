@@ -580,13 +580,13 @@ function addUser(first_name, last_name, email, callback){
 
 }
 //Done
-function addAdmin(first_name, last_name, email, callback){
+function addAdmin(email, callback){
 
 	con.query('SELECT * FROM USERS WHERE USERS.EMAIL=' + mysql.escape(email), function(err, rows){
 		if(!err){
 			if(rows[0] === undefined){
 				console.log("ROWS ARE EMPTY")
-				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ('+ mysql.escape(first_name) + ',' + mysql.escape(last_name) + ','+ mysql.escape(email) +', 1)', function(err2, result){
+				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ("", "",'+ mysql.escape(email) +', 1)', function(err2, result){
 					if(!err2){
 						con.commit(function(err3){
 							if(err3){con.rollback(function(){callback(err3, null)})}
@@ -1917,6 +1917,40 @@ app.post('/getAdminID', function(req, res){
 		}
 	})
 
+})
+
+function makepass() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < 20; i++){
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+app.post('/inviteAdmin', function(req, res){
+	addAdmin(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			var mailOptions = {
+				from: 'libertyelevatorreader@gmail.com',
+				to: [req.body.email],
+				subject: 'You have been added to Liberty Elevator Reader app!',
+				text: 'Please login using your email address and this temporary password: ' + req.body.pass;
+			}
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					res.json(error);
+				}
+				else{
+					res.json(info);
+				}
+			});
+		}
+	})
 })
 
 //admin_oidc.on('ready', () => {

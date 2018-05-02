@@ -566,23 +566,40 @@ export class EmployeesComponent implements OnInit {
 
     }
 
+	makepass() {
+	  var text = "";
+	  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+	  for (var i = 0; i < 5; i++)
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+	  return text;
+	}
+	
     inviteAdmin() {
         if (this.inviteAdminForm.invalid) {
             this.toastrService.warning('Invite', 'Enter Email address');
             return;
         }
-
+		password = this.makepass();
         const inviteData = {
-            EMAIL: this.inviteAdminForm.value.email,
+            email: this.inviteAdminForm.value.email,
+			pass: password
         };
 
         this.employeesService.sendInvitation(inviteData).subscribe((res: any) => {
             if (res && !res.status && res.message) {
                 this.toastrService.warning('Invite', res.message);
             } else {
-                this.toastrService.success('Invite', 'Success');
-                this.inviteAdminForm.reset();
-                $('#inviteAdminModal').modal('hide');
+				this.authService.signUpRegular(inviteData.email, inviteData.pass).subscribe((data) => {
+					this.toastrService.success('Invite', 'Success');
+					this.inviteAdminForm.reset();
+					$('#inviteAdminModal').modal('hide');
+				},
+				(err) => {
+					this.toastrService.warning('Invite', 'Internal server error');
+				});
+                
             }
         }, (err) => {
             this.toastrService.warning('Invite', 'Internal server error');
