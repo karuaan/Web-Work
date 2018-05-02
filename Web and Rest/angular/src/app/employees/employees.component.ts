@@ -180,6 +180,7 @@ export class EmployeesComponent implements OnInit {
                 }
             });
         });
+	}
 
     transformLessonModel(tempLession: Lesson) {
         return new Lesson(
