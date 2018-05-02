@@ -103,6 +103,7 @@ export class EmployeesComponent implements OnInit {
         this.userPassword = "";
 		this.isLoginError = false;
 		this.loginErrorMessage = "";
+		this.admin_password = "";
 
         this.employees = [];
         this.groups = [];
@@ -592,12 +593,12 @@ export class EmployeesComponent implements OnInit {
             if (res && !res.status && res.message) {
                 this.toastrService.warning('Invite', res.message);
             } else {
-				this.authService.signUpRegular(inviteData.email, inviteData.pass).subscribe((data) => {
+				this.authService.signUpRegular(inviteData.email, inviteData.pass).then(data => {
 					this.toastrService.success('Invite', 'Success');
 					this.inviteAdminForm.reset();
 					$('#inviteAdminModal').modal('hide');
-				},
-				(err) => {
+				})
+				.catch(err => {
 					this.toastrService.warning('Invite', 'Internal server error');
 				});
                 
