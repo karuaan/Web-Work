@@ -15,7 +15,7 @@ export class BookService {
   constructor(private http: HttpClient) {
     //this.setConfig();
 	this.restURL = environment.restURL;
-	this._api = {'endpoint', environment.restURL};
+	this._api = {'endpoint' : environment.restURL};
   }
 
   getBooks(): Observable<Book[]> {
