@@ -6,7 +6,7 @@ export const API_CONFIG = {
     },
     development : {
         endpoint : `http://localhost:3000`
-    }
+    },
 	windows: {
 		endpoint : `http://ec2-18-188-197-196.us-east-2.compute.amazonaws.com:3000/`
 	}
