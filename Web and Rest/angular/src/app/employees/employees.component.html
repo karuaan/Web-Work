@@ -108,7 +108,7 @@
                                                    <tr *ngFor="let lesson of dataObj.selectedBook.LESSONS;"
                                                        [ngClass]="{invalid:!lesson.validationCheck(dataObj.selectedBook.TOTAL_PAGES)}">
                                                        <td>
-                                                           <input type="checkbox" name="lession[][id]" (click)="lesson.toggle()">
+                                                           <input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
                                                        </td>
                                                        <td>
                                                            <input type="text" class="form-control input-sm col-sm-8"
@@ -164,6 +164,7 @@
 
                     <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
                     <button (click)="saveLessions()" class="btn btn-primary ">Save</button>
+										<button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
 					<!--<button type="button" class="btn btn-info" id="addLessonButton" data-toggle="modal" data-target="#newLessonModal">+ Add</button>-->
 				</div>
 			</div>

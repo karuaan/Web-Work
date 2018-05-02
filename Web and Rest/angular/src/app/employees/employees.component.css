@@ -467,3 +467,11 @@ pdf-viewer {
 #thirdColumn {
   min-height: 55em;
 }
+
+#deleteLessonButton {
+  display: none;
+}
+
+#deleteLessonButton.show {
+  display: inline-block;
+}

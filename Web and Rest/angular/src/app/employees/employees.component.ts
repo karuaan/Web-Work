@@ -1031,6 +1031,29 @@ export class EmployeesComponent implements OnInit {
         this.dataObj.selectedLesson = lesson;
     }
 
+    toggle(lesson) {
+      console.log('toggle start');
+      lesson.toggle();
+      let show = false;
+      for(let i = 0; i < this.dataObj.selectedBook.LESSONS.length; i++) {
+        if(this.dataObj.selectedBook.LESSONS[i].is_checked) {
+          show = true;
+        }
+      }
+      if(show) {
+        document.getElementById('deleteLessonButton').className = 'btn btn-primary show';
+      } else {
+        document.getElementById('deleteLessonButton').className = 'btn btn-primary';
+      }
+      console.log('toggle end');
+    }
+
+    deleteLessons() {
+      console.log(this.dataObj.selectedBook.LESSONS);
+
+      console.log('deleteLessons done');
+    }
+
     signInWithEmail() {
       this.authService.signInRegular(this.userEmail, this.userPassword).then((res) => {
 	       this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
