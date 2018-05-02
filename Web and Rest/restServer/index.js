@@ -1787,11 +1787,7 @@ function getLatestVersion(callback)
 			{
 				callback(err, null);
 			}
-<<<<<<< HEAD
 			else if (rows.length>=1) 
-=======
-			else
->>>>>>> f1625bbb15bee6ecfe8a11fe47453d02fb38caa4
 			{
 				callback(null, rows[0]);
 			}
