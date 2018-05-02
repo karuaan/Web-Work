@@ -1078,6 +1078,10 @@ export class EmployeesComponent implements OnInit {
 						this.onAdminLogin(this.admin_id);
 						this.isLoggedIn = true;
 					}
+				},
+				(err) => {
+					this.loginErrorMessage = "Internal server error, please contact an admin: " + err;
+					this.isLoginError = true;
 				})
 
             })
