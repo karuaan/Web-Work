@@ -733,6 +733,33 @@ function addAssignment(lesson_id, group_id, due_date, time_to_complete, notes){
 	});
 }
 
+function editAssignment(lesson_id, group_id, due_date, time_to_complete, notes, callback){
+	con.query("UPDATE ASSIGNMENTS SET ASSIGNMENTS.DUE_DATE=" + mysql.escape(due_date)+ ", ASSIGNMENTS.TIME_TO_COMPLETE="+ mysql.escape(time_to_complete) + ", ASSIGNMENTS.NOTES=" + mysql.esacpe(notes) + "WHERE ASSIGNMENTS.LESSON_ID="+ mysql.escape(lesson_id) +", ASSIGNMENTS.GROUP_ID=" +mysql.escape(group_id), function(err, rows){
+			if(err){
+				callback(err, null);
+			}
+			else{
+				callback(null, rows);
+			}
+	})
+
+
+app.put('/editAssignments', function(req, res)
+{
+	editAssignments(req.body.lesson_id, req.body.group_id, req.body.due_date, req.body.time_to_complete, req.body.notes, function(err, result)
+	{
+		if (err)
+		{
+			res.json(err);
+		}
+
+		else 
+		{
+			res.json(result);
+		}
+	})
+})
+
 //Done
 function addGroup(admin_id, user_ids, name, callback){
 	//console.log(user_ids);
