@@ -80,6 +80,9 @@ export class EmployeesComponent implements OnInit {
     sortAscending = true;
     sortDescending = true;
 
+    countdown: Number;
+    previewPdf: Object;
+
     private bookService: BookService;
 
     selectedGroup: Group;
@@ -780,7 +783,7 @@ export class EmployeesComponent implements OnInit {
       this.previewPdf = {
         url: `${this.bookService._api.endpoint}/read-pdf?path=${book[0].PDF_FILE}`,
         withCredentials: false
-    };
+      };
     }
 
     changePdfPageNo(pageNo: any) {
