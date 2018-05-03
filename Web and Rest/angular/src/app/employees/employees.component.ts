@@ -76,6 +76,9 @@ export class EmployeesComponent implements OnInit {
     inviteAdminForm: any = FormGroup;
     assignmentForm: any = null;
 
+    sortAscending = true;
+    sortDescending = true;
+
     private bookService: BookService;
 
     selectedGroup: Group;
@@ -100,8 +103,8 @@ export class EmployeesComponent implements OnInit {
 
         this.userEmail = "";
         this.userPassword = "";
-		this.isLoginError = false;
-		this.loginErrorMessage = "";
+		    this.isLoginError = false;
+		    this.loginErrorMessage = "";
 
         this.employees = [];
         this.groups = [];
@@ -741,6 +744,24 @@ export class EmployeesComponent implements OnInit {
         // $('#beforeChangePageOrBook').modal();
     }
 
+    loadAssignmentPreview() {
+      console.log(this.dataObj.books);
+      console.log(this.selectedAssignment);
+      let book = [];
+      for(let i = 0; i < this.dataObj.books.length; i++) {
+        if(this.dataObj.books[i].ID === this.selectedAssignment.book_id) {
+          book.push(this.dataObj.books[i]);
+        }
+      }
+
+      console.log(book);
+
+      this.previewPdf = {
+        url: `${this.bookService._api.endpoint}/read-pdf?path=${book[0].PDF_FILE}`,
+        withCredentials: false
+    };
+    }
+
     changePdfPageNo(pageNo: any) {
         if (pageNo != null && pageNo !== '' && pageNo <= this.dataObj.selectedBook.TOTAL_PAGES) {
             this.pdfCurrentPage = pageNo;
@@ -863,6 +884,8 @@ export class EmployeesComponent implements OnInit {
     }
 
     groupSelect(group) {
+      this.sortAscending = true;
+      this.sortDescending = true;
         if (group.ID == this.selectedGroup.ID) {
             return;
         }
@@ -996,6 +1019,7 @@ export class EmployeesComponent implements OnInit {
     }
 
     assignmentSelect(assignment, index) {
+      this.countdown = new Date(1970, 0, 1).setSeconds(assignment.TIME_TO_COMPLETE);
         let assignments = document.getElementsByClassName('assignment-summary');
         for (let i = 0; i < assignments.length; i++) {
             if (index == i) {
@@ -1025,6 +1049,7 @@ export class EmployeesComponent implements OnInit {
             }
 
         });
+        this.loadAssignmentPreview();
     }
 
     lessonSelect(lesson) {
@@ -1046,6 +1071,45 @@ export class EmployeesComponent implements OnInit {
         document.getElementById('deleteLessonButton').className = 'btn btn-primary';
       }
       console.log('toggle end');
+    }
+
+    toggleSort() {
+      console.log('toggling sorting direction');
+      console.log(this.sortAscending);
+      console.log(this.sortDescending);
+      console.log(this.assignments);
+
+      let sortDesc = function compare(a, b) {
+        if (a.DUE_DATE < b.DUE_DATE) {
+          return -1;
+        }
+        if (a.DUE_DATE > b.DUE_DATE) {
+          return 1;
+        }
+        // a must be equal to b
+        return 0;
+      }
+
+      let sortAsc = function compare(a, b) {
+        if (a.DUE_DATE > b.DUE_DATE) {
+          return -1;
+        }
+        if (a.DUE_DATE < b.DUE_DATE) {
+          return 1;
+        }
+        // a must be equal to b
+        return 0;
+      }
+
+      if(this.sortDescending) {
+        this.assignments.sort(sortAsc);
+        this.sortAscending = true;
+        this.sortDescending = false;
+      } else {
+        this.assignments.sort(sortDesc);
+        this.sortAscending = false;
+        this.sortDescending = true;
+      }
     }
 
     deleteLessons() {

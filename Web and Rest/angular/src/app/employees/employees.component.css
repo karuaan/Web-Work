@@ -475,3 +475,25 @@ pdf-viewer {
 #deleteLessonButton.show {
   display: inline-block;
 }
+
+.notes {
+  position: relative;
+}
+
+.notes img {
+  height: 1.5em;
+  margin: 0.5em 0em;
+}
+
+.notes-hover {
+  display: none;
+  position: absolute;
+    border: solid 0.1em #CCCCCC;
+    background: #FFFFFF;
+    border-radius: 2em;
+    padding: 0.5em;
+}
+
+.notes:hover .notes-hover {
+  display:block;
+}

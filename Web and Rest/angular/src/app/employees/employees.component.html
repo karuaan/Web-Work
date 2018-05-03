@@ -47,16 +47,26 @@
 		<div class="col-xl-0" id="secondColumn">
 			<div *ngIf="viewAssignments || viewLessons" id="secondaryContainer">
 				<div *ngIf="viewAssignments" id="assignmentsContainer">
-					<div class="date-header">
-						<h4>Due Date</h4>
+					<div class="date-header" style="height: 7em">
+						<h4 style="float: left; margin-top: 1em;">Due Date</h4>
+						<div class="due-sort" style="float: right" (click)="toggleSort()">
+							<div class="due-asc" *ngIf="sortAscending">
+								<img src="assets/pngs/arrow-up3.png" />
+							</div>
+							<div class="due-desc" *ngIf="sortDescending">
+								<img src="assets/pngs/arrow-down3.png" />
+							</div>
+						</div>
 					</div>
 					<div *ngIf="assignments[0].NAME == 'No assignments'" class="empty-assignments">No Assignments</div>
 					<div *ngIf="assignments[0].NAME !== 'No assignments'" class="assignment-list--container">
 						<div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
 							<h5>{{assignment.NAME}}</h5>
+							<!--
 							<button class="btn btn-sm btn-success" (click)="removeAssignment(assignment)" style="width: 100%">
 								<i class="fa fa-check"></i> Remove Assignment
 							</button>
+							-->
 							<div class="due-holder">
 								<p class="due-title">Due: </p><p class="due-value">{{assignment.DUE_DATE | date:'MM/dd/yyyy'}}</p>
 							</div>
@@ -173,16 +183,18 @@
 		<div class="col-xl-10" id="thirdColumn">
 			<div *ngIf="viewAssignments || !viewLessons">
 				<div id="groupSummary">
-					<h4 *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignment.NAME}}</h4>
+					<h4 *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
 					<div id="groupActions">
 						<div class="row">
 							<div class="icon-text">
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/hourglass.png" /></div>
-								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignment.TIME_TO_COMPLETE}}</div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/hourglass.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{countdown | date:'HH:mm:ss'}}</div>
 							</div>
 							<div class="icon-action">
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/ic_picture_as_pdf_48px.png" /></div>
-								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">PDF</div>
+								<!--
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/ic_picture_as_pdf_48px.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">PDF</div>
+							-->
 							</div>
 							<div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>
@@ -191,17 +203,33 @@
 						</div>
 						<div class="row">
 							<div class="icon-text">
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/calendar.png" /></div>
-								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignment.DUE_DATE| date : "MM/dd/yyyy"}}</div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/calendar.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.DUE_DATE| date : "MM/dd/yyyy"}}</div>
 							</div>
 							<div class="icon-text">
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false"><img src="assets/pngs/cs-cc-party.png" /></div>
-								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment !== null : false">{{selectedAssignmentCompletion}}</div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/cs-cc-party.png" /></div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignmentCompletion}}</div>
 							</div>
 							<div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>
 								<div class="text">Email all incomplete</div>
 							</div>
+						</div>
+						<div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' && selectedAssignment.NOTES !== undefined: false">
+							<div class="notes"><img src="assets/pngs/info2.png" />
+								<div class="notes-hover">{{selectedAssignment.NOTES}}</div>
+							</div>
+						</div>
+						<div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
+							<button class="btn btn-sm btn-success" (click)="removeAssignment(selectedAssignment)" style="margin: 0.5em 0.5em 0.5em 0em">
+								<i class="fa fa-check"></i> Remove Assignment
+							</button>
+
+							<!--
+							<button class="btn btn-sm btn-success" data-toggle="modal" data-target="#editAssignment" (click)="editAssignment(selectedAssignment)" style="margin: 0.5em 0.5em 0.5em 0em">
+								<i class="fa fa-check"></i> Edit Assignment
+							</button>
+						-->
 						</div>
 					</div>
 				</div>
@@ -241,6 +269,10 @@
                             [original-size]="false"
                             style="display: block;"></pdf-viewer>
 			</div>
+		</div>
+
+		<div class="col-xl-10" id="fourthColumn">
+			<pdf-viewer [src]="previewPdf" [render-text]="false"></pdf-viewer>
 		</div>
 	</div>
 
