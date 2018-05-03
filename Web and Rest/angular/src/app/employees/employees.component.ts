@@ -40,6 +40,7 @@ export class EmployeesComponent implements OnInit {
 	isLoginError = false;
     newBookAdded = false;
 	loginErrorMessage = "";
+	admin_password = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -50,7 +51,7 @@ export class EmployeesComponent implements OnInit {
     lessons: Lesson[];
     selectedAssignment: Assignment;
     selectedAssignmentCompletion: string;
-    admin_id = 3;
+    admin_id = -1;
     assignment_id: 1;
     pdfCurrentPage: string;
     pdfStartPage: Number;
@@ -103,8 +104,9 @@ export class EmployeesComponent implements OnInit {
 
         this.userEmail = "";
         this.userPassword = "";
-		    this.isLoginError = false;
-		    this.loginErrorMessage = "";
+		this.isLoginError = false;
+		this.loginErrorMessage = "";
+		this.admin_password = "";
 
         this.employees = [];
         this.groups = [];
@@ -124,12 +126,14 @@ export class EmployeesComponent implements OnInit {
 
         document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
 
+    }
 
-        employeesService.getGroups(this.admin_id).subscribe(groups => {
+	onAdminLogin(admin_id){
+		this.employeesService.getGroups(admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
 
-            employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
+            this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
 
                 if (assignments && assignments.hasOwnProperty('err')){
                     this.assignments = [{
@@ -143,7 +147,7 @@ export class EmployeesComponent implements OnInit {
                                     }];
                     this.selectedAssignment = assignments[0];
                                     if (this.selectedGroup && this.selectedAssignment){
-                                        employeesService.getEmployees(
+                                        this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
                                             -1
                                         ).subscribe(employees => {
@@ -154,7 +158,7 @@ export class EmployeesComponent implements OnInit {
                     this.assignments = assignments;
                     this.selectedAssignment = assignments[0];
                                     if (this.selectedGroup && this.selectedAssignment){
-                                        employeesService.getEmployees(
+                                        this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
                                             this.selectedAssignment.assignment_id
                                         ).subscribe(employees => {
@@ -181,7 +185,7 @@ export class EmployeesComponent implements OnInit {
                 }
             });
         });
-    }
+	}
 
     transformLessonModel(tempLession: Lesson) {
         return new Lesson(
@@ -567,23 +571,40 @@ export class EmployeesComponent implements OnInit {
 
     }
 
+	makepass() {
+	  var text = "";
+	  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+	  for (var i = 0; i < 5; i++)
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+	  return text;
+	}
+
     inviteAdmin() {
         if (this.inviteAdminForm.invalid) {
             this.toastrService.warning('Invite', 'Enter Email address');
             return;
         }
-
+		this.admin_password = this.makepass();
         const inviteData = {
-            EMAIL: this.inviteAdminForm.value.email,
+            email: this.inviteAdminForm.value.email,
+			pass: this.admin_password
         };
 
         this.employeesService.sendInvitation(inviteData).subscribe((res: any) => {
             if (res && !res.status && res.message) {
                 this.toastrService.warning('Invite', res.message);
             } else {
-                this.toastrService.success('Invite', 'Success');
-                this.inviteAdminForm.reset();
-                $('#inviteAdminModal').modal('hide');
+				this.authService.signUpRegular(inviteData.email, inviteData.pass).then(data => {
+					this.toastrService.success('Invite', 'Success');
+					this.inviteAdminForm.reset();
+					$('#inviteAdminModal').modal('hide');
+				})
+				.catch(err => {
+					this.toastrService.warning('Invite', 'Internal server error');
+				});
+
             }
         }, (err) => {
             this.toastrService.warning('Invite', 'Internal server error');
@@ -1125,27 +1146,36 @@ export class EmployeesComponent implements OnInit {
     }
 
     signInWithEmail() {
-      this.authService.signInRegular(this.userEmail, this.userPassword).then((res) => {
-	       this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
-           if(res2[0]['ID'] == undefined) {
-             this.loginErrorMessage = "You are not an admin";
-             this.isLoginError = true;
-           } else {
-             this.admin_id = res2[0]['ID'];
-             this.isLoggedIn = true;
-           }
-           setTimeout(() => {
-                this.viewSwitch('assignments');
-              });
-         })
-       }).catch((err) => {
-         this.loginErrorMessage = err;
-         this.isLoginError = true;
-       });
-     }
-     testAddUser(){
-		     this.authService.signUpRegular("ggoldsht@stevens.edu", "");
-	   }
+        this.authService.signInRegular(this.userEmail, this.userPassword)
+            .then((res) => {
+				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
+					if(res2[0] == undefined){
+						//this.loginErrorMessage = "You are not an admin";
+						//this.isLoginError = true;
+						this.isLoggedIn = true;
+					}
+					else{
+						this.admin_id = res2[0]['ID'];
+						console.log(this.admin_id)
+						this.onAdminLogin(3);
+						this.isLoggedIn = true;
+					}
+				},
+				(err) => {
+					this.loginErrorMessage = "Internal server error, please contact an admin: " + err;
+					this.isLoginError = true;
+				})
+
+            })
+            .catch((err) => {
+				this.loginErrorMessage = err;
+				this.isLoginError = true;
+			});
+    }
+
+	testAddUser(){
+		this.authService.signUpRegular("ggoldsht@stevens.edu", "");
+	}
 
     ngOnInit() {
 

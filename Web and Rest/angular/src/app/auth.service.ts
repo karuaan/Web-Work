@@ -15,15 +15,9 @@ export class AuthService {
   }
 
   signUpRegular(email: string, password : string) {
-    this.firebaseAuth
+    return this.firebaseAuth
       .auth
-      .createUserWithEmailAndPassword(email, password)
-      .then(value => {
-        console.log('Success!', value);
-      })
-      .catch(err => {
-        console.log('Something went wrong:',err.message);
-      });    
+      .createUserWithEmailAndPassword(email, password);  
   }
 
   signInRegular(email: string, password: string) {

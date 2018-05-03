@@ -6,10 +6,14 @@ var mkdirp = require('mkdirp');
 const mysql = require('mysql')
 const fs = require('fs');
 const path = require('path')
-const fileupload = require('express-fileupload')
-const admin_functions = require('./functions/admin_functions')
-const hummus = require('hummus')
+const https = require('https');
+const fileupload = require('express-fileupload');
+const admin_functions = require('./functions/admin_functions');
+const hummus = require('hummus');
+const firebaseAdmin = require("firebase-admin");
+const serviceAccount = require("./firebase_key.json");
 var validator = require('express-validator');
+var scheduler = require('node-schedule');
 global.__basedir = __dirname;
 
 
@@ -40,11 +44,15 @@ const nodemailer = require('nodemailer');
 const session = require('express-session');
 const request = require('request')
 var cors = require('cors')
-const { ExpressOIDC } = require('@okta/oidc-middleware');
 
 //TODO, refactor for admin/user access
 //const user_functions = require('./functions/user_functions.js');
 //const admin_functions = require('./functions/admin_functions.js');
+
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(serviceAccount),
+  databaseURL: "https://safety-book-reader.firebaseio.com"
+});
 
 var transporter = nodemailer.createTransport({
 	service: 'Gmail',
@@ -100,7 +108,7 @@ app.get('/test/getallusers', function(req, res){
 			res.json(rows);
 		}
 	})
-})
+});
 
 app.use(function (req, res, next) {
 
@@ -195,6 +203,7 @@ function create_all_tables(){
 "START_DATE DATETIME,                                                      "+
 "END_DATE DATETIME,                                                        "+
 "TIME_TO_COMPLETE int unsigned,                                            "+
+"AVAILABLE bit(1),														   "+
 "PRIMARY KEY (ID),                                                         "+
 "FOREIGN KEY (LESSON_ID) REFERENCES LESSONS(ID) ON DELETE CASCADE);        "
 		, function(err, rows, fields){
@@ -230,38 +239,95 @@ function create_all_tables(){
 app.get('/createalltables', function(req, res){
 	create_all_tables();
 	res.json({});
-})
-
-const admin_oidc = new ExpressOIDC({
-	issuer: 'https://dev-383846.oktapreview.com/oauth2/default',
-	client_id: '0oadczot4xyhUxY8Y0h7',
-	client_secret: 'FPoYzR_ogea7hxNlYz9AA-HLi_aI32zRY1q-bbW6',
-	redirect_uri: 'http://localhost:3000/authorization-code/callback',
-	scope: 'openid profile'
-})
-const user_oidc = new ExpressOIDC({
-	issuer: 'https://dev-383846.oktapreview.com/oauth2/default',
-	client_id: '0oadfv76nkbkSICaA0h7',
-	client_secret: 'UtQJB-S31SHaITwf0qwVlKcgOfHBm3LxQuVW-hy2',
-	redirect_uri: 'http://localhost:3000/authorization-code/callback',
-	scope: 'openid profile'
-})
-
-// commneed the admin_oidc and user_oidc  temporiarly bcz of csrf token error
-//app.use(admin_oidc.router);
-//app.use(user_oidc.router);
-
-
-
-
-//app.use(bodyParser.urlencoded({extended: true}));
-//app.use(bodyParser.json());
-
-//app.use(fileUp())
+});
 
 //Added the cors to avoid cross origin issue
 app.use(cors());
 app.use(validator());
+
+//run every day to add status records for newly available assignments
+var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
+	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, rows){
+		if (!err){
+			console.log(rows);
+			if (rows.length>0){
+				let statusQuery = "INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ";
+				rows.forEach(function(element, index, array){
+					if (index>0){
+						statusQuery+=", "
+					}
+					statusQuery+="(SELECT "+mysql.escape(element.group_id)+", USER_ID, "+mysql.escape(element.assignment_id)+", 0 "+
+					"FROM GROUPS WHERE ID="+mysql.escape(element.group_id)+")";
+				});
+				statusQuery+=";";
+				console.log(statusQuery);
+				con.query(statusQuery, function(err, result){
+					if (!err){
+						console.log(result);
+						let availableQuery = "UPDATE ASSIGNMENTS SET AVAILABLE=1 WHERE";
+						rows.forEach(function(element, index, array){
+							if (index>0){
+								availableQuery+=" AND"
+							}
+							availableQuery+=" (ID="+mysql.escape(element.assignment_id)+" AND GROUP_ID="+mysql.escape(element.group_id)+")";
+						});
+						console.log(availableQuery);
+						con.query(availableQuery, function(err, result){
+							if (!err){
+								console.log(result);
+								rows.forEach(function(element, index, array){
+									//send notification
+									//NILESH: this should be an expandable notification that show the notes attribute when expanded (if possible)
+									// thank you :-)
+									let title = element.assignment_name + " now available";
+									let minutes = Math.floor(element.reading_time / 60);
+									let notes = element.notes; //could be null
+									let seconds = element.reading_time - minutes * 60;
+									let readingTimeStr = "";
+									if (minutes > 0){
+										readingTimeStr += minutes + " minutes ";
+									}
+									if (seconds > 0){
+										readingTimeStr += seconds + " seconds";
+									}
+									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
+									//headers for https request
+									/*headers:{
+											'Content-Type':'application/json',
+											Authorization:'key=AIzaSyDj3uGXUayslSgPJnwmpqHjwQ_c0ZCqBv4'
+										}*/
+									//options for firebase notification
+									let options = {
+										hostname: 'fcm.googleapis.com/fcm/send',
+										priority: 'normal',
+										notification: {
+											title: title,
+											body: body
+										}
+
+									};
+
+									//todo: send notification to topic: '/group<ID>'
+									
+								});
+							}
+							else{
+								console.log(err);
+							}
+						});
+					}
+					else{
+						console.log(err);
+					}
+				});
+				
+			}
+		}
+		else{
+			console.log(error);
+		}
+	})
+});
 
 app.get('/email/test', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	transporter.sendMail(mailOptions, function(error, info){
@@ -393,14 +459,14 @@ function getGroups(email, callback){
 //Helper function to get things the way James wants
 function nest(theJson, index, array){
 	var assignment = {
-	"assignment_id" : theJson.assignment_id,
-	"assignment_name" : theJson.assignment_name,
+	"id" : theJson.id,
+	"name" : theJson.name,
 	"start_page" : theJson.start_page,
 	"end_page" : theJson.end_page,
 	"reading_time" : theJson.reading_time,
 	"due_date" : theJson.due_date,
-	"file" : theJson.file,
-	"complete" : parseInt(theJson.complete.toString('hex'))
+	"lesson_pdf" : theJson.lesson_pdf,
+	"complete" : parseInt(theJson.is_complete.toString('hex'))
 	}
 	//console.log(assignment)
 	theJson["assignment"] = assignment;
@@ -414,6 +480,7 @@ function nest(theJson, index, array){
 	delete theJson['complete'];
 
 }
+
 //May need rework in ordering
 function getGroups2(email, callback){
 
@@ -448,6 +515,30 @@ function getGroups3(email, callback){
 		}
 	});
 
+}
+
+function getGroups4(user_id, callback){
+	let groupQuery = 'SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name '+
+					'FROM GROUPS '+
+				  	'INNER JOIN USERS '+
+					    'ON GROUPS.ADMIN_ID=USERS.ID '+
+					  'INNER JOIN LESSON_PLANS '+
+					    'ON LESSON_PLANS.GROUP_ID = GROUPS.ID '+
+					  'INNER JOIN LESSONS '+
+					    'ON LESSONS.ID = LESSONS.LESSON_PLAN_ID '+
+					  'INNER JOIN BOOKS '+
+					    'ON BOOKS.ID = LESSON_PLANS.BOOK_ID '+
+		    		'INNER JOIN STATUS '+
+			    		'ON STATUS.GROUP_ID = GROUPS.ID '+
+					'WHERE STATUS.IS_COMPLETE = 0 AND GROUPS.USER_ID = '+mysql.escape(user_id);
+	con.query(groupQuery, function(err, rows){
+		if (!err){
+			callback(null, rows);
+		}
+		else{
+			callback(err, null);
+		}
+	})
 }
 /*
 function getLatestAssignment(groupID, callback){
@@ -489,13 +580,13 @@ function addUser(first_name, last_name, email, callback){
 
 }
 //Done
-function addAdmin(first_name, last_name, email, callback){
+function addAdmin(email, callback){
 
 	con.query('SELECT * FROM USERS WHERE USERS.EMAIL=' + mysql.escape(email), function(err, rows){
 		if(!err){
 			if(rows[0] === undefined){
 				console.log("ROWS ARE EMPTY")
-				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ('+ mysql.escape(first_name) + ',' + mysql.escape(last_name) + ','+ mysql.escape(email) +', 1)', function(err2, result){
+				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ("", "",'+ mysql.escape(email) +', 1)', function(err2, result){
 					if(!err2){
 						con.commit(function(err3){
 							if(err3){con.rollback(function(){callback(err3, null)})}
@@ -510,8 +601,9 @@ function addAdmin(first_name, last_name, email, callback){
 				})
 			}
 			else{
-				console.log(rows)
+				console.log(rows);
 				callback({'error': 'user already exists'}, null);
+				throw err;
 			}
 		}
 		else{
@@ -1531,10 +1623,10 @@ app.post('/getUID', function(req, res){
 
 function getAssignmentsUser(user_id, group_id, callback){
 
-	con.query('select STATUS.IS_COMPLETE, LESSONS.START_PAGE, LESSONS.PDF_FILE, LESSONS.END_PAGE, LESSONS.NAME, '+
-	'ASSIGNMENTS.TIME_TO_COMPLETE, ASSIGNMENTS.DUE_DATE, ASSIGNMENTS.ID FROM LESSONS '+
+	con.query('select STATUS.IS_COMPLETE as is_complete, LESSONS.START_PAGE as start_page, LESSONS.PDF_FILE as lesson_pdf, LESSONS.END_PAGE as end_page, LESSONS.NAME as name, '+
+	'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id FROM LESSONS '+
 	'JOIN ASSIGNMENTS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID JOIN STATUS ON STATUS.ASSIGNMENT_ID='+
-	'ASSIGNMENTS.ID WHERE STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
+	'ASSIGNMENTS.ID WHERE ASSIGNMENT.START_DATE<=CURRENT_DATE() STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
 //	con.query('Select * FROM USERS '+
 //	'JOIN GROUPS ON USERS.ID=GROUPS.USER_ID '+
 //	'JOIN ASSIGNMENTS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID '+
@@ -1591,14 +1683,52 @@ app.post('/getgroups',function(req,res){
 });
 
 app.post('/getGroupsUser', function(req, res){
-	getGroups2(req.body.user_email, function(err, results){
+	getGroups4(req.body.user_id, function(err, rows){
 		if(err){
 			res.json(err);
 		}
 		else{
-			res.json(results);
+			if (req.body.completed_assignments){
+				let query = 'INSERT INTO STATUS (IS_COMPLETE) VALUES ';
+				//VALUES
+				for (var i = 0; i < req.body.completed_assignments.length; i++){
+					if (i>0){
+						query+=', ';
+					}
+					query+='(1)';
+				}
+				query+=' WHERE user_id='+mysql.escape(req.body.user_id)+ 'AND (';
+
+				for (var i = 0; i < req.body.completed_assignments.length; i++){
+					if (i>0){
+						query+=' OR';
+					}
+					query+=' ASSIGNMENT_ID='+mysql.escape(req.body.completed_assignments[i]);
+				}
+				query+=')';
+				con.query(query, function(err, data, fields){
+					if (!err){
+						rows.forEach(function(element, index, array){
+							getAssignmentsUser(req.body.user_id, element.group_id, function(err, results){
+								nest(element, results);
+							});
+						});
+						res.json(results);
+					}
+				});
+
+			}
+			else{
+				getAssignments
+				res.json(results);
+				
+			}
 		}
-	})
+	});
+});
+
+app.get('/getGroupsUser', function(req, res){
+
 })
 
 function emailToList(emailList, text, callback){
@@ -1657,9 +1787,9 @@ function getLatestVersion(callback)
 			{
 				callback(err, null);
 			}
-			else
+			else if (rows.length>=1) 
 			{
-				callback(null, rows);
+				callback(null, rows[0]);
 			}
 		}
 
@@ -1669,7 +1799,7 @@ function getLatestVersion(callback)
 function updateVersionAPK(versionNumber, versionUrl, callback)
 {
 	con.query
-	("INSERT INTO ANDROID_VERSION(version_number, version_url) VALUES ("mysql.escape(versionNumber) + ',' + mysql.escape(versionUrl) +")", function(err, rows)
+	("INSERT INTO ANDROID_VERSION(version_number, version_url) VALUES ("+mysql.escape(versionNumber) + ',' + mysql.escape(versionUrl) +")", function(err, rows)
 	{
 		if (err)
 		{
@@ -1787,6 +1917,40 @@ app.post('/getAdminID', function(req, res){
 		}
 	})
 
+})
+
+function makepass() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < 20; i++){
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+app.post('/inviteAdmin', function(req, res){
+	addAdmin(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			var mailOptions = {
+				from: 'libertyelevatorreader@gmail.com',
+				to: [req.body.email],
+				subject: 'You have been added to Liberty Elevator Reader app!',
+				text: 'Please login using your email address and this temporary password: ' + req.body.pass
+			}
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					res.json(error);
+				}
+				else{
+					res.json(info);
+				}
+			});
+		}
+	})
 })
 
 //admin_oidc.on('ready', () => {

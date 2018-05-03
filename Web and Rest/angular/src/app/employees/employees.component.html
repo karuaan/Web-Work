@@ -18,7 +18,7 @@
 	  <p>{{loginErrorMessage}}</p>
 	</div>
 </div>
-<div class="container" *ngIf="isLoggedIn">
+<div class="container" *ngIf="isLoggedIn && admin_id >= 0">
 
 	<div class="row" id="groupTabs">
 		<div class="btn-group btn-group-toggle" data-toggle="buttons">
@@ -641,4 +641,16 @@
            </div>
        </div>
 
+</div>
+
+<div class="container" *ngIf="isLoggedIn && admin_id < 0">
+	<h1>Welcome to the PDF Distribution App</h1>
+	<p>This page has instructions for downloading and installing the pdf reader app on your android device.</p>
+	<p>Follow these instructions to begin receiving learning materials.</p>
+	<ol>
+		<li>Step 1</li>
+		<li>Step 2</li>
+		<li>Step 3</li>
+	</ol>
+	<small class="text text-muted">If you are an admin trying to get to the admin console, you should not be seeing this page. Please contact an administrator.</small>
 </div>

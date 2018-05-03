@@ -7,7 +7,8 @@ import { Book } from './book';
 import { Lesson } from './lesson';
 import { MasterEntry } from './master-entry';
 import { Observable } from 'rxjs';
-import {API_CONFIG, DEBUG_MODE} from './config/index';
+//import {API_CONFIG, DEBUG_MODE} from './config/index';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class EmployeesService {
@@ -15,7 +16,7 @@ export class EmployeesService {
 	restURL: string;
 
   constructor(private http: HttpClient) {
-      this.setConfig();
+      //this.setConfig();
 	  // var debug = false;
 	  // if(!debug){
 		// this.restURL =  'http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000';
@@ -23,6 +24,8 @@ export class EmployeesService {
 	  // else{
 		// this.restURL = 'http://localhost:3000';
 	  // }
+	  
+	  this.restURL = environment.restURL;
   }
   
   convertToEmployeeArray(){
@@ -63,17 +66,17 @@ export class EmployeesService {
 	  var response = this.http.post<Group[]>(this.restURL + '/getgroups', {'admin_id': admin_id});
 	  return response;
   }
-
+/* 
   setConfig(): void {
        if (DEBUG_MODE) {
             this.restURL = API_CONFIG.development.endpoint;
        } else {
             this.restURL = API_CONFIG.production.endpoint;
        }
-   }
+   } */
 
     sendInvitation(data): any {
-        var response = this.http.post(this.restURL + '/send-invitation', data);
+        var response = this.http.post(this.restURL + '/inviteAdmin', data);
         return response;
     }
 	
