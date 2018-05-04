@@ -1944,17 +1944,70 @@ app.post('/getUserDetails', function(req,res){
 	}
 
 
+})
+app.post('/sendNotification', function(req,res){
+	// 52 is user id of mamidi.nilesh@gmail.com
+	// add the user ids in in clause to get and send to multple users at once
 
-	// con.query("SELECT * FROM USERS WHERE EMAIL=" + mysql.escape(req.body.email), function(err, rows){
-	// 	if(err){
-	// 		callback(err, null);
-	// 	}
-	// 	else{
-	// 		callback(null, rows);
-	// 	}
-	// })
+			con.query("SELECT FIREBASE_ID  FROM USERS WHERE ID IN (52);", function(err, rows){
+			if(err){
+				res.json(err);
+			}
+			else{
+				console.log(rows.toString())
+				var firebase_tokens = [];
+				for (var i = 0; i < rows.length; i++) {
+						firebase_tokens.push(rows[i]["FIREBASE_ID"].toString());
+				    
+				}
+				;
+				//notification_type: currently handling 2 type normal and expandable
+				sendMessageToUser(firebase_tokens,"Safety Reader","Please complete your assignment", "expandable")
+				res.status(200)
+				res.json("Notification sent");
+			}
+		})
+
+	
 
 })
+
+
+
+function sendMessageToUser(deviceIds, title, body,notification_type) {
+  request({
+    url: 'https://fcm.googleapis.com/fcm/send',
+    method: 'POST',
+    headers: {
+      'Content-Type' :' application/json',
+      'Authorization': 'key=AIzaSyD_eYHs27nVu8f94PJRIXHVw7zcu-UTyAA'
+    },
+    body: JSON.stringify(
+      { "data": {
+      	"body": body,
+        "title": title,
+        "notification_type": notification_type
+      },
+        "registration_ids": deviceIds
+      }
+    )
+  }, function(error, response, body) {
+    if (error) { 
+    	//res.json(error);
+      console.error(error, response, body); 
+    }
+    else if (response.statusCode >= 400) { 
+    	//res.status(302);
+      console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body); 
+    }
+    else {
+      console.log('Done!')
+      //res.status(200);
+    }
+  });
+}
+
+
 
 //admin_oidc.on('ready', () => {
 //	user_oidc.on('ready', () => {

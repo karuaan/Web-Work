@@ -48,7 +48,7 @@ dependencies {
     implementation "com.android.support:customtabs:27.1.1"
     implementation 'com.google.firebase:firebase-auth:15.0.0'
     implementation 'com.firebaseui:firebase-ui-auth:3.2.2'
-    implementation 'com.google.firebase:firebase-messaging:15.0.0'
+    implementation 'com.google.firebase:firebase-messaging:15.0.2'
     api 'com.firebase:firebase-jobdispatcher:0.6.0'
     api fileTree(include: ['*.jar'], dir: 'libs')
     api 'joda-time:joda-time:2.9.9'

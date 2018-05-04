@@ -73,6 +73,7 @@ import okhttp3.OkHttpClient;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "LoginActivity";
     private Button loginButton;
     private Button forgotPass;
     SharedPreferences sharedPreferences;
@@ -95,12 +96,16 @@ public class LoginActivity extends AppCompatActivity {
             new AuthUI.IdpConfig.EmailBuilder().setAllowNewAccounts(false).build());
 
     RequestQueue requestQueue;
+    ProgressDialog progressDialog;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestQueue = RequestQueue.getInstance(this);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("Loading please wait ..");
 
 //        if (isOnline() == true) {
 //            updateChecker();
@@ -390,6 +395,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN){
            // Log.d("ff", "onActivityResult: "+data.getDataString());
+            progressDialog.show();
+            //nextScreen();
             getDetailsFromServer();
 
         }
@@ -414,10 +421,12 @@ public class LoginActivity extends AppCompatActivity {
         Map<String,String> params = new HashMap<>();
         params.put("email",mAuth.getCurrentUser().getEmail());
         params.put("firebase_token", AppSharedPreference.getData(this,AppSharedPreference.FIREBASE_TOKEN,""));
-        JsonObjectRequest objectRequest = new JsonObjectRequest(Method.POST,"http://localhost:3000/getUserDetails", new JSONObject(params),
+        JsonObjectRequest objectRequest = new JsonObjectRequest(Method.POST,"http://192.168.0.103:3000/getUserDetails", new JSONObject(params),
                 new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                progressDialog.dismiss();
+                Log.d(TAG, "onResponse: =============== ");
                 if(response!=null){
                     try {
                         AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_ID,response.getString("ID"));
@@ -443,6 +452,8 @@ public class LoginActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "onErrorResponse: ==================");
+                progressDialog.dismiss();
                 mAuth.signOut();
                 Toast.makeText(LoginActivity.this, "Unable to sign in try again", Toast.LENGTH_SHORT).show();
                 getLoginScreen();
