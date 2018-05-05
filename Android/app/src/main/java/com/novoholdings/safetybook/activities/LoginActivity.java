@@ -38,6 +38,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.novoholdings.safetybook.BuildConfig;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.RequestQueue;
@@ -46,6 +47,7 @@ import com.novoholdings.safetybook.common.AppSharedPreference;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -432,6 +434,11 @@ public class LoginActivity extends AppCompatActivity {
                         AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_ID,response.getString("ID"));
                         AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_FIRSTNAME,response.getString("FIRST_NAME"));
                         AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_LAST_NAME,response.getString("LAST_NAME"));
+                        JSONArray suscribingTopics = response.getJSONArray("SUSCRIBE_TOPICS");
+                        for(int i =0;i<suscribingTopics.length();i++){
+                            FirebaseMessaging.getInstance().subscribeToTopic(suscribingTopics.getString(i));
+
+                        }
                         nextScreen();
 
                     } catch (JSONException e) {

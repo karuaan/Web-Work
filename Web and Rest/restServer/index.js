@@ -308,6 +308,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 									};
 
 									//todo: send notification to topic: '/group<ID>'
+									//sendMessageToGroup("group1","Safety Reader","Please complete your assignment", "expandable")
 									
 								});
 							}
@@ -1920,8 +1921,10 @@ app.post('/getAdminID', function(req, res){
 
 })
 
+
 app.post('/getUserDetails', function(req,res){
 	if (req.body.hasOwnProperty("email") && req.body.hasOwnProperty("firebase_token")){
+
 			con.query("update  USERS  set FIREBASE_ID = '"+ req.body.firebase_token+"' WHERE EMAIL = '"+req.body.email+"';");
 
 			con.query("SELECT * FROM USERS WHERE EMAIL='"+req.body.email+"';", function(err, rows){
@@ -1933,7 +1936,26 @@ app.post('/getUserDetails', function(req,res){
 
 			}
 			else{
-				res.json(rows[0]);
+				var userData = rows[0];				
+				con.query("SELECT ID FROM GROUPS WHERE USER_ID='"+userData["ID"]+"';", function(err, rows){
+					//  suscribe_to_topics  is an array as user belongs to multiple groups
+					
+					var suscribe_to_topics = [];
+					if (err){
+						console.log(err)
+						// do nothing
+					}else {						
+						for (var i = 0; i < rows.length; i++) {
+						suscribe_to_topics.push("group"+rows[i]["ID"].toString());
+					}
+					// currently added a dummy group1 as i dont belong to any group
+					// remove the below line 
+					suscribe_to_topics.push("group1");
+					userData["SUSCRIBE_TOPICS"] = suscribe_to_topics;
+					res.json(userData);
+					}
+				})
+				
 			}
 		})
 
@@ -2006,6 +2028,49 @@ function sendMessageToUser(deviceIds, title, body,notification_type) {
     }
   });
 }
+app.post('/sendMessageToGroup', function(req,res){
+				sendMessageToGroup("group1","TOPIC - Safety Reader","Please complete your assignment", "expandable")
+				res.status(200)
+				res.json("Notification sent");
+			
+});
+
+
+
+function sendMessageToGroup(topic, title, body,notification_type) {
+  request({
+    url: 'https://fcm.googleapis.com/fcm/send',
+    method: 'POST',
+    headers: {
+      'Content-Type' :' application/json',
+      'Authorization': 'key=AIzaSyD_eYHs27nVu8f94PJRIXHVw7zcu-UTyAA'
+    },
+    body: JSON.stringify(
+      { "data": {
+      	"body": body,
+        "title": title,
+        "notification_type": notification_type
+      },
+        "to": "/topics/"+topic
+      }
+    )
+  }, function(error, response, body) {
+    if (error) { 
+    	//res.json(error);
+      console.error(error, response, body); 
+    }
+    else if (response.statusCode >= 400) { 
+    	//res.status(302);
+      console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body); 
+    }
+    else {
+      console.log('Done!')
+      //res.status(200);
+    }
+  });
+}
+
+
 
 
 
