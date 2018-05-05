@@ -14,9 +14,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.GridView;
@@ -63,7 +65,7 @@ public class GroupsActivity extends AppCompatActivity {
     private GroupsDao groupsDao;
     private AssignmentsDao assignmentsDao;
     private ArrayList<GroupBean> userGroups;
-    private GridLayout gridLayout;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private GridView studentGrid;
     private TextView studentWelcome;
     private ArrayList<AssignmentBean> assignmentArray = new ArrayList<>();
@@ -97,7 +99,7 @@ public class GroupsActivity extends AppCompatActivity {
             startActivity(i);
         }
         else {
-            updateUI(mAuth.getCurrentUser());
+            updateUI();
         }
 
         threeDayNotification = new NotificationCompat.Builder(GroupsActivity.this);
@@ -142,25 +144,59 @@ public class GroupsActivity extends AppCompatActivity {
         }
     }
 
-    private void updateUI(FirebaseUser currentUser){
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            // Check if user triggered a refresh:
+            case R.id.sync:
+                Log.i("Input", "Refresh menu item selected");
+
+                // Signal SwipeRefreshLayout to start the progress indicator
+                swipeRefreshLayout.setRefreshing(true);
+
+                // Start the refresh background task.
+                // This method calls setRefreshing(false) when it's finished.
+                fetchUserInfo(mAuth.getCurrentUser());
+
+                return true;
+
+            case R.id.log_out:
+
+                mAuth.signOut();
+        }
+
+        // User didn't trigger a refresh, let the superclass handle this action
+        return super.onOptionsItemSelected(item);
+
+    }
+    private void updateUI(){
         extras = getIntent().getExtras();
 
         groupsDao = new GroupsDao(GroupsActivity.this);
         assignmentsDao = new AssignmentsDao(GroupsActivity.this);
 
+        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_layout);
         studentGrid = (GridView) findViewById(R.id.studentGrid);
         studentWelcome = (TextView) findViewById(R.id.studentWelcome);
 
-        int permissionCheck = ContextCompat.checkSelfPermission(
-                this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            showExplanation("Storage permission needed", "", Manifest.permission.READ_PHONE_STATE, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
-        } else {
-            fetchUserInfo(currentUser);
-        }
+        swipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i("Input", "onRefresh called from SwipeRefreshLayout");
 
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        fetchUserInfo(mAuth.getCurrentUser());
+                    }
+                }
+        );
+    }
+
+    @Override
+    public void onBackPressed(){
+        finish();
     }
 
     private void showExplanation(String title,
@@ -213,38 +249,49 @@ public class GroupsActivity extends AppCompatActivity {
 //        AppProperties.saveUserData(GroupsActivity.this, mUserInfoJson.get());
 
         //get user ID
-        String email = AppProperties.getUserEmail(GroupsActivity.this, currentUser.getEmail());
-        if (!AppProperties.isNull(email)){
+        int permissionCheck = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            showExplanation("Storage permission needed", "", Manifest.permission.READ_PHONE_STATE, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+        } else {
+            String email = AppProperties.getUserEmail(GroupsActivity.this, currentUser.getEmail());
+            if (!AppProperties.isNull(email)){
 
-            String url = AppProperties.DIR_SERVER_ROOT+"getUID";
-            JSONObject getUserDataRequest = new JSONObject();
-            try{
+                String url = AppProperties.DIR_SERVER_ROOT+"getUID";
+                JSONObject getUserDataRequest = new JSONObject();
+                try{
 
-                getUserDataRequest.put("user_email", email);
-            }catch (JSONException e){
-                e.printStackTrace();
-            }
+                    getUserDataRequest.put("user_email", email);
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
 
-            JsonObjectRequest getUserId = new JsonObjectRequest
-                    (Request.Method.POST, url, getUserDataRequest, new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try{
-                                AppProperties.setUserId(GroupsActivity.this, response.getLong("ID"));
-                                downloadUserData();
+                JsonObjectRequest getUserId = new JsonObjectRequest
+                        (Request.Method.POST, url, getUserDataRequest, new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                try{
+                                    AppProperties.setUserId(GroupsActivity.this, response.getLong("ID"));
+                                    downloadUserData();
 
-                            }catch (JSONException e){
-                                e.printStackTrace();
+                                }catch (JSONException e){
+                                    swipeRefreshLayout.setRefreshing(false);
+                                    e.printStackTrace();
+                                }
                             }
-                        }
-                    }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                        }
-                    });
-            RequestQueue.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                swipeRefreshLayout.setRefreshing(false);
+                                error.printStackTrace();
+                            }
+                        });
+                RequestQueue.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
+            }
         }
+
     }
 
     private void showSnackbar(String message) {
@@ -281,6 +328,7 @@ public class GroupsActivity extends AppCompatActivity {
 
             findViewById(R.id.loading_container).setVisibility(View.GONE);
             findViewById(R.id.grid_container).setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setRefreshing(false);
 
             return;
         }
@@ -307,6 +355,7 @@ public class GroupsActivity extends AppCompatActivity {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     error.getMessage();
+                    swipeRefreshLayout.setRefreshing(false);
                     Toast.makeText(GroupsActivity.this, "Error loading data", Toast.LENGTH_LONG).show();
                 }
             }) {
@@ -330,6 +379,7 @@ public class GroupsActivity extends AppCompatActivity {
 
 
         } catch (Exception e) {
+            swipeRefreshLayout.setRefreshing(false);
             e.printStackTrace();
         }
 
@@ -408,6 +458,7 @@ public class GroupsActivity extends AppCompatActivity {
 
                 populateGroups();
             } catch (JSONException e) {
+                swipeRefreshLayout.setRefreshing(false);
                 e.printStackTrace();
                 Toast.makeText(GroupsActivity.this, "Error loading data", Toast.LENGTH_LONG).show();
 
@@ -435,6 +486,7 @@ public class GroupsActivity extends AppCompatActivity {
         studentGrid = (GridView)findViewById(R.id.studentGrid);
 
         studentGrid.setAdapter(gridAdapter);
+        swipeRefreshLayout.setRefreshing(false);
 
     }
 

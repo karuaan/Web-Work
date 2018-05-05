@@ -199,8 +199,8 @@ function create_all_tables(){
 "NAME text,                                                                "+
 "LESSON_ID int unsigned,                                                   "+
 "GROUP_ID int unsigned,                                                    "+
-"DUE_DATE DATETIME,                                                        "+
-"START_DATE DATETIME,                                                      "+
+"DUE_DATE DATE,                                                        	   "+
+"START_DATE DATE,                                                      	   "+
 "END_DATE DATETIME,                                                        "+
 "TIME_TO_COMPLETE int unsigned,                                            "+
 "AVAILABLE bit(1),														   "+
