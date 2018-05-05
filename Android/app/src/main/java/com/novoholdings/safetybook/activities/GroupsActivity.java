@@ -1,8 +1,11 @@
 package com.novoholdings.safetybook.activities;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -10,9 +13,12 @@ import android.support.annotation.MainThread;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.GridView;
@@ -24,8 +30,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.beans.AssignmentBean;
@@ -42,7 +51,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.acl.Group;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,11 +65,11 @@ public class GroupsActivity extends AppCompatActivity {
     private GroupsDao groupsDao;
     private AssignmentsDao assignmentsDao;
     private ArrayList<GroupBean> userGroups;
-    private GridLayout gridLayout;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private GridView studentGrid;
     private TextView studentWelcome;
-    private ArrayList<AssignmentJson> assignmentArray = new ArrayList<>();
-    private HashMap<Long, AssignmentJson> assignmentGroupsMap;
+    private ArrayList<AssignmentBean> assignmentArray = new ArrayList<>();
+    private HashMap<Long, AssignmentBean> assignmentGroupsMap;
 
     private FirebaseAuth mAuth;
 
@@ -73,6 +84,9 @@ public class GroupsActivity extends AppCompatActivity {
     private static final int newAssignmentNotification = 5562;
     private static final int newTestNotify = 5588;
 
+    private final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE=2233;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +99,7 @@ public class GroupsActivity extends AppCompatActivity {
             startActivity(i);
         }
         else {
-            updateUI(mAuth.getCurrentUser());
+            updateUI();
         }
 
         threeDayNotification = new NotificationCompat.Builder(GroupsActivity.this);
@@ -130,31 +144,104 @@ public class GroupsActivity extends AppCompatActivity {
         }
     }
 
-    private void updateUI(FirebaseUser currentUser){
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            // Check if user triggered a refresh:
+            case R.id.sync:
+                Log.i("Input", "Refresh menu item selected");
+
+                // Signal SwipeRefreshLayout to start the progress indicator
+                swipeRefreshLayout.setRefreshing(true);
+
+                // Start the refresh background task.
+                // This method calls setRefreshing(false) when it's finished.
+                fetchUserInfo(mAuth.getCurrentUser());
+
+                return true;
+
+            case R.id.log_out:
+
+                mAuth.signOut();
+        }
+
+        // User didn't trigger a refresh, let the superclass handle this action
+        return super.onOptionsItemSelected(item);
+
+    }
+    private void updateUI(){
         extras = getIntent().getExtras();
 
         groupsDao = new GroupsDao(GroupsActivity.this);
         assignmentsDao = new AssignmentsDao(GroupsActivity.this);
 
+        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_layout);
         studentGrid = (GridView) findViewById(R.id.studentGrid);
         studentWelcome = (TextView) findViewById(R.id.studentWelcome);
 
-        fetchUserInfo(currentUser);
+        swipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i("Input", "onRefresh called from SwipeRefreshLayout");
 
-        int check = ActivityCompat.checkSelfPermission(GroupsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (check == PackageManager.PERMISSION_GRANTED) {
-            //Do something
-        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1024);
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        fetchUserInfo(mAuth.getCurrentUser());
+                    }
+                }
+        );
+    }
+
+    @Override
+    public void onBackPressed(){
+        finish();
+    }
+
+    private void showExplanation(String title,
+                                 String message,
+                                 final String permission,
+                                 final int permissionRequestCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        requestPermission(permissionRequestCode);
+                    }
+                });
+        builder.create().show();
+    }
+
+    private void requestPermission(int permissionRequestCode) {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionRequestCode);
+        }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String permissions[],
+            int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    fetchUserInfo(mAuth.getCurrentUser());
+
+                    Toast.makeText(GroupsActivity.this, "Permission granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    requestPermission(REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+                    Toast.makeText(GroupsActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
+                }
         }
     }
 
-
-    @MainThread
     private void fetchUserInfo(FirebaseUser currentUser) {
         //displayLoading(getString(R.string.user_info_loading));
         if (AppProperties.isDemoMode()){
-            runOnUiThread(() -> downloadUserData(currentUser.getEmail()));
+            downloadUserData();
             return;
         }
         // Do whatever you need to do with the user info data
@@ -162,41 +249,51 @@ public class GroupsActivity extends AppCompatActivity {
 //        AppProperties.saveUserData(GroupsActivity.this, mUserInfoJson.get());
 
         //get user ID
-        String email = AppProperties.getUserEmail(GroupsActivity.this, currentUser.getEmail());
-        if (!AppProperties.isNull(email)){
+        int permissionCheck = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            showExplanation("Storage permission needed", "", Manifest.permission.READ_PHONE_STATE, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+        } else {
+            String email = AppProperties.getUserEmail(GroupsActivity.this, currentUser.getEmail());
+            if (!AppProperties.isNull(email)){
 
-            String url = AppProperties.DIR_SERVER_ROOT+"getUID";
-            JSONObject getUserDataRequest = new JSONObject();
-            try{
+                String url = AppProperties.DIR_SERVER_ROOT+"getUID";
+                JSONObject getUserDataRequest = new JSONObject();
+                try{
 
-                getUserDataRequest.put("user_email", email);
-            }catch (JSONException e){
-                e.printStackTrace();
-            }
+                    getUserDataRequest.put("user_email", email);
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
 
-            JsonObjectRequest getUserId = new JsonObjectRequest
-                    (Request.Method.POST, url, getUserDataRequest, new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try{
-                                AppProperties.setUserId(GroupsActivity.this, response.getLong("ID"));
-                                runOnUiThread(() -> downloadUserData(email));
+                JsonObjectRequest getUserId = new JsonObjectRequest
+                        (Request.Method.POST, url, getUserDataRequest, new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                try{
+                                    AppProperties.setUserId(GroupsActivity.this, response.getLong("ID"));
+                                    downloadUserData();
 
-                            }catch (JSONException e){
-                                e.printStackTrace();
+                                }catch (JSONException e){
+                                    swipeRefreshLayout.setRefreshing(false);
+                                    e.printStackTrace();
+                                }
                             }
-                        }
-                    }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                        }
-                    });
-            RequestQueue.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                swipeRefreshLayout.setRefreshing(false);
+                                error.printStackTrace();
+                            }
+                        });
+                RequestQueue.getInstance(GroupsActivity.this).addToRequestQueue(getUserId);
+            }
         }
+
     }
 
-    @MainThread
     private void showSnackbar(String message) {
         Snackbar.make(findViewById(R.id.coordinator),
                 message,
@@ -222,20 +319,21 @@ public class GroupsActivity extends AppCompatActivity {
             studentWelcome.setText(name);
     }
 
-    private void downloadUserData(String email){
+    private void downloadUserData() {
 
         displayUserInfo();
 
-        if (!Utils.isOnline(GroupsActivity.this) ){
+        if (!Utils.isOnline(GroupsActivity.this)) {
             populateGroups();
 
             findViewById(R.id.loading_container).setVisibility(View.GONE);
             findViewById(R.id.grid_container).setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setRefreshing(false);
 
             return;
         }
 
-        if (AppProperties.isDemoMode()){
+        if (AppProperties.isDemoMode()) {
             populateGroups();
 
             findViewById(R.id.loading_container).setVisibility(View.GONE);
@@ -243,107 +341,130 @@ public class GroupsActivity extends AppCompatActivity {
             return;
         }
 
-        try{
-            JSONObject getUserDataRequest = new JSONObject();
-            getUserDataRequest.put("email", email);
 
-            String url = AppProperties.DIR_SERVER_ROOT+"getGroupsUser";
-
-            StringRequest jsObjRequest = new StringRequest
-                    (Request.Method.POST, url, new Response.Listener<String>() {
-
-                        @Override
-                        public void onResponse(String response) {
-                            //  mTxtDisplay.setText("Response: " + response.toString());
-                            JSONArray jsonResponse;
-                            try{
-
-                                jsonResponse = new JSONArray(response);
-                            }catch (JSONException e){
-                                e.printStackTrace();
-                                return;
-                            }
-
-                            Log.d("JSON response: ", response.toString());
-
-                            //success
-
-                            ArrayList<AssignmentBean> assignmentsArray = new ArrayList<>();
-                            try{
-
-                                assignmentArray = new ArrayList<>();
-
-                                JSONArray groupsList = jsonResponse;
-                                for (int i = 0; i < groupsList.length(); i++){
-                                    JSONObject group = groupsList.getJSONObject(i);
-                                    long groupId = 0;
-                                    if (group!=null){
-                                        groupId = group.getLong("group_id");
-                                        String name = group.getString("group_name");
-                                        String adminName = group.getString("admin_firstname") + " " + group.getString("admin_lastname");
-                                        String adminEmail = group.getString("admin_email");
-                                        String bookName = group.getString("book_name");
-                                        String bookServerPath = group.getString("book_file");
-
-                                        //add group
-                                        if (AppDatabase.alreadyExists(GroupsDao.TABLE_NAME, "server_id="+groupId)){
-                                            groupsDao.insertData(name, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName, bookServerPath);
-                                            setNewGroupNotifier(name);
-                                        }
-                                        //update group
-                                        else{
-                                            groupsDao.updateData(name, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName);
-                                        }
-                                    }
+        long userId = AppProperties.getUserId(GroupsActivity.this);
+        //post un-synchronized complete assignments
+        ArrayList<AssignmentBean> assignmentsList = assignmentsDao.getData(AssignmentsDao.QUERY_GET_MODIFIED + " AND complete='"+AppProperties.YES+"'");
 
 
-                                    //get current active assignment
-                                    if (group.getJSONObject("assignment")!=null){
-                                        AssignmentJson assignment = (AssignmentJson)group.getJSONObject("assignment");
+        String url = AppProperties.DIR_SERVER_ROOT + "groups/"+userId;
+        try {
 
-                                        String complete = (assignment.getInt("complete")==1) ? AppProperties.YES : AppProperties.NO;
-
-                                        assignmentArray.add(assignment);
-
-                                        if (!assignmentsDao.checkRecExists(assignment.getServerId())) {
-                                            assignmentsDao.insertData(assignment.getName(), assignment.getServerId(), assignment.getGroupId(), AppProperties.YES, assignment.getReadingTime(), assignment.getDueDate(), complete, assignment.getStartPage(), assignment.getEndPage());
-                                        }
-                                        else
-                                            assignmentsDao.updateData(assignment.getServerId(), assignment.getName(), AppProperties.YES, assignment.getReadingTime(), assignment.getDueDate(), assignment.getStartPage(), assignment.getEndPage());
-                                    }
-                                }
-
-                                populateGroups();
-                            }catch (JSONException e){
-                                e.printStackTrace();
-                                Toast.makeText(GroupsActivity.this, "Error loading data", Toast.LENGTH_LONG).show();
-
-                            }
+            int requestType = assignmentsList.size()>0 ? Request.Method.POST : Request.Method.GET;
+            StringRequest request = new StringRequest(requestType, url, groupsResponse, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.getMessage();
+                    swipeRefreshLayout.setRefreshing(false);
+                    Toast.makeText(GroupsActivity.this, "Error loading data", Toast.LENGTH_LONG).show();
+                }
+            }) {
+                // here is params will add to your url using post method
+                @Override
+                protected Map<String, String> getParams() {
+                    Map<String, String> params = new HashMap<>();
+                    if (assignmentsList.size()>0){
+                        int i = 0;
+                        for (AssignmentBean assignmentBean : assignmentsList){
+                            params.put("completed_assignments["+(i++)+"]",String.valueOf(assignmentBean.getId()));
                         }
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.getMessage();
-                            Toast.makeText(GroupsActivity.this, "Error loading data", Toast.LENGTH_LONG).show();
-                        }
-                    }){
-                        // here is params will add to your url using post method
-                        @Override
-                        protected Map<String, String> getParams() {
-                            Map<String, String> params = new HashMap<>();
-                            params.put("user_email", email);
-                            //params.put("2ndParamName","valueoF2ndParam");
-                            return params;
-                        }
+                    }
+                    //params.put("2ndParamName","valueoF2ndParam");
+                    return params;
+                }
             };
 
             // Access the RequestQueue through your singleton class.
-            RequestQueue.getInstance(this).addToRequestQueue(jsObjRequest);
-        } catch (JSONException e){
+            RequestQueue.getInstance(this).addToRequestQueue(request);
+
+
+        } catch (Exception e) {
+            swipeRefreshLayout.setRefreshing(false);
             e.printStackTrace();
         }
+
     }
+
+    Response.Listener<String> groupsResponse = new Response.Listener<String>() {
+
+        @Override
+        public void onResponse(String response) {
+            //  mTxtDisplay.setText("Response: " + response.toString());
+            JSONArray jsonResponse;
+            try {
+
+                jsonResponse = new JSONArray(response);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return;
+            }
+
+            Log.d("JSON response: ", response);
+
+            //success
+
+            ArrayList<AssignmentBean> assignmentsArray = new ArrayList<>();
+            try {
+
+                assignmentArray = new ArrayList<>();
+
+                JSONArray groupsList = jsonResponse;
+                for (int i = 0; i < groupsList.length(); i++) {
+                    JSONObject group = groupsList.getJSONObject(i);
+                    long groupId = 0;
+                    if (group != null) {
+                        groupId = group.getLong("group_id");
+                        String groupName = group.getString("group_name");
+                        String adminName = group.getString("admin_first_name") + " " + group.getString("admin_last_name");
+                        String adminEmail = group.getString("admin_email");
+                        String bookName = group.getString("book_name");
+                        String bookServerPath = group.getString("book_path");
+
+                        //add group
+                        if (!AppDatabase.alreadyExists(GroupsDao.TABLE_NAME, "server_id=" + groupId)) {
+                            groupsDao.insertData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName, bookServerPath);
+                            subscribeToGroupNotifications(groupId);
+                        }
+                        //update group
+                        else {
+                            groupsDao.updateData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName, bookServerPath);
+                        }
+
+                        if (group.getJSONArray("assignments")!=null){
+                            JSONArray assignmentsFromServer = group.getJSONArray("assignments");
+                            JSONObject assignment = null;
+                            for (int j = 0; i<  assignmentsFromServer.length(); i++){
+                                 assignment = (JSONObject) assignmentsFromServer.getJSONObject(j);
+                            }
+
+                            if (assignment!=null){
+                                long serverId = assignment.getLong("id");
+                                String assignmentName = assignment.getString("name");
+                                String dueDate = assignment.getString("due_date");
+                                int startPage = assignment.getInt("start_page");
+                                int endPage = assignment.getInt("end_page");
+                                int readingTime = assignment.getInt("reading_time");
+                                boolean complete = assignment.getBoolean("is_complete");
+
+                                if (!assignmentsDao.checkRecExists(serverId)) {
+                                    assignmentsDao.insertData(serverId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, complete, startPage, endPage);
+                                }
+                                else
+                                    assignmentsDao.updateData(serverId, assignmentName, AppProperties.YES, readingTime, complete, dueDate, startPage, endPage);
+                            }
+                        }
+                    }
+                }
+
+                populateGroups();
+            } catch (JSONException e) {
+                swipeRefreshLayout.setRefreshing(false);
+                e.printStackTrace();
+                Toast.makeText(GroupsActivity.this, "Error loading data", Toast.LENGTH_LONG).show();
+
+            }
+        }
+    };
 
     public void populateGroups(){
         userGroups = groupsDao.getGroupsData();
@@ -351,12 +472,12 @@ public class GroupsActivity extends AppCompatActivity {
         assignmentGroupsMap = new HashMap<>();
 
         if (AppProperties.isDemoMode() && assignmentArray.size()>0){
-            for (AssignmentJson bean : assignmentArray){
+            for (AssignmentBean bean : assignmentArray){
                 assignmentGroupsMap.put(bean.getGroupId(), bean);
             }
         }
         else{
-            for (AssignmentJson bean : assignmentArray){
+            for (AssignmentBean bean : assignmentArray){
                 assignmentGroupsMap.put(bean.getGroupId(), bean);
             }
         }
@@ -365,6 +486,7 @@ public class GroupsActivity extends AppCompatActivity {
         studentGrid = (GridView)findViewById(R.id.studentGrid);
 
         studentGrid.setAdapter(gridAdapter);
+        swipeRefreshLayout.setRefreshing(false);
 
     }
 
@@ -456,26 +578,15 @@ public class GroupsActivity extends AppCompatActivity {
         manager.notify(overdueNotifi, overdueNotification.build());
     }
 
-    public void setNewGroupNotifier(String name)
+    public void subscribeToGroupNotifications(long groupId)
     {
-        String message = "Welcome to your new group!";
-        String titleText = "Welcome!";
-        String notifierText = "You have been added to Group " + name;
+        FirebaseMessaging.getInstance().subscribeToTopic("group"+groupId);
+    }
 
-        newGroupNotifier.setSmallIcon(R.drawable.ic_group_name);
-        newGroupNotifier.setTicker(message);
-        newGroupNotifier.setWhen(System.currentTimeMillis());
-        newGroupNotifier.setContentTitle(titleText);
-        newGroupNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newGroupNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newGroupNotification, newGroupNotifier.build());
+    public static Intent createIntent(Context ctx, IdpResponse response){
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("loginResponse", response);
+        return new Intent(ctx, GroupsActivity.class);
     }
 
     public void setNewAssignmentNotifier(String groupName)

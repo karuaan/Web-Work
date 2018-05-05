@@ -49,7 +49,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
             handleNow();
-
         }
 
         // Check if message contains a notification payload.
@@ -65,13 +64,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Schedule a job using FirebaseJobDispatcher.
      */
-
-
+  /*  private void scheduleJob() {
+        // [START dispatch_job]
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+        Job myJob = dispatcher.newJobBuilder()
+                .setService(SyncService.class)
+                .setTag("my-job-tag")
+                .build();
+        dispatcher.schedule(myJob);
+        // [END dispatch_job]
+    }
+*/
     /**
      * Handle time allotted to BroadcastReceivers.
      */
     private void handleNow() {
         Log.d(TAG, "Short lived task is done.");
+
     }
 
     /**

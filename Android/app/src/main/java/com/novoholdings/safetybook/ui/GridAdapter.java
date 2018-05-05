@@ -21,10 +21,12 @@ import android.widget.Toast;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.activities.AssignmentsActivity;
 import com.novoholdings.safetybook.beans.AssignmentBean;
-import com.novoholdings.safetybook.beans.AssignmentJson;
+import com.novoholdings.safetybook.beans.AssignmentBean;
 import com.novoholdings.safetybook.beans.GroupBean;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.database.AssignmentsDao;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.text.ParseException;
@@ -42,14 +44,14 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class GridAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<GroupBean> groupList;
-    private HashMap<Long, AssignmentJson> assignmentGroupMap;
+    private HashMap<Long, AssignmentBean> assignmentGroupMap;
     private AssignmentsDao assignmentsDao;
     private long lastDownload;
     private DownloadManager downloadManager;
-    private LongSparseArray<AssignmentJson> assignmentDownloadIdServerIdMap;
+    private LongSparseArray<AssignmentBean> assignmentDownloadIdServerIdMap;
 
 
-    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList, HashMap<Long, AssignmentJson> assignmentsList) {
+    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList, HashMap<Long, AssignmentBean> assignmentsList) {
         this.assignmentsDao = assignmentsDao;
         this.mContext = context;
         this.groupList = groupList;
@@ -108,7 +110,7 @@ public class GridAdapter extends BaseAdapter {
 
         if (assignmentGroupMap!=null && assignmentGroupMap.size()>0){
 
-            final AssignmentJson assignment = assignmentGroupMap.get(group.getId());
+            final AssignmentBean assignment = assignmentGroupMap.get(group.getId());
 
             String currentChapter = assignment.getName();
             String completionStatus = (assignment.isComplete()) ? "Finished!" : "Incomplete";
