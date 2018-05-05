@@ -36,4 +36,6 @@
     <string name="book_name">Book Name</string>
     <string name="number_of_chapters_completed">Number of Chapters Completed</string>
     <string name="admin_name">Admin Name (Job Title)</string>
+    <string name="no_internet_connection">No Internet connection</string>
+    <string name="unknown_error">Unknown error</string>
 </resources>

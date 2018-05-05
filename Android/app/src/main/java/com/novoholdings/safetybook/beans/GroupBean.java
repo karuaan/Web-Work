@@ -10,7 +10,6 @@ public class GroupBean {
             adminName,
             adminEmail,
             bookName,
-            dueDate,
             serverPath,
             localPath,
             fileName;
@@ -68,7 +67,7 @@ public class GroupBean {
     }
 
     public void setLocalPath(String path) {
-        this.serverPath = path;
+        this.localPath = path;
     }
 
     public String getLocalPath(){

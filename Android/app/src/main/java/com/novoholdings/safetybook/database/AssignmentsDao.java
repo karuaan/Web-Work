@@ -54,12 +54,12 @@ public class AssignmentsDao {
         _database = AppDatabase.openDataBase(ctx);
 
         if (AppProperties.isDemoMode() && !AppDatabase.alreadyExists(TABLE_NAME, "status='" + AppProperties.STATUS_ACTIVE + "'")) {
-            insertData("Section 1 - General Safety", 1, 1,  AppProperties.YES, 120, "2018-02-02T00:00.000Z", AppProperties.NO, 8, 13);
-            insertData("Section 2 - Safety Inspections", 2, 1,  AppProperties.YES, 120, "2018-02-09T00:00.000Z", AppProperties.NO, 17, 19);
+            //insertData("Section 1 - General Safety", 1, 1,  AppProperties.YES, 120, "2018-02-02T00:00.000Z", AppProperties.NO, 8, 13);
+            //insertData("Section 2 - Safety Inspections", 2, 1,  AppProperties.YES, 120, "2018-02-09T00:00.000Z", AppProperties.NO, 17, 19);
         }
     }
 
-    public long insertData(String name, long serverId, long groupId, String isSynced, int timeToRead, String dueDate, String isComplete, int startPage, int endPage)
+    public long insertData(long serverId, String name, long groupId, String isSynced, int timeToRead, String dueDate, boolean isComplete, int startPage, int endPage)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -94,7 +94,7 @@ public class AssignmentsDao {
         return res;
     }
 
-    public long updateData(long id, String name,String isSynced, int timeToRead, String dueDate, int startPage, int endPage)
+    public long updateData(long id, String name,String isSynced, int timeToRead, boolean isComplete, String dueDate, int startPage, int endPage)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -110,6 +110,7 @@ public class AssignmentsDao {
             values.put(COLUMN_IS_SYNCED, isSynced);
         if (timeToRead > 0)
             values.put(COLUMN_TIME_TO_READ, timeToRead);
+        values.put(COLUMN_IS_COMPLETE, isComplete);
         if (!AppProperties.isNull(dueDate))
             values.put(COLUMN_DUE_DATE, dueDate);
         if (startPage > 0)
@@ -127,6 +128,25 @@ public class AssignmentsDao {
         }
         return res;
     }
+
+    public long updateSyncStatus(long id, String status){
+        long res;
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_IS_SYNCED, status);
+
+        try
+        {
+            res = _database.update(TABLE_NAME, values, COLUMN_ID+"=?",new String[] { String.valueOf(id) });
+        }
+        catch (Exception e)
+        {
+            res = 0;
+            Log.e("Error while inserting", e.toString());
+        }
+        return res;
+
+    }
+
 
     public long completeReading(long id){
         long res;
@@ -266,6 +286,31 @@ public class AssignmentsDao {
 
 
         c.close();
+
+        if(arList==null)
+        {
+            arList=new ArrayList<AssignmentBean>();
+        }
+
+        return arList;
+    }
+
+    public ArrayList<AssignmentBean> getData(String query){
+        ArrayList<AssignmentBean> arList = null;
+        Cursor c;
+        c = AppDatabase.get(query,mContext);
+
+        try
+        {
+            arList = cursorToBean(c);
+        }
+        catch (Exception e)
+        {
+            Log.i("Error in getting data ", e.toString());
+        }
+
+        if (c!=null)
+            c.close();
 
         if(arList==null)
         {

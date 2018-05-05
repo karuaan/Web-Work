@@ -47,7 +47,6 @@ import com.android.volley.toolbox.*;
 import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.beans.AssignmentBean;
-import com.novoholdings.safetybook.beans.AssignmentJson;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.ui.AssignmentListAdapter;
@@ -75,13 +74,14 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static com.novoholdings.safetybook.common.AppProperties.YES;
+import static com.novoholdings.safetybook.common.AppProperties.getFileNameFromPath;
 
 /**
  * Created by James on 11/25/2017.
  */
 
 public class AssignmentsActivity extends AppCompatActivity{
-    private String groupName, adminName, adminEmail, localFilePath, serverFilePath, fileName;
+    private String groupName, adminName, adminEmail, localFilePath = "", serverFilePath, fileName;
     private long groupId, userId, currentAssignmentId,  bookDownload=-1L;
 
     private PDFView pdfView;
@@ -152,8 +152,10 @@ public class AssignmentsActivity extends AppCompatActivity{
             adapter = new AssignmentListAdapter(AssignmentsActivity.this, assignmentsList);
             recyclerView.setAdapter(adapter);
             //todo
-            if (assignmentsList.size()==1)
-                recyclerView.findViewHolderForAdapterPosition(0).itemView.performClick();
+            /*if (assignmentsList.size()==1)
+                recyclerView.requestChildFocus();
+                postAndNotifyAdapter(new Handler(), recyclerView);*/
+
 
         }
 
@@ -161,22 +163,34 @@ public class AssignmentsActivity extends AppCompatActivity{
         if (!AppProperties.isDemoMode())
             checkBookFile();
 
-        //download new assignments
-        downloadAssignmentMetadata();
-
         IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
 
         registerReceiver(onComplete, intentFilter);
 
 
         downloadManager =  (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        int check = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+       /* int check = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (check == PackageManager.PERMISSION_GRANTED) {
             //Do something
         } else {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1024);
-        }
+        }*/
     }
+
+    protected void postAndNotifyAdapter(final Handler handler, final RecyclerView recyclerView) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!recyclerView.isComputingLayout()) {
+                    // This will call first item by calling "performClick()" of view.
+                    ((RecyclerView.ViewHolder) recyclerView.findViewHolderForLayoutPosition(0)).itemView.performClick();
+                } else {
+                    postAndNotifyAdapter(handler, recyclerView);
+                }
+            }
+        });
+    }
+
     private void getIntentExtras(){
         Bundle extras = getIntent().getExtras();
         try{
@@ -197,12 +211,6 @@ public class AssignmentsActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         try{
-            groupId = extras.getLong("groupId");
-
-        }catch (NullPointerException e){
-            e.printStackTrace();
-        }
-        try{
             groupId=extras.getLong("groupId");
 
         }catch (NullPointerException e){
@@ -215,7 +223,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         }
         try{
             localFilePath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName + "/" + AppProperties.getFileNameFromPath(serverFilePath);
-
+            fileName = getFileNameFromPath(localFilePath);
         }catch (NullPointerException e){
             e.printStackTrace();
         }
@@ -243,6 +251,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         if (!file.exists() && !AppProperties.isNull(serverFilePath)){
             String message = "Download book";
             chapterNameTV.setText(message);
+            serverFilePath = AppProperties.DIR_SERVER+serverFilePath;
             Uri uri = Uri.parse(serverFilePath);
 
             //set download button on click
@@ -255,45 +264,6 @@ public class AssignmentsActivity extends AppCompatActivity{
             });
             startButton.setVisibility(View.VISIBLE);
         }
-    }
-
-    private void downloadAssignmentMetadata(){
-        final String groupUrl = AppProperties.DIR_SERVER_ROOT+"getAssignments";
-        long userId = AppProperties.getUserId(AssignmentsActivity.this);
-
-        JSONArray requestParams = new JSONArray();
-        requestParams.put(groupId);
-        requestParams.put(userId);
-        JsonArrayRequest assignmentsRequest = new JsonArrayRequest(Request.Method.POST, groupUrl, requestParams, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                for (int i = 0; i < response.length(); i++){
-                    try{
-                        AssignmentJson assignment = (AssignmentJson)response.getJSONObject(i);
-                        String complete = (assignment.getCompletionStatus()==1) ? YES : AppProperties.NO;
-
-                        if (!assignmentsDao.checkRecExists(assignment.getServerId())){
-                            assignmentsDao.insertData(assignment.getName(), assignment.getServerId(), groupId, YES, assignment.getReadingTime(), assignment.getDueDate(), complete, assignment.getStartPage(), assignment.getEndPage());
-                        }
-                        else {
-                            assignmentsDao.updateData(assignment.getServerId(), assignment.getName(), YES, assignment.getReadingTime(), assignment.getDueDate(), assignment.getStartPage(), assignment.getEndPage());
-                        }
-
-                    }catch (JSONException e){
-                        e.printStackTrace();
-                    }
-                }
-                populateRecyclerView();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        });
-
-        // Access the RequestQueue through your singleton class.
-        RequestQueue.getInstance(this).addToRequestQueue(assignmentsRequest);
     }
 
     private void populateRecyclerView(){
@@ -343,6 +313,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                 });
             }
             else {
+                serverFilePath = AppProperties.DIR_SERVER+serverFilePath;
                 Uri uri = Uri.parse(serverFilePath);
 
                 //set download button on click
@@ -526,7 +497,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         JsonObjectRequest postComplete = new JsonObjectRequest(Request.Method.POST, url, body, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                assignmentsDao.updateData(currentAssignmentId, null, YES, 0, null, 0, 0);
+                assignmentsDao.updateSyncStatus(currentAssignmentId, YES);
                 Toast.makeText(AssignmentsActivity.this, "Reading progress synchronized", Toast.LENGTH_LONG).show();
             }
         }, new Response.ErrorListener() {

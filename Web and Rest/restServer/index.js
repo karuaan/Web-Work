@@ -481,6 +481,11 @@ function nest(theJson, index, array){
 
 }
 
+function formatGroupAssignments(group, assignments){
+	group.assignments = assignments;
+	return group;
+}
+
 //May need rework in ordering
 function getGroups2(email, callback){
 
@@ -518,19 +523,12 @@ function getGroups3(email, callback){
 }
 
 function getGroups4(user_id, callback){
-	let groupQuery = 'SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name '+
-					'FROM GROUPS '+
-				  	'INNER JOIN USERS '+
-					    'ON GROUPS.ADMIN_ID=USERS.ID '+
-					  'INNER JOIN LESSON_PLANS '+
-					    'ON LESSON_PLANS.GROUP_ID = GROUPS.ID '+
-					  'INNER JOIN LESSONS '+
-					    'ON LESSONS.ID = LESSONS.LESSON_PLAN_ID '+
-					  'INNER JOIN BOOKS '+
-					    'ON BOOKS.ID = LESSON_PLANS.BOOK_ID '+
-		    		'INNER JOIN STATUS '+
-			    		'ON STATUS.GROUP_ID = GROUPS.ID '+
-					'WHERE STATUS.IS_COMPLETE = 0 AND GROUPS.USER_ID = '+mysql.escape(user_id);
+	let groupQuery = 'SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email '+
+					'FROM GROUPS INNER JOIN USERS ON GROUPS.ADMIN_ID=USERS.ID '+
+					'INNER JOIN LESSONS ON LESSONS.GROUP_ID = GROUPS.ID '+
+					'INNER JOIN BOOKS ON BOOKS.ID = LESSONS.BOOK_ID '+
+					'WHERE GROUPS.USER_ID = '+mysql.escape(user_id)+
+					' GROUP BY GROUPS.ID;';
 	con.query(groupQuery, function(err, rows){
 		if (!err){
 			callback(null, rows);
@@ -1649,32 +1647,51 @@ app.post('/getUID', function(req, res){
 	})
 })
 
-function getAssignmentsUser(user_id, group_id, callback){
+function getAssignmentsUser(user_id, group_id){
 
-	con.query('select STATUS.IS_COMPLETE as is_complete, LESSONS.START_PAGE as start_page, LESSONS.PDF_FILE as lesson_pdf, LESSONS.END_PAGE as end_page, LESSONS.NAME as name, '+
-	'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id FROM LESSONS '+
-	'JOIN ASSIGNMENTS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID JOIN STATUS ON STATUS.ASSIGNMENT_ID='+
-	'ASSIGNMENTS.ID WHERE ASSIGNMENT.START_DATE<=CURRENT_DATE() STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
-//	con.query('Select * FROM USERS '+
-//	'JOIN GROUPS ON USERS.ID=GROUPS.USER_ID '+
-//	'JOIN ASSIGNMENTS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID '+
-//	'JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID ' +
-//	'JOIN STATUS ON STATUS.EMPLOYEE_ID=USERS.ID '+
-//	'WHERE USERS.ID='+mysql.escape(user_id) + ' ' +
-//	'AND GROUPS.ID='+mysql.escape(group_id)
-		, function(err, rows){
-
-		if(err){
-			callback(err, null)
-		}
-		else{
-			callback(null, rows)
-		}
-
-	})
+	return new Promise(function(resolve, reject){
+		con.query('select STATUS.IS_COMPLETE as is_complete, LESSONS.START_PAGE as start_page, LESSONS.PDF_FILE as lesson_pdf, LESSONS.END_PAGE as end_page, LESSONS.NAME as name, '+
+		'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id, ASSIGNMENTS.GROUP_ID as group_id FROM LESSONS '+
+		'JOIN ASSIGNMENTS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID JOIN STATUS ON STATUS.ASSIGNMENT_ID='+
+		'ASSIGNMENTS.ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
+			, function(err, rows){
+				if(err){
+					reject(err);
+				}
+				else{
+					rows.forEach(function(element, index, array){
+						element.is_complete = element.is_complete[0]===1;
+					});
+					resolve(rows);
+				}
+			});
+				
+	
+	});
 
 }
+function updateReadingStatus(status, user_id, callback){
+	let query = 'UPDATE STATUS SET IS_COMPLETE=1 ';
+	query+=' WHERE EMPLOYEE_ID='+mysql.escape(user_id)+ ' AND (';
 
+	for (var i = 0; i < status.length; i++){
+		if (i>0){
+			query+=' OR';
+		}
+		query+=' ASSIGNMENT_ID='+mysql.escape(Number(status[i]));
+	}
+	query+=')';
+	console.log(query);
+	con.query(query, function(err, rows){
+		if (!err){
+			callback(null, rows);
+		}else
+		{
+			callback(err, null);
+		}
+	
+	});
+}
 app.get('/getAssignmentsUser', function(req, res){
 	getAssignmentsUser(5, 1, function(err, result){
 		if(err){
@@ -1710,54 +1727,75 @@ app.post('/getgroups',function(req,res){
 
 });
 
-app.post('/getGroupsUser', function(req, res){
-	getGroups4(req.body.user_id, function(err, rows){
+app.post('/groups/:user_id', function(req, res){
+	getGroups4(Number(req.params.user_id), function(err, groups){
 		if(err){
 			res.json(err);
 		}
 		else{
 			if (req.body.completed_assignments){
-				let query = 'INSERT INTO STATUS (IS_COMPLETE) VALUES ';
-				//VALUES
-				for (var i = 0; i < req.body.completed_assignments.length; i++){
-					if (i>0){
-						query+=', ';
-					}
-					query+='(1)';
-				}
-				query+=' WHERE user_id='+mysql.escape(req.body.user_id)+ 'AND (';
-
-				for (var i = 0; i < req.body.completed_assignments.length; i++){
-					if (i>0){
-						query+=' OR';
-					}
-					query+=' ASSIGNMENT_ID='+mysql.escape(req.body.completed_assignments[i]);
-				}
-				query+=')';
-				con.query(query, function(err, data, fields){
+				updateReadingStatus(req.body.completed_assignments, Number(req.params.user_id), function(err, result){
 					if (!err){
-						rows.forEach(function(element, index, array){
-							getAssignmentsUser(req.body.user_id, element.group_id, function(err, results){
-								nest(element, results);
-							});
+						let assignmentPromises = [];
+						groups.forEach(function(element, index, array){
+							assignmentPromises.push(getAssignmentsUser(Number(req.params.user_id), element.group_id).then(function(assignments){
+								return formatGroupAssignments(element, assignments);
+							}, function(error){
+								return error;
+							}));
+							
 						});
-						res.json(results);
+						return Promise.all(assignmentPromises).then(function(array){
+							res.json(array);
+						});
+					}
+					else{
+						res.json(err);
 					}
 				});
 
 			}
 			else{
-				getAssignments
-				res.json(results);
-				
+				let assignmentPromises = [];
+				groups.forEach(function(element, index, array){
+					assignmentPromises.push(getAssignmentsUser(req.params.user_id, element.group_id).then(function(assignments){
+						return formatGroupAssignments(element, assignments);
+					}, function(error){
+						return error;
+					}));
+					
+				});
+				return Promise.all(assignmentPromises).then(function(array){
+					res.json(array);
+				});
 			}
 		}
 	});
 });
 
-app.get('/getGroupsUser', function(req, res){
-
-})
+app.get('/groups/:id', function(req, res){
+	console.log(Number(req.params.id));
+	getGroups4(req.param('id'), function(err, groups){
+		if(err){
+			res.json(err);
+		}
+		else{
+			let assignmentPromises = [];
+			groups.forEach(function(element, index, array){
+				assignmentPromises.push(getAssignmentsUser(Number(req.params.id), element.group_id).then(function(assignments){
+					return formatGroupAssignments(element, assignments);
+				}, function(error){
+					return error;
+				}));
+				
+			});
+			return Promise.all(assignmentPromises).then(function(array){
+				res.json(array);
+			});
+		}
+	});
+	
+});
 
 function emailToList(emailList, text, callback){
 
@@ -1857,7 +1895,7 @@ app.post('/androidVersionTable', function(req, res)
 			res.json(result);
 		}
 	});
-})
+});
 
 app.get('/androidVersionTable', function(req, res)
 {
@@ -1873,7 +1911,7 @@ app.get('/androidVersionTable', function(req, res)
 			res.json(rows);
 		}
 	});
-})
+});
 
 function getAdminID(email, callback){
 	con.query("SELECT ID FROM USERS WHERE USERS.IS_ADMIN=1 AND USERS.EMAIL=" + mysql.escape(email), function(err, rows){
@@ -1978,11 +2016,7 @@ app.post('/inviteAdmin', function(req, res){
 				}
 			});
 		}
-	})
-})
+	});
+});
 
-//admin_oidc.on('ready', () => {
-//	user_oidc.on('ready', () => {
-		app.listen(3000, () => console.log('server running on 3000'))
-//	});
-//});
+app.listen(3000, '0.0.0.0', () => console.log('server running on 3000'));
