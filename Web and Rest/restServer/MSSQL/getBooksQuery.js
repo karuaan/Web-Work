@@ -1,4 +1,4 @@
-var sql = require("seriate");
+const sql = require('mssql');
 
 var getBooksQuery = function(callback) {
 
@@ -9,15 +9,17 @@ var getBooksQuery = function(callback) {
         "database": "READER"
     };
 
-    sql.setDefaultConfig(config);
-
-    sql.execute({
-        query: sql.fromFile("./SQL/getBooksQuery")
-    }).then(function(results) {
-        callback(null, results);
-    }, function(err) {
-        callback(err, null);
-    })
+    sql.connect(config, err => {
+        new sql.Request().query('SELECT * FROM BOOKS', (err, results) => {
+            if(err) {
+                callback(err, null);
+            }
+            else {
+                callback(null, results['recordset']);
+            }
+        })
+    });
 };
+
 
 exports.query = getBooksQuery;

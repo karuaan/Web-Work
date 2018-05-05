@@ -16,6 +16,7 @@ var validator = require('express-validator');
 var scheduler = require('node-schedule');
 var getBooksQuery = require('./MSSQL/getBooksQuery').query;
 var getStatusQuery = require('./MSSQL/getStatusQuery').query;
+var getLessons = require('./MSSQL/getLessonsQuery').query;
 global.__basedir = __dirname;
 
 
@@ -359,18 +360,6 @@ app.get('/read-pdf', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 		}
 	});
 });
-
-function getLessons(callback){
-    con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
-	" LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS", function(err, rows){
-		if(err){
-			callback(err, null)
-		}
-		else{
-			callback(null, rows)
-		}
-	})
-}
 
 function getLessonsByBookId(book_id,callback){
     con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +

@@ -1,4 +1,4 @@
-var sql = require("seriate");
+var sql = require("mssql");
 
 var getStatusQuery = function(callback) {
 
@@ -9,15 +9,16 @@ var getStatusQuery = function(callback) {
         "database": "READER"
     };
 
-    sql.setDefaultConfig(config);
-
-    sql.execute({
-        query: sql.fromFile("./SQL/getStatusQuery")
-    }).then(function(results) {
-        callback(null, results);
-    }, function(err) {
-        callback(err, null);
-    })
+    sql.connect(config, err => {
+        new sql.Request().query('SELECT * FROM STATUS', (err, results) => {
+            if(err) {
+                callback(err, null);
+            }
+            else {
+                callback(null, results['recordset']);
+            }
+        })
+    });
 };
 
 exports.query = getStatusQuery;
