@@ -1181,12 +1181,7 @@ export class EmployeesComponent implements OnInit {
 	//}
 
 	testGetEmployee(){
-		this.authService.testAdminGetUser()
-			.then((res) => {
-				console.log(res);
-			}, (err) => {
-				console.log(err);
-			});
+		console.log(this.authService.testAdminGetUser());
 	}
 	
     ngOnInit() {
