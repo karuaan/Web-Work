@@ -2177,4 +2177,31 @@ app.post('/inviteAdmin', function(req, res){
 	});
 });
 
+function registerUsers(first_name, last_name, email, callback){
+	con.query("UPDATE USERS SET USERS.FIRST_NAME= "+ mysql.escape(first_name)  +", USERS.LAST_NAME=" + mysql.escape(last_name)+ "WHERE USERS.EMAIL="+ mysql.escape(email), function(err, rows){
+			if(err){
+				callback(err, null);
+			}
+			else{
+				callback(null, rows);
+			}
+	})
+}
+
+app.put('/registerUser', function(req, res)
+{
+	registerUsers(req.body.first_name, req.body.last_name, req.body.email, function(err, result)
+	{
+		if (err)
+		{
+			res.json(err);
+		}
+
+		else 
+		{
+			res.json(result);
+		}
+	})
+});
+
 app.listen(3000, '0.0.0.0', () => console.log('server running on 3000'));

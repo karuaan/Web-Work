@@ -50,7 +50,23 @@ con.query('SELECT * FROM STATUS WHERE EMPLOYEE_ID=' + mysql.escape(user_id) + ' 
 	})
 },
 getGroup(con, userid, groupid, callback){
-	con.query('SELECT DISTINCT LESSONS.ID as id, LESSONS.NAME as name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_COMPLETE as time_to_read, STATUS.IS_COMPLETE  as complete, LESSONS.PDF_FILE as filename FROM USERS, GROUPS, ASSIGNMENTS, LESSONS, STATUS WHERE USERS.ID=' + mysql.escape(userid) + ' AND GROUPS.ID=' + mysql.escape(groupid) + ' AND ASSIGNMENTS.GROUP_ID=GROUPS.ID AND STATUS.GROUP_ID=GROUPS.ID AND STATUS.EMPLOYEE_ID=USERS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID', function(err, rows){
+	con.query('SELECT DISTINCT LESSONS.ID as id, ' + 
+				'LESSONS.NAME as name, ' + 
+				'ASSIGNMENTS.DUE_DATE as due_date, ' + 
+				'ASSIGNMENTS.TIME_TO_COMPLETE as time_to_read, ' + 
+				'STATUS.IS_COMPLETE  as complete, ' + 
+				'LESSONS.PDF_FILE as filename ' + 
+			'FROM USERS, ' + 
+				'GROUPS, ' + 
+				'ASSIGNMENTS, ' + 
+				'LESSONS, ' + 
+				'STATUS ' + 
+			'WHERE USERS.ID=' + mysql.escape(userid) + 
+				' AND GROUPS.ID=' + mysql.escape(groupid) + 
+				' AND ASSIGNMENTS.GROUP_ID=GROUPS.ID ' + 
+				'AND STATUS.GROUP_ID=GROUPS.ID' + 
+				' AND STATUS.EMPLOYEE_ID=USERS.ID ' + 
+				'AND ASSIGNMENTS.LESSON_ID=LESSONS.ID', function(err, rows){
 	if(!err){
 		callback(null, rows);
 	}

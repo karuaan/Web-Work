@@ -1176,10 +1176,19 @@ export class EmployeesComponent implements OnInit {
 			});
     }
 
-	testAddUser(){
-		this.authService.signUpRegular("ggoldsht@stevens.edu", "");
-	}
+	//testAddUser(){
+	//	this.authService.signUpRegular("ggoldsht@stevens.edu", "");
+	//}
 
+	/* testGetEmployee(){
+		this.authService.testAdminGetUser()
+			.then((res) => {
+				console.log(res);
+			}, (err) => {
+				console.log(err);
+			});
+	} */
+	
     ngOnInit() {
 
         this.selectedGroup = this.groups[0];
