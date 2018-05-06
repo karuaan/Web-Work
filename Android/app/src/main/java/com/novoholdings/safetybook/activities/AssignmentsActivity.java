@@ -68,6 +68,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -81,7 +83,7 @@ import static com.novoholdings.safetybook.common.AppProperties.getFileNameFromPa
  */
 
 public class AssignmentsActivity extends AppCompatActivity{
-    private String groupName, adminName, adminEmail, localFilePath = "", serverFilePath, fileName;
+    private String groupName, adminName, adminEmail, localFilePath = "", localFolderPath, serverFilePath, fileName;
     private long groupId, userId, currentAssignmentId,  bookDownload=-1L;
 
     private PDFView pdfView;
@@ -105,6 +107,8 @@ public class AssignmentsActivity extends AppCompatActivity{
     private int timeToRead;
 
     private CountDownTimer countDownTimer;
+
+    private AssignmentBean currentAssignment;
 
 
     @Override
@@ -217,13 +221,15 @@ public class AssignmentsActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         try{
-            serverFilePath = extras.getString("serverPath");
+            serverFilePath = AppProperties.DIR_SERVER + extras.getString("serverPath");
+           // serverFilePath = serverFilePath.replaceAll(" ", "%20");
         }catch (NullPointerException e){
             e.printStackTrace();
         }
         try{
             localFilePath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName + "/" + AppProperties.getFileNameFromPath(serverFilePath);
-            fileName = getFileNameFromPath(localFilePath);
+            localFolderPath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName;
+            fileName = getFileNameFromPath(serverFilePath);
         }catch (NullPointerException e){
             e.printStackTrace();
         }
@@ -244,22 +250,18 @@ public class AssignmentsActivity extends AppCompatActivity{
     }
 
     private void checkBookFile(){
-        String localPath = localFilePath;
 
-        File file = new File(localPath);
+        File file = new File(Environment.getExternalStorageDirectory()+localFilePath);
 
         if (!file.exists() && !AppProperties.isNull(serverFilePath)){
             String message = "Download book";
             chapterNameTV.setText(message);
-            serverFilePath = AppProperties.DIR_SERVER+serverFilePath;
-            Uri uri = Uri.parse(serverFilePath);
-
             //set download button on click
             startButton.setText(R.string.download);
             startButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startDownload(uri, fileName);
+                    startDownload();
                 }
             });
             startButton.setVisibility(View.VISIBLE);
@@ -281,6 +283,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         findViewById(R.id.startButton).setVisibility(View.VISIBLE);
 
         currentAssignmentId = assignmentBean.getId();
+        currentAssignment = assignmentBean;
 
         String label = getMinutes(assignmentBean.getReadingTime()) + ":" + getSeconds(assignmentBean.getReadingTime());
         String pageCount = assignmentBean.getPageCount() + " pages";
@@ -301,27 +304,24 @@ public class AssignmentsActivity extends AppCompatActivity{
             });
         else{
 
-            File file = new File(localFilePath);
+            File file = new File(Environment.getExternalStorageDirectory()+localFilePath);
 
             if (file.exists()){
                 //set start button on click
                 startButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startReading(file, assignmentBean.getReadingTime());
+                        startReading(file, assignmentBean);
                     }
                 });
             }
             else {
-                serverFilePath = AppProperties.DIR_SERVER+serverFilePath;
-                Uri uri = Uri.parse(serverFilePath);
-
                 //set download button on click
                 startButton.setText(R.string.download);
                 startButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startDownload(uri, fileName);
+                        startDownload();
                     }
                 });
             }
@@ -382,6 +382,7 @@ public class AssignmentsActivity extends AppCompatActivity{
             long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
 
             //is the assignment currently showing in the preview pane?
+            //checkDownloadStatus(referenceId);
             if (referenceId == bookDownload){
                 File file = new File(localFilePath);
                 //change start button appearance and behavior
@@ -391,7 +392,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                     startButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            startReading(file, timeToRead);
+                            startReading(file, currentAssignment);
                         }
                     });
                     startButton.setEnabled(true);
@@ -405,13 +406,14 @@ public class AssignmentsActivity extends AppCompatActivity{
         }
     };
 
-    public void startDownload(Uri uri, String fileName) {
+    public void startDownload() {
 
+        Uri uri = Uri.parse("https://dl.dropboxusercontent.com/s/lwui5ay1cnciibs/NEII%20Safety%20Handbook.pdf");
         startButton.setEnabled(false);
         startButton.setText("Downloading...");
 
         Environment
-                .getExternalStoragePublicDirectory(localFilePath)
+                .getExternalStoragePublicDirectory(localFolderPath)
                 .mkdirs();
 
         bookDownload=
@@ -422,8 +424,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                         .setTitle(fileName)
                         .setDescription(groupName)
                         .setVisibleInDownloadsUi(true)
-                        .setDestinationInExternalPublicDir(localFilePath,
-                                fileName));
+                        .setDestinationInExternalPublicDir(localFolderPath, uri.getLastPathSegment()));
     }
 
     //todo remove
@@ -489,7 +490,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         JSONObject body = new JSONObject();
         try{
             body.put("user_id", userId);
-            body.put("asssignment_id", currentAssignmentId);
+            body.put("assignment_id", currentAssignmentId);
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -524,15 +525,13 @@ public class AssignmentsActivity extends AppCompatActivity{
         RequestQueue.getInstance(AssignmentsActivity.this).addToRequestQueue(postComplete);
     }
 
-    public void startReading(File file, int timeToRead){
+    public void startReading(File file, AssignmentBean assignment){
 
-        final AssignmentBean assignmentBean = new AssignmentBean();
-        assignmentBean.setLastReadPosition(0);
+        assignment.setLastReadPosition(0);
 
         pdfView.fromFile(file)
                 .enableSwipe(true) // allows to block changing pages using swipe
                 .swipeHorizontal(false)
-                .defaultPage(0)
                 // allows to draw something on the current page, usually visible in the middle of the screen
                 .onDraw(new OnDrawListener() {
                     @Override
@@ -577,13 +576,13 @@ public class AssignmentsActivity extends AppCompatActivity{
                         }
 
                         if (lastPageReached){
-                            if (positionOffset > assignmentBean.getLastReadPosition()){
+                            if (positionOffset > assignment.getLastReadPosition()){
                                 hideFab();
-                                assignmentBean.setLastReadPosition(positionOffset);
+                                assignment.setLastReadPosition(positionOffset);
                             }
-                            else if (positionOffset < assignmentBean.getLastReadPosition()){
+                            else if (positionOffset < assignment.getLastReadPosition()){
                                 showFab();
-                                assignmentBean.setLastReadPosition(positionOffset);
+                                assignment.setLastReadPosition(positionOffset);
                             }
                         }
                     }
@@ -597,8 +596,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                                 .setPositiveButton("Download", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        Uri uri = Uri.parse(serverFilePath);
-                                        startDownload(uri, file.getName());
+                                        startDownload();
                                     }
                                 })
                                 .setNeutralButton("Contact", new DialogInterface.OnClickListener() {
@@ -647,6 +645,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                 .enableAntialiasing(true) // improve rendering a little bit on low-res screens
                 // spacing between pages in dp. To define spacing color, set view background
                 .spacing(2)
+                .pages(assignment.getStartPage()-1, assignment.getEndPage()-1)
                 //.pageFitPolicy(WIDTH)
                 .load();
 

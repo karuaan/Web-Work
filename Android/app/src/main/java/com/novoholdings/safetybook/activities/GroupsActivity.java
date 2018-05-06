@@ -192,6 +192,8 @@ public class GroupsActivity extends AppCompatActivity {
                     }
                 }
         );
+        swipeRefreshLayout.setRefreshing(true);
+        fetchUserInfo(mAuth.getCurrentUser());
     }
 
     @Override
