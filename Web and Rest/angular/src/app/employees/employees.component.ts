@@ -1160,7 +1160,7 @@ export class EmployeesComponent implements OnInit {
 					else{
 						console.log(res2[0]);
 					}
-				}, (err2){
+				}, (err2) => {
 					this.loginErrorMessage = err2;
 					this.isLoginError = true;
 				});
