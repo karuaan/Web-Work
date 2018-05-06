@@ -2215,7 +2215,7 @@ function getUserByEmail(email, callback){
 }
 
 app.post('/getUserByEmail', function(req, res){
-	getUserByEmail(email, function(err, result){
+	getUserByEmail(req.body.email, function(err, result){
 		if(err){
 			res.json(err);
 		}
