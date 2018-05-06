@@ -22,7 +22,9 @@
 	</div>
 </div>
 <div class="container" *ngIf="isLoggedIn && admin_id >= 0">
-
+	<div class="row">
+	<button (click)="testGetEmployee()">Test Get Employee by Email</button>
+	</div>
 	<div class="row" id="groupTabs">
 		<div class="btn-group btn-group-toggle" data-toggle="buttons">
 			<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
