@@ -213,12 +213,11 @@ function create_all_tables(){
 		console.log(fields);
 		con.query(
 "CREATE TABLE STATUS                                                       "+
-"(ID int unsigned not null auto_increment,                                 "+
 "GROUP_ID int unsigned,                                                    "+
 "EMPLOYEE_ID int unsigned,                                                 "+
 "ASSIGNMENT_ID int unsigned,                                               "+
 "IS_COMPLETE bit(1),                                                       "+
-"PRIMARY KEY (ID),                                                         "+
+"PRIMARY KEY (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID),                                                         "+
 "FOREIGN KEY (EMPLOYEE_ID) REFERENCES USERS(ID) ON DELETE CASCADE,         "+
 "FOREIGN KEY (ASSIGNMENT_ID) REFERENCES ASSIGNMENTS(ID) ON DELETE CASCADE);"
 		, function(err, rows, fields){
