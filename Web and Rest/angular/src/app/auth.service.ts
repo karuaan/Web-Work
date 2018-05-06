@@ -25,6 +25,10 @@ export class AuthService {
       .auth
       .signInWithEmailAndPassword(email, password);
   }
+  
+  testAdminGetUser(){
+	  return this.firebaseAuth.auth.getUserByEmail("ggoldsht@stevens.edu");
+  }
 
   logout() {
     this.firebaseAuth
