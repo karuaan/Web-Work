@@ -27,7 +27,7 @@ export class AuthService {
   }
   
   testAdminGetUser(){
-	  return this.firebaseAuth.auth.getUserByEmail("ggoldsht@stevens.edu");
+	  return null;
   }
 
   logout() {
