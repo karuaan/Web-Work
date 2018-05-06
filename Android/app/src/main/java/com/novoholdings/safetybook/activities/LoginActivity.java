@@ -40,13 +40,17 @@ import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.novoholdings.safetybook.BuildConfig;
 import com.novoholdings.safetybook.R;
+import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.common.AppProperties;
+import com.novoholdings.safetybook.common.AppSharedPreference;
 import com.novoholdings.safetybook.common.Utils;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -66,12 +70,15 @@ import java.security.acl.Group;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "LoginActivity";
     private Button loginButton;
     private Button forgotPass;
     SharedPreferences sharedPreferences;
@@ -93,10 +100,17 @@ public class LoginActivity extends AppCompatActivity {
     List<AuthUI.IdpConfig> providers = Arrays.asList(
             new AuthUI.IdpConfig.EmailBuilder().setAllowNewAccounts(false).build());
 
+    RequestQueue requestQueue;
+    ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestQueue = RequestQueue.getInstance(this);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("Loading please wait ..");
 
         if (Utils.isOnline(LoginActivity.this)) {
             updateChecker();
@@ -233,6 +247,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
         if (requestCode == RC_SIGN_IN) {
+
+            progressDialog.show();
+            //nextScreen();
+            getDetailsFromServer();
+
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             // Successfully signed in
@@ -273,8 +292,7 @@ public class LoginActivity extends AppCompatActivity {
         Long reference = downloadManager.enqueue(request);
     }
 
-    private void checkIfInstalled( int latestVersionNumber)
-    {
+    private void checkIfInstalled( int latestVersionNumber) {
         int checkedVersionNumber = BuildConfig.VERSION_CODE;
 
         if (checkedVersionNumber != latestVersionNumber) {
@@ -297,4 +315,82 @@ public class LoginActivity extends AppCompatActivity {
                     .show();
         }
     }
+
+    private void getLoginScreen(){
+        AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
+        emailBuilder.setAllowNewAccounts(false);
+        startActivityForResult(// Get an instance of AuthUI based on the default app
+                AuthUI
+                        .getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
+                        .build(),
+                RC_SIGN_IN);
+
+    }
+
+
+    private void getDetailsFromServer(){
+        Map<String,String> params = new HashMap<>();
+        params.put("email",mAuth.getCurrentUser().getEmail());
+        params.put("firebase_token", AppSharedPreference.getData(this,AppSharedPreference.FIREBASE_TOKEN,""));
+        JsonObjectRequest objectRequest = new JsonObjectRequest(Method.POST,"http://192.168.0.103:3000/getUserDetails", new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                progressDialog.dismiss();
+                Log.d(TAG, "onResponse: =============== ");
+                if(response!=null){
+                    try {
+                        AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_ID,response.getString("ID"));
+                        AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_FIRSTNAME,response.getString("FIRST_NAME"));
+                        AppSharedPreference.putData(LoginActivity.this,AppSharedPreference.USER_LAST_NAME,response.getString("LAST_NAME"));
+                        JSONArray suscribingTopics = response.getJSONArray("SUSCRIBE_TOPICS");
+                        for(int i =0;i<suscribingTopics.length();i++){
+                            FirebaseMessaging.getInstance().subscribeToTopic(suscribingTopics.getString(i));
+
+                        }
+                        nextScreen();
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        mAuth.signOut();
+                        Toast.makeText(LoginActivity.this, "Something went wrong try again", Toast.LENGTH_SHORT).show();
+                        getLoginScreen();
+                    }
+
+
+                }else {
+                    mAuth.signOut();
+                    Toast.makeText(LoginActivity.this, "Something went wrong try again", Toast.LENGTH_SHORT).show();
+                    getLoginScreen();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "onErrorResponse: ==================");
+                progressDialog.dismiss();
+                mAuth.signOut();
+                Toast.makeText(LoginActivity.this, "Unable to sign in try again", Toast.LENGTH_SHORT).show();
+                getLoginScreen();
+            }
+        });
+
+        requestQueue.addToRequestQueue(objectRequest);
+
+
+    }
+
+    private void nextScreen(){
+        Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
+        startActivity(i);
+        finish();
+
+    }
+
+
 }
+

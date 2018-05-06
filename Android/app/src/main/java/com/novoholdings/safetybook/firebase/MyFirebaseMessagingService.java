@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
@@ -48,7 +49,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
-            handleNow();
+            //{notification_type=expandable, body=Please complete your assignment, title=Safety Reader}
+            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"));
+
+
         }
 
         // Check if message contains a notification payload.
@@ -64,23 +68,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Schedule a job using FirebaseJobDispatcher.
      */
-  /*  private void scheduleJob() {
-        // [START dispatch_job]
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
-        Job myJob = dispatcher.newJobBuilder()
-                .setService(SyncService.class)
-                .setTag("my-job-tag")
-                .build();
-        dispatcher.schedule(myJob);
-        // [END dispatch_job]
-    }
-*/
+
+
     /**
      * Handle time allotted to BroadcastReceivers.
      */
     private void handleNow() {
         Log.d(TAG, "Short lived task is done.");
-
     }
 
     /**
@@ -88,7 +82,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      *
      * @param messageBody FCM message body received.
      */
-    private void sendNotification(String messageBody) {
+    private void sendNotification(String title,String messageBody) {
+        generateExpandableNotification(title,messageBody);
+
+    }
+
+
+    private void generateExpandableNotification(String title, String message){
         Intent intent = new Intent(this, GroupsActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -98,11 +98,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_group_name)
-                        .setContentTitle("FCM Message")
-                        .setContentText(messageBody)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setContentTitle(title)
+                        .setContentText(message)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
+                        .setStyle(new NotificationCompat.BigPictureStyle()
+                                .bigPicture(((BitmapDrawable)getApplicationContext().getDrawable(R.mipmap.ic_launcher)).getBitmap())
+                                .bigLargeIcon(null))
                         .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
