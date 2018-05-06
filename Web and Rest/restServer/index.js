@@ -2166,7 +2166,7 @@ function sendMessageToGroup(topic, title, body,notification_type) {
 
 //admin_oidc.on('ready', () => {
 //	user_oidc.on('ready', () => {
-		app.listen(3000, () => console.log('server running on 3000'))
+//app.listen(3000, () => console.log('server running on 3000'))
 //	});
 //});
 function makepass() {
