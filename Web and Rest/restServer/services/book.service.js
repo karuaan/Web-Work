@@ -46,8 +46,8 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
      };
 
-     const newBook = (book) => {
-        return new Promise(async (resolve,reject) =>{
+     const newBook = async (book) => {
+        return new Promise((resolve,reject) =>{
             var bookCounts = await bookExistsByName(book.NAME);
             if (bookCounts.count > 0) {
                 resolve({

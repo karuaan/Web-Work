@@ -27,7 +27,7 @@ export class AuthService {
   }
   
   testAdminGetUser(){
-	  return null;
+	  return this.firebaseAuth.auth.currentUser;
   }
 
   logout() {
