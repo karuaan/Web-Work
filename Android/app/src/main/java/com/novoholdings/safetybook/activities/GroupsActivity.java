@@ -75,15 +75,6 @@ public class GroupsActivity extends AppCompatActivity {
 
     Bundle extras;
 
-    NotificationCompat.Builder threeDayNotification, oneDayNotification, oneHourNotification, overdueNotification, newGroupNotifier, newAssignmentNotifier, testNotifier;
-    private static final int threeDay = 5548;
-    private static final int oneDay = 5546;
-    private static final int oneHour = 5542;
-    private static final int overdueNotifi = 5524;
-    private static final int newGroupNotification = 5584;
-    private static final int newAssignmentNotification = 5562;
-    private static final int newTestNotify = 5588;
-
     private final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE=2233;
 
 
@@ -102,33 +93,12 @@ public class GroupsActivity extends AppCompatActivity {
             updateUI();
         }
 
-        threeDayNotification = new NotificationCompat.Builder(GroupsActivity.this);
-        threeDayNotification.setAutoCancel(true);
 
-        oneDayNotification = new NotificationCompat.Builder(GroupsActivity.this);
-        oneDayNotification.setAutoCancel(true);
-
-        oneHourNotification = new NotificationCompat.Builder(GroupsActivity.this);
-        oneHourNotification.setAutoCancel(true);
-
-        overdueNotification = new NotificationCompat.Builder(GroupsActivity.this);
-        overdueNotification.setAutoCancel(false);
-
-        newGroupNotifier = new NotificationCompat.Builder(GroupsActivity.this);
-        newGroupNotifier.setAutoCancel(true);
-
-        newAssignmentNotifier = new NotificationCompat.Builder(GroupsActivity.this);
-        newAssignmentNotifier.setAutoCancel(true);
-
-        testNotifier = new NotificationCompat.Builder(GroupsActivity.this);
-        testNotifier.setAutoCancel(true);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        setTestNotifier();
 
         if (!AppProperties.isDemoMode() && mAuth.getCurrentUser()==null) {
             Log.i(TAG, "No authorization state retained - reauthorization required");
@@ -492,94 +462,6 @@ public class GroupsActivity extends AppCompatActivity {
 
     }
 
-    public void setThreeDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 3 days. Don't be late!";
-
-        threeDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        threeDayNotification.setTicker(message);
-        threeDayNotification.setWhen(System.currentTimeMillis());
-        threeDayNotification.setContentTitle(titleText);
-        threeDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        threeDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.notify(threeDay, threeDayNotification.build());
-    }
-
-    public void setOneDayNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 day. Don't be late!";
-
-        oneDayNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneDayNotification.setTicker(message);
-        oneDayNotification.setWhen(System.currentTimeMillis());
-        oneDayNotification.setContentTitle(titleText);
-        oneDayNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneDayNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneDay, oneDayNotification.build());
-    }
-
-    public void setOneHourNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        oneHourNotification.setSmallIcon(R.drawable.ic_assignment);
-        oneHourNotification.setTicker(message);
-        oneHourNotification.setWhen(System.currentTimeMillis());
-        oneHourNotification.setContentTitle(titleText);
-        oneHourNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        oneHourNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(oneHour, oneHourNotification.build());
-    }
-
-    public void setOverdueNotifier(String name)
-    {
-        String message = "Assignment due date is creeping close!";
-        String titleText = "Group " + name + " Assignment";
-        String notifierText = "Group " + name + "'s Assignment is due in 1 hour. Don't be late!";
-
-        overdueNotification.setSmallIcon(R.drawable.ic_assignment);
-        overdueNotification.setTicker(message);
-        overdueNotification.setWhen(System.currentTimeMillis());
-        overdueNotification.setContentTitle(titleText);
-        overdueNotification.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        overdueNotification.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(overdueNotifi, overdueNotification.build());
-    }
-
     public void subscribeToGroupNotifications(long groupId)
     {
         FirebaseMessaging.getInstance().subscribeToTopic("group"+groupId);
@@ -589,49 +471,5 @@ public class GroupsActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putParcelable("loginResponse", response);
         return new Intent(ctx, GroupsActivity.class);
-    }
-
-    public void setNewAssignmentNotifier(String groupName)
-    {
-        String message = "New Assignment has been added!";
-        String titleText = "New Assignment!";
-        String notifierText = "Assignment has been added to Group " + groupName;
-
-        newAssignmentNotifier.setSmallIcon(R.drawable.ic_assignment);
-        newAssignmentNotifier.setTicker(message);
-        newAssignmentNotifier.setWhen(System.currentTimeMillis());
-        newAssignmentNotifier.setContentTitle(titleText);
-        newAssignmentNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        newAssignmentNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newAssignmentNotification, newAssignmentNotifier.build());
-    }
-
-    public void setTestNotifier()
-    {
-        String message = "You are now in the Groups Page!";
-        String titleText = "Groups Page";
-        String notifierText = "This is the groups page!";
-
-        testNotifier.setSmallIcon(R.drawable.ic_assignment);
-        testNotifier.setTicker(message);
-        testNotifier.setWhen(System.currentTimeMillis());
-        testNotifier.setContentTitle(titleText);
-        testNotifier.setContentText(notifierText);
-
-        Intent intent = new Intent(this, GroupsActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        testNotifier.setContentIntent(pendingIntent);
-
-        //Builds Notification and issues it
-
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(newTestNotify, testNotifier.build());
     }
 }

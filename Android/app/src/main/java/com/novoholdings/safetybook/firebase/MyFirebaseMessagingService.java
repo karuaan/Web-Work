@@ -1,12 +1,17 @@
 package com.novoholdings.safetybook.firebase;
 
+import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 
 import com.firebase.jobdispatcher.Constraint;
@@ -16,11 +21,30 @@ import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.novoholdings.safetybook.R;
+import com.novoholdings.safetybook.activities.AssignmentsActivity;
 import com.novoholdings.safetybook.activities.GroupsActivity;
+import com.novoholdings.safetybook.common.AppProperties;
+import com.novoholdings.safetybook.receivers.AssignmentReminder;
+
+import org.joda.time.DateTime;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
+    private static final int newAssignmentNotification = 5562;
+    private static final int newTestNotify = 5588;
+    NotificationCompat.Builder threeDayNotification, oneDayNotification, oneHourNotification, overdueNotification, newGroupNotifier, newAssignmentNotifier, testNotifier;
+    private static final int newGroupNotification = 5584;
+    private static final long oneWeek = 604800000;
+    private static final long threeDays = 259200000;
+    private static final long oneDay = 129600000;
+    private static final long oneHour = 5400000;
+
 
     /**
      * Called when message is received.
@@ -48,7 +72,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
-            handleNow();
+            //{notification_type=expandable, body=Please complete your assignment, title=Safety Reader}
+            int notificationId = Integer.parseInt(remoteMessage.getData().get("assignment_id"));
+            String groupName = remoteMessage.getData().get("group_name");
+            String assignmentName = remoteMessage.getData().get("assignment_name");
+
+            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), notificationId);
+            SimpleDateFormat f = new SimpleDateFormat("dd-MMM-yyyy");
+            try {
+                Date dueDate = f.parse(remoteMessage.getData().get("due_date"));
+                long millisecondsUntilDueDate = dueDate.getTime() - Calendar.getInstance().getTimeInMillis();
+
+                if (millisecondsUntilDueDate >= oneWeek){
+                    scheduleNotification( millisecondsUntilDueDate - oneWeek, notificationId, assignmentName, "Due in one week", groupName);
+                }
+
+                if (millisecondsUntilDueDate >= threeDays){
+                    scheduleNotification( millisecondsUntilDueDate - threeDays, notificationId, assignmentName, "Due in 3 days", groupName);
+                }
+
+                if (millisecondsUntilDueDate >= oneDay){
+                    scheduleNotification(millisecondsUntilDueDate-oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
+                }
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
 
         // Check if message contains a notification payload.
@@ -64,23 +113,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Schedule a job using FirebaseJobDispatcher.
      */
-  /*  private void scheduleJob() {
-        // [START dispatch_job]
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
-        Job myJob = dispatcher.newJobBuilder()
-                .setService(SyncService.class)
-                .setTag("my-job-tag")
-                .build();
-        dispatcher.schedule(myJob);
-        // [END dispatch_job]
-    }
-*/
+
+
     /**
      * Handle time allotted to BroadcastReceivers.
      */
     private void handleNow() {
         Log.d(TAG, "Short lived task is done.");
-
     }
 
     /**
@@ -88,8 +127,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      *
      * @param messageBody FCM message body received.
      */
-    private void sendNotification(String messageBody) {
-        Intent intent = new Intent(this, GroupsActivity.class);
+    private void sendNotification(String title,String messageBody, String groupName, String notes, int id) {
+        Intent intent = new Intent(this, AssignmentsActivity.class);
+        intent.putExtra("assignment_id", id);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
@@ -98,16 +138,70 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_group_name)
-                        .setContentTitle("FCM Message")
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setContentTitle(title)
                         .setContentText(messageBody)
+                        .setContentInfo(groupName)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
+                        .setStyle(new NotificationCompat.BigTextStyle()
+                                .bigText(notes))
                         .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    }
+
+    public void setNewAssignmentNotifier(String groupName)
+    {
+        String message = "New Assignment has been added!";
+        String titleText = "New Assignment!";
+        String notifierText = "Assignment has been added to Group " + groupName;
+
+        newAssignmentNotifier.setSmallIcon(R.drawable.ic_assignment);
+        newAssignmentNotifier.setTicker(message);
+        newAssignmentNotifier.setWhen(System.currentTimeMillis());
+        newAssignmentNotifier.setContentTitle(titleText);
+        newAssignmentNotifier.setContentText(notifierText);
+
+        Intent intent = new Intent(this, GroupsActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        newAssignmentNotifier.setContentIntent(pendingIntent);
+
+        //Builds Notification and issues it
+
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        manager.notify(newAssignmentNotification, newAssignmentNotifier.build());
+    }
+
+    private void generateExpandableNotification(String title, String message, String notes){
+
+    }
+
+    public void scheduleNotification(long delay, int notificationId, String assignmentName, String message, String groupName) {//delay is after how much time(in millis) from current time you want to schedule the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(MyFirebaseMessagingService.this)
+                .setContentTitle(assignmentName)
+                .setContentText(message)
+                .setContentInfo(groupName)
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.ic_assignment)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
+        Intent intent = new Intent(MyFirebaseMessagingService.this, AssignmentsActivity.class);
+        PendingIntent activity = PendingIntent.getActivity(MyFirebaseMessagingService.this, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.setContentIntent(activity);
+
+        Notification notification = builder.build();
+
+        Intent notificationIntent = new Intent(MyFirebaseMessagingService.this, AssignmentReminder.class);
+        notificationIntent.putExtra(AssignmentReminder.NOTIFICATION_ID, notificationId);
+        notificationIntent.putExtra(AssignmentReminder.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(MyFirebaseMessagingService.this, notificationId, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager) MyFirebaseMessagingService.this.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }
 }

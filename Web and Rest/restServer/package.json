@@ -9,7 +9,6 @@
   "author": "Gregory Goldshteyn",
   "license": "ISC",
   "dependencies": {
-    "@okta/oidc-middleware": "0.0.15",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.2",
@@ -28,7 +27,6 @@
     "npm": "^5.8.0",
     "passport": "^0.4.0",
     "path": "^0.12.7",
-    "request": "^2.83.0",
-    "mssql": "^4.1.0"
+    "request": "^2.83.0"
   }
 }

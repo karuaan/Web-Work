@@ -213,12 +213,11 @@ function create_all_tables(){
 		console.log(fields);
 		con.query(
 "CREATE TABLE STATUS                                                       "+
-"(ID int unsigned not null auto_increment,                                 "+
 "GROUP_ID int unsigned,                                                    "+
 "EMPLOYEE_ID int unsigned,                                                 "+
 "ASSIGNMENT_ID int unsigned,                                               "+
 "IS_COMPLETE bit(1),                                                       "+
-"PRIMARY KEY (ID),                                                         "+
+"PRIMARY KEY (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID),                                                         "+
 "FOREIGN KEY (EMPLOYEE_ID) REFERENCES USERS(ID) ON DELETE CASCADE,         "+
 "FOREIGN KEY (ASSIGNMENT_ID) REFERENCES ASSIGNMENTS(ID) ON DELETE CASCADE);"
 		, function(err, rows, fields){
@@ -308,7 +307,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 									};
 
 									//todo: send notification to topic: '/group<ID>'
-									
+									//sendMessageToGroup("group1","Safety Reader","Please complete your assignment", "expandable");
 								});
 							}
 							else{
@@ -752,7 +751,7 @@ app.put('/editAssignments', function(req, res)
 			res.json(err);
 		}
 
-		else 
+		else
 		{
 			res.json(result);
 		}
@@ -1692,8 +1691,8 @@ function getAssignmentsUser(user_id, group_id){
 					resolve(rows);
 				}
 			});
-				
-	
+
+
 	});
 
 }
@@ -1716,7 +1715,7 @@ function updateReadingStatus(status, user_id, callback){
 		{
 			callback(err, null);
 		}
-	
+
 	});
 }
 app.get('/getAssignmentsUser', function(req, res){
@@ -1770,7 +1769,7 @@ app.post('/groups/:user_id', function(req, res){
 							}, function(error){
 								return error;
 							}));
-							
+
 						});
 						return Promise.all(assignmentPromises).then(function(array){
 							res.json(array);
@@ -1790,7 +1789,7 @@ app.post('/groups/:user_id', function(req, res){
 					}, function(error){
 						return error;
 					}));
-					
+
 				});
 				return Promise.all(assignmentPromises).then(function(array){
 					res.json(array);
@@ -1814,14 +1813,14 @@ app.get('/groups/:id', function(req, res){
 				}, function(error){
 					return error;
 				}));
-				
+
 			});
 			return Promise.all(assignmentPromises).then(function(array){
 				res.json(array);
 			});
 		}
 	});
-	
+
 });
 
 function emailToList(emailList, text, callback){
@@ -1880,7 +1879,7 @@ function getLatestVersion(callback)
 			{
 				callback(err, null);
 			}
-			else if (rows.length>=1) 
+			else if (rows.length>=1)
 			{
 				callback(null, rows[0]);
 			}
@@ -2012,6 +2011,164 @@ app.post('/getAdminID', function(req, res){
 
 })
 
+
+app.post('/getUserDetails', function(req,res){
+	if (req.body.hasOwnProperty("email") && req.body.hasOwnProperty("firebase_token")){
+
+			con.query("update  USERS  set FIREBASE_ID = '"+ req.body.firebase_token+"' WHERE EMAIL = '"+req.body.email+"';");
+
+			con.query("SELECT * FROM USERS WHERE EMAIL='"+req.body.email+"';", function(err, rows){
+			if(err){
+				res.json(err);
+			}else if (rows.length === 0){
+				res.status(204);
+				res.send('No user found');
+
+			}
+			else{
+				var userData = rows[0];
+				con.query("SELECT ID FROM GROUPS WHERE USER_ID='"+userData["ID"]+"';", function(err, rows){
+					//  suscribe_to_topics  is an array as user belongs to multiple groups
+
+					var suscribe_to_topics = [];
+					if (err){
+						console.log(err)
+						// do nothing
+					}else {
+						for (var i = 0; i < rows.length; i++) {
+						suscribe_to_topics.push("group"+rows[i]["ID"].toString());
+					}
+					// currently added a dummy group1 as i dont belong to any group
+					// remove the below line
+					suscribe_to_topics.push("group1");
+					userData["SUSCRIBE_TOPICS"] = suscribe_to_topics;
+					res.json(userData);
+					}
+				})
+
+			}
+		})
+
+	}else {
+		res.status(302);
+		res.send('Bad request');
+
+	}
+
+
+})
+app.post('/sendNotification', function(req,res){
+	// 52 is user id of mamidi.nilesh@gmail.com
+	// add the user ids in in clause to get and send to multple users at once
+
+			con.query("SELECT FIREBASE_ID  FROM USERS WHERE ID IN (52);", function(err, rows){
+			if(err){
+				res.json(err);
+			}
+			else{
+				console.log(rows.toString())
+				var firebase_tokens = [];
+				for (var i = 0; i < rows.length; i++) {
+						firebase_tokens.push(rows[i]["FIREBASE_ID"].toString());
+
+				}
+				;
+				//notification_type: currently handling 2 type normal and expandable
+				sendMessageToUser(firebase_tokens,"Safety Reader","Please complete your assignment", "expandable")
+				res.status(200)
+				res.json("Notification sent");
+			}
+		})
+
+
+
+})
+
+
+
+function sendMessageToUser(deviceIds, title, body,notification_type) {
+  request({
+    url: 'https://fcm.googleapis.com/fcm/send',
+    method: 'POST',
+    headers: {
+      'Content-Type' :' application/json',
+      'Authorization': 'key=AIzaSyD_eYHs27nVu8f94PJRIXHVw7zcu-UTyAA'
+    },
+    body: JSON.stringify(
+      { "data": {
+      	"body": body,
+        "title": title,
+        "notification_type": notification_type
+      },
+        "registration_ids": deviceIds
+      }
+    )
+  }, function(error, response, body) {
+    if (error) {
+    	//res.json(error);
+      console.error(error, response, body);
+    }
+    else if (response.statusCode >= 400) {
+    	//res.status(302);
+      console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body);
+    }
+    else {
+      console.log('Done!')
+      //res.status(200);
+    }
+  });
+}
+app.post('/sendMessageToGroup', function(req,res){
+				sendMessageToGroup("group1","TOPIC - Safety Reader","Please complete your assignment", "expandable")
+				res.status(200)
+				res.json("Notification sent");
+
+});
+
+
+
+function sendMessageToGroup(topic, title, body,notification_type) {
+  request({
+    url: 'https://fcm.googleapis.com/fcm/send',
+    method: 'POST',
+    headers: {
+      'Content-Type' :' application/json',
+      'Authorization': 'key=AIzaSyD_eYHs27nVu8f94PJRIXHVw7zcu-UTyAA'
+    },
+    body: JSON.stringify(
+      { "data": {
+      	"body": body,
+        "title": title,
+        "notification_type": notification_type
+      },
+        "to": "/topics/"+topic
+      }
+    )
+  }, function(error, response, body) {
+    if (error) {
+    	//res.json(error);
+      console.error(error, response, body);
+    }
+    else if (response.statusCode >= 400) {
+    	//res.status(302);
+      console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body);
+    }
+    else {
+      console.log('Done!')
+      //res.status(200);
+    }
+  });
+}
+
+
+
+
+
+//admin_oidc.on('ready', () => {
+//	user_oidc.on('ready', () => {
+		app.listen(3000, () => console.log('server running on 3000'))
+//	});
+//});
 function makepass() {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -2044,6 +2201,33 @@ app.post('/inviteAdmin', function(req, res){
 			});
 		}
 	});
+});
+
+function registerUsers(first_name, last_name, email, callback){
+	con.query("UPDATE USERS SET USERS.FIRST_NAME= "+ mysql.escape(first_name)  +", USERS.LAST_NAME=" + mysql.escape(last_name)+ "WHERE USERS.EMAIL="+ mysql.escape(email), function(err, rows){
+			if(err){
+				callback(err, null);
+			}
+			else{
+				callback(null, rows);
+			}
+	})
+}
+
+app.put('/registerUser', function(req, res)
+{
+	registerUsers(req.body.first_name, req.body.last_name, req.body.email, function(err, result)
+	{
+		if (err)
+		{
+			res.json(err);
+		}
+
+		else 
+		{
+			res.json(result);
+		}
+	})
 });
 
 app.listen(3000, '0.0.0.0', () => console.log('server running on 3000'));
