@@ -49,6 +49,10 @@ export class AuthService {
 			return {'error': err};
 		});
 	}
+	
+	getCurrentUser(){
+		return this.firebaseAuth.auth.currentUser;
+	}
 
   logout() {
     this.firebaseAuth
