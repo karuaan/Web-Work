@@ -42,6 +42,11 @@ export class EmployeesComponent implements OnInit {
 	newUser = false;
 	loginErrorMessage = "";
 	admin_password = "";
+	
+	newUserFirstName = "";
+	newUserLastName = "";
+	newPassword = "";
+	confirmPassword = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -115,6 +120,11 @@ export class EmployeesComponent implements OnInit {
 		this.newUser = false;
 		this.loginErrorMessage = "";
 		this.admin_password = "";
+		
+		this.newUserFirstName = "";
+		this.newUserLastName = "";
+		this.newPassword = "";
+		this.confirmPassword = "";
 
         this.employees = [];
         this.groups = [];
@@ -1266,6 +1276,12 @@ export class EmployeesComponent implements OnInit {
 				this.isLoginError = true;
 			});
     }
+	
+	signInFirstTime(){
+		console.log(this.newUserFirstName);
+		console.log(this.newUserLastName);
+		console.log(this.newPassword == this.confirmPassword);
+	}
 
 	//testAddUser(){
 	//	this.authService.signUpRegular("ggoldsht@stevens.edu", "");
