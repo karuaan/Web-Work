@@ -1442,7 +1442,9 @@ export class EmployeesComponent implements OnInit {
 
 	}
 
-
+	logout(){
+		this.authService.logout();
+	}
 
     ngOnInit() {
 
