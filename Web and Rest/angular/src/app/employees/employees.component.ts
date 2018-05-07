@@ -1361,7 +1361,7 @@ export class EmployeesComponent implements OnInit {
 				///*
 				this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
-						this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went terribly wrong. Please contact an administrator";
+						this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went wrong. Please contact an administrator";
 						this.isLoginError = true;
 						//this.isLoggedIn = true;
 					}
@@ -1438,9 +1438,18 @@ export class EmployeesComponent implements OnInit {
 			this.isLoginError = true;
 		}
 		else{
-			this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword);
-			this.loginErrorMessage = "SUCCESS!!! Reload page to login";
-			this.isLoginError = true;
+			newUserError = this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword)['error'];
+			if(newUserError === undefined){
+				this.loginErrorMessage = "Internal server error. Please contact an administrator";
+				console.log()
+				this.isLoginError = true;
+			}
+			else{
+				this.loginErrorMessage = "Success!";
+				this.isLoginError = true;
+				this.userPassword = this.newPassword;
+				this.signInWithEmail();
+			};
 		}
 
 	}
