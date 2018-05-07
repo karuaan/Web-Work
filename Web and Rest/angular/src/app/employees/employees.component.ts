@@ -1222,14 +1222,14 @@ export class EmployeesComponent implements OnInit {
 							this.newUser = true;
 						}
 						else{
-							if(res2[0]['IS_ADMIN'][0] == 1){
+							if(res2[0]['IS_ADMIN']['data'][0] == 1){
 								this.admin_id = res2[0]['ID'];
 								this.onAdminLogin(this.admin_id);
 								this.isLoggedIn = true;
 							}
 							else{
-								console.log(res2[0]['IS_ADMIN']);
-								console.log(this.admin_id);
+								//console.log(res2[0]['IS_ADMIN']);
+								//console.log(this.admin_id);
 								this.isLoggedIn = true;
 							}
 						}
