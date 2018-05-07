@@ -624,9 +624,6 @@ export class EmployeesComponent implements OnInit {
       document.getElementById('adminMenu').style.display = 'block';
     }
   }
-  logout() {
-    console.log('logout');
-  }
   inviteAdminAction() {
 
     document.getElementById('adminMenu').style.display = 'none';
