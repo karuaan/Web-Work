@@ -39,8 +39,14 @@ export class EmployeesComponent implements OnInit {
     isLoggedIn = false;
 	isLoginError = false;
     newBookAdded = false;
+	newUser = false;
 	loginErrorMessage = "";
 	admin_password = "";
+	
+	newUserFirstName = "";
+	newUserLastName = "";
+	newPassword = "";
+	confirmPassword = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -54,6 +60,7 @@ export class EmployeesComponent implements OnInit {
     admin_id = -1;
     assignment_id: 1;
     pdfCurrentPage: string;
+    pdfCurrentPagePreview: string;
     pdfStartPage: Number;
     pdfEndPage: Number;
     employeesService: EmployeesService;
@@ -61,6 +68,7 @@ export class EmployeesComponent implements OnInit {
     emailContents: string;
     modalEmails: string;
     testPdf: Object;
+    viewPdf=false;
     lookAtAssignments = true;
 
     viewAssignments: boolean;
@@ -82,6 +90,7 @@ export class EmployeesComponent implements OnInit {
 
     countdown: Number;
     previewPdf: Object;
+    pdfCurrentPagePreviewMax: string;
 
     private bookService: BookService;
 
@@ -108,8 +117,14 @@ export class EmployeesComponent implements OnInit {
         this.userEmail = "";
         this.userPassword = "";
 		this.isLoginError = false;
+		this.newUser = false;
 		this.loginErrorMessage = "";
 		this.admin_password = "";
+		
+		this.newUserFirstName = "";
+		this.newUserLastName = "";
+		this.newPassword = "";
+		this.confirmPassword = "";
 
         this.employees = [];
         this.groups = [];
@@ -186,6 +201,8 @@ export class EmployeesComponent implements OnInit {
                                         });
                                     }
                 }
+
+                this.loadAssignmentPreview();
             });
         });
 	}
@@ -768,22 +785,66 @@ export class EmployeesComponent implements OnInit {
         // $('#beforeChangePageOrBook').modal();
     }
 
+    togglePdfPreview() {
+      console.log('toggle preview');
+      if (this.viewPdf) {
+          this.viewPdf = false;
+          document.getElementById('thirdColumn').className = 'col-xl-10';
+          document.getElementById('fourthColumn').className = 'col-xl-0';
+          document.getElementById('fourthColumn').style.display = 'none';
+      } else {
+          this.viewPdf = true;
+          this.viewAssignments = false;
+          document.getElementById('secondColumn').className = 'col-xl-0';
+          document.getElementById('thirdColumn').className = 'col-xl-6';
+          document.getElementById('fourthColumn').className = 'col-xl-4';
+          document.getElementById('fourthColumn').style.display = 'block';
+      }
+    }
+
     loadAssignmentPreview() {
-      console.log(this.dataObj.books);
-      console.log(this.selectedAssignment);
+
+      let lesson;
       let book = [];
       for(let i = 0; i < this.dataObj.books.length; i++) {
         if(this.dataObj.books[i].ID === this.selectedAssignment.book_id) {
           book.push(this.dataObj.books[i]);
+
+          for(let j = 0; j < this.dataObj.books[i].LESSONS.length; j++) {
+            if(this.dataObj.books[i].LESSONS[j].ID === this.selectedAssignment.lesson_id) {
+              lesson = this.dataObj.books[i].LESSONS[j];
+            }
+          }
         }
       }
 
-      console.log(book);
 
       this.previewPdf = {
         url: `${this.bookService._api.endpoint}/read-pdf?path=${book[0].PDF_FILE}`,
         withCredentials: false
       };
+
+      this.pdfCurrentPagePreviewMax = book[0].TOTAL_PAGES + "";
+      this.pdfCurrentPagePreview = lesson.START_PAGE + "";
+    }
+
+    changedPdfPageNoPreview(pageNo: any) {
+      console.log('change');
+      /*
+      if (pageNo != null && pageNo !== '' && pageNo <= this.dataObj.selectedBook.TOTAL_PAGES) {
+          this.pdfCurrentPage = pageNo;
+      }
+      */
+    }
+
+    incrementPagePreview() {
+      console.log('inc');
+      this.pdfCurrentPagePreview = String(Number(this.pdfCurrentPagePreview) + 1);
+    }
+
+    decrementPagePreview() {
+      console.log('dec');
+      this.pdfCurrentPagePreview = String(Number(this.pdfCurrentPagePreview) - 1);
     }
 
     changePdfPageNo(pageNo: any) {
@@ -1040,9 +1101,16 @@ export class EmployeesComponent implements OnInit {
                 document.getElementById('thirdColumn').className = 'col-xl-4';
             }
         }
+
+        this.viewPdf = false;
+        document.getElementById('fourthColumn').className = 'col-xl-0';
+        document.getElementById('fourthColumn').style.display = 'none';
     }
 
     assignmentSelect(assignment, index) {
+      console.log('assignmentSelect');
+      console.log(assignment);
+      console.log(this.dataObj.selectedBook.LESSONS);
       this.countdown = new Date(1970, 0, 1).setSeconds(assignment.TIME_TO_COMPLETE);
         let assignments = document.getElementsByClassName('assignment-summary');
         for (let i = 0; i < assignments.length; i++) {
@@ -1151,6 +1219,39 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
+				
+				///*
+				this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
+					if(res2[0] == undefined){
+						this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went terribly wrong. Please contact an administrator";
+						this.isLoginError = true;
+						//this.isLoggedIn = true;
+					}
+					else{
+						if(res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined){
+							this.isLoginError = false;
+							this.newUser = true;
+						}
+						else{
+							if(res2[0]['IS_ADMIN']['data'][0] == 1){
+								this.admin_id = res2[0]['ID'];
+								this.onAdminLogin(3);//HARDCODE FOR TESTING
+								//this.onAdminLogin(this.admin_id);
+								this.isLoggedIn = true;
+							}
+							else{
+								//console.log(res2[0]['IS_ADMIN']);
+								//console.log(this.admin_id);
+								this.isLoggedIn = true;
+							}
+						}
+					}
+				}, (err2) => {
+					this.loginErrorMessage = err2;
+					this.isLoginError = true;
+				});
+				//*/
+				/* 
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
 						//this.loginErrorMessage = "You are not an admin";
@@ -1167,7 +1268,8 @@ export class EmployeesComponent implements OnInit {
 				(err) => {
 					this.loginErrorMessage = "Internal server error, please contact an admin: " + err;
 					this.isLoginError = true;
-				})
+				}) 
+				//*/
 
             })
             .catch((err) => {
@@ -1175,15 +1277,48 @@ export class EmployeesComponent implements OnInit {
 				this.isLoginError = true;
 			});
     }
+	
+	signInFirstTime(){
+		console.log(this.newUserFirstName);
+		console.log(this.newUserLastName);
+		console.log(this.newPassword == this.confirmPassword);
+		
+		if(this.newUserFirstName == ""){
+			this.loginErrorMessage = "First name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newUserLastName == ""){
+			this.loginErrorMessage = "Last name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword == ""){
+			this.loginErrorMessage = "Password cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword != this.confirmPassword){
+			this.loginErrorMessage = "Passwords must match";
+			this.isLoginError = true;
+		}
+		else{
+			this.loginErrorMessage = "SUCCESS!!! Reload page to login";
+			this.isLoginError = true;
+		}
+		
+	}
 
 	//testAddUser(){
 	//	this.authService.signUpRegular("ggoldsht@stevens.edu", "");
 	//}
 
-	testGetEmployee(){
-		console.log(this.authService.testAdminGetUser());
-	}
-	
+	/* testGetEmployee(){
+		this.authService.testAdminGetUser()
+			.then((res) => {
+				console.log(res);
+			}, (err) => {
+				console.log(err);
+			});
+	} */
+
     ngOnInit() {
 
         this.selectedGroup = this.groups[0];

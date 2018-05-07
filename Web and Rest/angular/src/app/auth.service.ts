@@ -29,6 +29,10 @@ export class AuthService {
   testAdminGetUser(){
 	  return this.firebaseAuth.auth.currentUser;
   }
+  
+  firstSignIn(newPassword){
+	  return this.firebaseAuth.auth.currentUser.updatePassword(newPassword);
+  }
 
   logout() {
     this.firebaseAuth

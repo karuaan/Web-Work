@@ -181,6 +181,7 @@
   padding: 1em;
   border-bottom: solid black 0.2em;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .assignment-summary-selected,
@@ -464,10 +465,6 @@ pdf-viewer {
   height: 2.5em;
 }
 
-#thirdColumn {
-  min-height: 55em;
-}
-
 #deleteLessonButton {
   display: none;
 }
@@ -496,4 +493,8 @@ pdf-viewer {
 
 .notes:hover .notes-hover {
   display:block;
+}
+
+#groupTabs label {
+  min-width: 10em;
 }
