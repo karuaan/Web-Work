@@ -154,6 +154,7 @@ export class EmployeesComponent implements OnInit {
                                         "NOTES": ""
                                     }];
                     this.selectedAssignment = assignments[0];
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                                     if (this.selectedGroup && this.selectedAssignment){
                                         this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
@@ -165,6 +166,8 @@ export class EmployeesComponent implements OnInit {
                 }else{
                     this.assignments = assignments;
                     this.selectedAssignment = assignments[0];
+
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                                     if (this.selectedGroup && this.selectedAssignment){
                                         this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
@@ -436,6 +439,8 @@ export class EmployeesComponent implements OnInit {
                     this.selectedAssignment = assign;
 
 
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
+
                     this.dataObj.selectedBook.LESSONS.forEach((item) => {
                         if (item.ID == dataForm.LESSON_ID) {
                             console.log('itemitem',item);
@@ -654,6 +659,8 @@ export class EmployeesComponent implements OnInit {
                             "lesson_id": -1
                         }];
                         this.selectedAssignment = this.assignments[0];
+
+                        this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     }
                     for(let j = 0; j < this.dataObj.selectedBook.LESSONS.length; j++) {
                       if(this.dataObj.selectedBook.LESSONS[j].ID === assignment.lesson_id) {
@@ -974,6 +981,8 @@ export class EmployeesComponent implements OnInit {
                 } else {
                     this.assignments = data2;
                     this.selectedAssignment = data2[0];
+
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     this.employeesService.getEmployees(this.selectedGroup.ID, this.selectedAssignment.assignment_id).subscribe(data3 => {
                         this.employees = data3;
 
@@ -1007,6 +1016,8 @@ export class EmployeesComponent implements OnInit {
                     "lesson_id": -1
                 }];
                 this.selectedAssignment = this.assignments[0];
+
+                this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                 this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
                     this.employees = data3;
 
@@ -1098,9 +1109,7 @@ export class EmployeesComponent implements OnInit {
     }
 
     assignmentSelect(assignment, index) {
-      console.log('assignmentSelect');
       console.log(assignment);
-      console.log(this.dataObj.selectedBook.LESSONS);
       this.countdown = new Date(1970, 0, 1).setSeconds(assignment.TIME_TO_COMPLETE);
         let assignments = document.getElementsByClassName('assignment-summary');
         for (let i = 0; i < assignments.length; i++) {
@@ -1111,6 +1120,8 @@ export class EmployeesComponent implements OnInit {
             }
         }
         this.selectedAssignment = assignment;
+
+        this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
         this.employeesService.getEmployees(this.selectedGroup.ID, assignment.assignment_id).subscribe(data3 => {
             this.employees = data3;
 
@@ -1132,6 +1143,97 @@ export class EmployeesComponent implements OnInit {
 
         });
         this.loadAssignmentPreview();
+    }
+
+    editAssignment() {
+      console.log("edit");
+      console.log(this.selectedAssignment);
+      var date = new Date(this.selectedAssignment.START_DATE);
+      var month = (date.getMonth() + 1);
+      if(month < 10) {
+        month = "0" + month;
+      }
+      var day = date.getDate();
+      if(day < 10) {
+        day = "0" + day;
+      }
+      var year = date.getFullYear();
+      date = year + '-' + month + '-' + day;
+      document.getElementById('startDateEdit').value = date;
+
+
+      date = new Date(this.selectedAssignment.DUE_DATE);
+      month = (date.getMonth() + 1);
+      if(month < 10) {
+        month = "0" + month;
+      }
+      day = date.getDate();
+      if(day < 10) {
+        day = "0" + day;
+      }
+      year = date.getFullYear();
+      date = year + '-' + month + '-' + day;
+      document.getElementById('dueDateEdit').value = date;
+
+      var minutes = (Math.floor(this.selectedAssignment.TIME_TO_COMPLETE / 60));
+      var seconds = this.selectedAssignment.TIME_TO_COMPLETE - (minutes * 60);
+
+      document.getElementById("minutesEdit").value = minutes;
+      document.getElementById("secondsEdit").value = seconds;
+
+      var notes = this.selectedAssignment.NOTES;
+      if(notes !== undefined && notes !== null && notes != "") {
+        document.getElementById("notesInputEdit").value = notes;
+      }
+    }
+
+    updateAssignment() {
+      let minute = parseInt(document.getElementById("minutesEdit").value);
+      let seconds = "0";
+      if(document.getElementById("secondsEdit").value !== null && document.getElementById("secondsEdit").value !== undefined) {
+        seconds = parseInt(document.getElementById("secondsEdit").value);
+      }
+      let time_to_complete = (minute * 60) + seconds;
+
+      let notes = document.getElementById("notesInputEdit").value;
+      let start_date = document.getElementById('startDateEdit').value;
+      let due_date = document.getElementById('dueDateEdit').value;
+      const dataForm = {
+          assignment_id: this.selectedAssignment.assignment_id,
+          NAME: this.selectedAssignment.NAME,
+          LESSON_ID: this.selectedAssignment.lesson_id,
+          BOOK_ID: this.selectedAssignment.book_id,
+          GROUP_ID: this.selectedGroup.ID,
+          NOTES: notes,
+          DUE_DATE: due_date,
+          START_DATE: start_date,
+          TIME_TO_COMPLETE: time_to_complete
+      };
+
+      let assign: Assignment = {
+        NAME: this.selectedAssignment.NAME,
+        lesson_id: this.selectedAssignment.lesson_id,
+        book_id: this.selectedAssignment.book_id,
+        DUE_DATE: due_date,
+        START_DATE: start_date,
+        TIME_TO_COMPLETE: time_to_complete,
+        assignment_id : this.selectedAssignment.assignment_id
+      };
+      if(notes !== null && notes !== undefined && notes != "") {
+        assign.NOTES = notes;
+      }
+
+      for(let i = 0; i < this.assignments.length; i++) {
+        if (this.assignments[i].assignment_id == assign.assignment_id) {
+          this.assignments[i] = assign;
+        }
+      }
+
+      this.selectedAssignment = assign;
+
+      this.bookService.editAssignment(this.selectedAssignment.assignment_id, dataForm).subscribe((res: any) => {
+        console.log('complete');
+      });
     }
 
     lessonSelect(lesson) {
@@ -1209,7 +1311,7 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
-				
+
 				/*
 				this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
@@ -1237,7 +1339,7 @@ export class EmployeesComponent implements OnInit {
 					this.isLoginError = true;
 				});
 				//*/
-				///* 
+				///*
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
 						//this.loginErrorMessage = "You are not an admin";
@@ -1254,7 +1356,7 @@ export class EmployeesComponent implements OnInit {
 				(err) => {
 					this.loginErrorMessage = "Internal server error, please contact an admin: " + err;
 					this.isLoginError = true;
-				}) 
+				})
 				//*/
 
             })

@@ -60,12 +60,12 @@
 
 #groupTabs {
   padding-top: 1em;
-  border-bottom: solid black 0.2em;
+  border-bottom: solid black 0.1em;
 }
 
 #groupTabs label {
-  border-top: solid black 0.2em;
-  border-bottom: solid black 0.2em;
+  border-top: solid black 0.1em;
+  border-bottom: solid black 0.1em;
   border-left: solid black 0.1em;
   border-right: solid black 0.1em;
   transform: translate(0%, 0.2em);
@@ -74,21 +74,21 @@
 }
 
 #groupTabs label:first-child {
-  border-left: solid black 0.2em;
+  border-left: solid black 0.1em;
 }
 
 #groupTabs button {
-  border-top: solid black 0.2em;
-  border-bottom: solid black 0.2em;
+  border-top: solid black 0.1em;
+  border-bottom: solid black 0.1em;
   border-left: solid black 0.1em;
-  border-right: solid black 0.2em;
+  border-right: solid black 0.1em;
   transform: translate(0%, 0.2em);
   border-top-left-radius: 1em;
   border-top-right-radius: 1em;
 }
 
 #mainContainer {
-  border: solid black 0.2em;
+  border: solid black 0.1em;
   border-top: solid black 0em;
   background-color: #FFFFFF;
 }
@@ -123,8 +123,8 @@
 }
 
 .date-header {
-  border-top: solid black 0.2em;
-  border-bottom: solid black 0.2em;
+  border-top: solid black 0.1em;
+  border-bottom: solid black 0.1em;
   padding: 1em;
 }
 
@@ -139,8 +139,8 @@
 
 @media (min-width: 1200px) {
   #secondaryContainer {
-    border-left: solid black 0.2em;
-    border-right: solid black 0.2em;
+    border-left: solid black 0.1em;
+    border-right: solid black 0.1em;
   }
 
   .date-header {
@@ -179,7 +179,7 @@
 
 .assignment-summary {
   padding: 1em;
-  border-bottom: solid black 0.2em;
+  border-bottom: solid black 0.1em;
   cursor: pointer;
   overflow: hidden;
 }
@@ -200,7 +200,7 @@
 
 .empty-assignments {
   padding: 1em;
-  border-bottom: solid black 0.2em;
+  border-bottom: solid black 0.1em;
 }
 
 .col-xl-2 {
@@ -322,8 +322,8 @@
 
 @media (max-width: 1200px) {
   #lessonsContainer {
-    border-top: solid black 0.2em;
-    border-bottom: solid black 0.2em;
+    border-top: solid black 0.1em;
+    border-bottom: solid black 0.1em;
   }
 }
 
@@ -413,8 +413,8 @@ pdf-viewer {
 
 @media (min-width: 1000px) {
   #secondaryContainer {
-    border-left: solid black 0.2em;
-    border-right: solid black 0.2em;
+    border-left: solid black 0.1em;
+    border-right: solid black 0.1em;
   }
 }
 
@@ -497,4 +497,11 @@ pdf-viewer {
 
 #groupTabs label {
   min-width: 10em;
+}
+
+#notesDisplay {
+  width: 100%;
+  word-wrap: break-word;
+  margin: 0.5em 0em;
+  font-size: 1.2em;
 }
