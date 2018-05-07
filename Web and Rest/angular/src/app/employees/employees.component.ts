@@ -47,6 +47,9 @@ export class EmployeesComponent implements OnInit {
 	confirmPassword = "";
     firstName = "";
     lastName = "";
+	
+	newUserFirstName = "";
+	newUserLastName = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -125,6 +128,9 @@ export class EmployeesComponent implements OnInit {
 		this.confirmPassword = "";
         this.firstName = "";
         this.lastName = "";
+		
+		this.newUserFirstName = "";
+		this.newUserLastName = "";
 
         this.employees = [];
         this.groups = [];
@@ -1408,8 +1414,8 @@ export class EmployeesComponent implements OnInit {
     }
 
 	signInFirstTime(){
-		console.log(this.firstName);
-		console.log(this.lastName);
+		console.log(this.newUserFirstName);
+		console.log(this.newUserLastName);
 		console.log(this.newPassword == this.confirmPassword);
 
 		if(this.firstName == ""){
