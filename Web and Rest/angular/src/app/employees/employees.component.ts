@@ -1210,7 +1210,7 @@ export class EmployeesComponent implements OnInit {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
 				
-				/*
+				///*
 				this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
 						this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went terribly wrong. Please contact an administrator";
@@ -1222,12 +1222,14 @@ export class EmployeesComponent implements OnInit {
 							this.newUser = true;
 						}
 						else{
-							if(res2[0]['IS_ADMIN'][0] === 1){
+							if(res2[0]['IS_ADMIN'][0] == 1){
 								this.admin_id = res2[0]['ID'];
 								this.onAdminLogin(this.admin_id);
 								this.isLoggedIn = true;
 							}
 							else{
+								console.log(res2[0]['IS_ADMIN'][0]);
+								console.log(this.admin_id);
 								this.isLoggedIn = true;
 							}
 						}
@@ -1237,7 +1239,7 @@ export class EmployeesComponent implements OnInit {
 					this.isLoginError = true;
 				});
 				//*/
-				///* 
+				/* 
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
 						//this.loginErrorMessage = "You are not an admin";
