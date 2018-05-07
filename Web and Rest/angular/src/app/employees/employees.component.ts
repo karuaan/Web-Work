@@ -168,7 +168,8 @@ export class EmployeesComponent implements OnInit {
                                         "DUE_DATE": null,
                                         "book_id": -1,
                                         "lesson_id": -1,
-                                        "NOTES": ""
+                                        "NOTES": "",
+                                        "TIME_TO_COMPLETE": 0
                                     }];
                     this.selectedAssignment = assignments[0];
                     this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
@@ -439,7 +440,8 @@ export class EmployeesComponent implements OnInit {
                             DUE_DATE: this.assignmentForm.due_date,
                             START_DATE: this.assignmentForm.start_date,
                             NOTES: this.assignmentForm.notes,
-                            assignment_id : res.data.ID
+                            assignment_id : res.data.ID,
+                            TIME_TO_COMPLETE: res.assignmentForm.time_to_complete
                         };
 
                     console.log('NEW assignMENT', assign);
@@ -679,7 +681,8 @@ export class EmployeesComponent implements OnInit {
                             "DUE_DATE": null,
                             "NOTES": "",
                             "book_id": -1,
-                            "lesson_id": -1
+                            "lesson_id": -1,
+                            "TIME_TO_COMPLETE": 0
                         }];
                         this.selectedAssignment = this.assignments[0];
 
@@ -1036,7 +1039,8 @@ export class EmployeesComponent implements OnInit {
                     "START_DATE": null,
                     "DUE_DATE": null,
                     "book_id": -1,
-                    "lesson_id": -1
+                    "lesson_id": -1,
+                    "TIME_TO_COMPLETE": 0
                 }];
                 this.selectedAssignment = this.assignments[0];
 
@@ -1240,14 +1244,17 @@ export class EmployeesComponent implements OnInit {
           TIME_TO_COMPLETE: time_to_complete
       };
 
+      let startDate = new Date(start_date);
+      let dueDate = new Date(due_date);
       let assign: Assignment = {
         NAME: this.selectedAssignment.NAME,
         lesson_id: this.selectedAssignment.lesson_id,
         book_id: this.selectedAssignment.book_id,
-        DUE_DATE: due_date,
-        START_DATE: start_date,
+        DUE_DATE: dueDate,
+        START_DATE: startDate,
         TIME_TO_COMPLETE: time_to_complete,
-        assignment_id : this.selectedAssignment.assignment_id
+        assignment_id : this.selectedAssignment.assignment_id,
+        NOTES: notes
       };
       if(notes !== null && notes !== undefined && notes != "") {
         assign.NOTES = notes;
@@ -1341,7 +1348,7 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
-				
+
 				///*
 				this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
@@ -1373,7 +1380,7 @@ export class EmployeesComponent implements OnInit {
 					this.isLoginError = true;
 				});
 				//*/
-				/* 
+				/*
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
 						//this.loginErrorMessage = "You are not an admin";
@@ -1390,7 +1397,7 @@ export class EmployeesComponent implements OnInit {
 				(err) => {
 					this.loginErrorMessage = "Internal server error, please contact an admin: " + err;
 					this.isLoginError = true;
-				}) 
+				})
 				//*/
 
             })
@@ -1428,7 +1435,7 @@ export class EmployeesComponent implements OnInit {
 
 	}
 
-	 
+
 
     ngOnInit() {
 
