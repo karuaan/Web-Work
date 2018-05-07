@@ -1429,6 +1429,7 @@ export class EmployeesComponent implements OnInit {
 			this.isLoginError = true;
 		}
 		else{
+			this.authService.updateUserNames(this.firstName, this.lastName, this.newPassword);
 			this.loginErrorMessage = "SUCCESS!!! Reload page to login";
 			this.isLoginError = true;
 		}
