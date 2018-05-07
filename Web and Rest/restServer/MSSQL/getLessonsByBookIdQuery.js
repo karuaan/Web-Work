@@ -1,6 +1,6 @@
-const sql = require('mssql');
+var sql = require("mssql");
 
-var getBooksQuery = function(callback) {
+var getLessonsByBookId = function(num, callback) {
 
     var config = {
         "server": "microsoft-sql-database.cgkepgzez06k.us-east-2.rds.amazonaws.com",
@@ -10,7 +10,8 @@ var getBooksQuery = function(callback) {
     };
 
     sql.connect(config, err => {
-        new sql.Request().query('SELECT * FROM BOOKS', (err, results) => {
+        new sql.Request().input('bookId', sql.Int, num)
+        .query('SELECT * FROM LESSONS WHERE LESSONS.BOOK_ID = @bookId', (err, results) => {
             if(err) {
                 callback(err, null);
                 sql.close();
@@ -21,7 +22,8 @@ var getBooksQuery = function(callback) {
             }
         })
     });
+
+
 };
 
-
-exports.query = getBooksQuery;
+exports.query = getLessonsByBookId;
