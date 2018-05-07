@@ -33,6 +33,15 @@ export class AuthService {
   firstSignIn(newPassword){
 	  return this.firebaseAuth.auth.currentUser.updatePassword(newPassword);
   }
+  
+  updateUserNames(first_name, last_name, password): Observable<Object>{
+		var response = this.http.put<Object>(this.restURL + '/updateUserNamesByEmail', {'email' : this.firebaseAuth.auth.currentUser.email, 'first_name' : first_name, 'last_name': last_name});
+		response.subscribe((res) => {
+			console.log(res);
+		}, (err) => {
+			console.log(err);
+		});
+	}
 
   logout() {
     this.firebaseAuth
