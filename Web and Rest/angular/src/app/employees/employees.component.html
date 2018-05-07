@@ -191,13 +191,11 @@
 						<div class="row">
 							<div class="icon-text">
 								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/hourglass.png" /></div>
-								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{countdown | date:'HH:mm:ss'}}</div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{countdown | date: "m 'minutes' ss 'seconds'"}}</div>
 							</div>
-							<div class="icon-action">
-								<!--
+							<div class="icon-action" (click)="togglePdfPreview()">
 								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/ic_picture_as_pdf_48px.png" /></div>
 								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">PDF</div>
-							-->
 							</div>
 							<div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>
@@ -211,7 +209,7 @@
 							</div>
 							<div class="icon-text">
 								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/cs-cc-party.png" /></div>
-								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignmentCompletion}}</div>
+								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignmentCompletion}} of employees finished</div>
 							</div>
 							<div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
 								<div class="icon"><img src="assets/pngs/mail.png" /></div>
@@ -264,7 +262,7 @@
                             (click)="incrementPage()">Next
                     </button>
 				</div>
-				<pdf-viewer [src]="testPdf" [render-text]="false"
+				<pdf-viewer style="min-height: 47em;"[src]="testPdf" [render-text]="false"
                             [(page)]="pdfCurrentPage"
                             (error)="onPdfLoadError($event)"
                             (after-load-complete)="generateLessonPlan($event)"
@@ -274,8 +272,18 @@
 			</div>
 		</div>
 
-		<div class="col-xl-10" id="fourthColumn">
-			<pdf-viewer [src]="previewPdf" [render-text]="false"></pdf-viewer>
+		<div style="min-height: 47em" class="col-xl-0" id="fourthColumn" style="display: none">
+			<div class="pdf-controller">
+				<button class="btn btn-primary"
+													[disabled]="'1' == pdfCurrentPagePreview"
+													(click)="decrementPagePreview()">Prev</button>
+				<input type="number" [(ngModel)]="pdfCurrentPagePreview">
+				<button class="btn btn-primary" [disabled]="pdfCurrentPagePreviewMax == pdfCurrentPage"
+													(click)="incrementPagePreview()">Next
+									</button>
+			</div>
+
+			<pdf-viewer style="min-height: 47em;" [src]="previewPdf" [(page)]="pdfCurrentPagePreview" [show-all]="false"[render-text]="false"></pdf-viewer>
 		</div>
 	</div>
 

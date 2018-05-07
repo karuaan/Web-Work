@@ -54,6 +54,7 @@ export class EmployeesComponent implements OnInit {
     admin_id = -1;
     assignment_id: 1;
     pdfCurrentPage: string;
+    pdfCurrentPagePreview: string;
     pdfStartPage: Number;
     pdfEndPage: Number;
     employeesService: EmployeesService;
@@ -61,6 +62,7 @@ export class EmployeesComponent implements OnInit {
     emailContents: string;
     modalEmails: string;
     testPdf: Object;
+    viewPdf=false;
     lookAtAssignments = true;
 
     viewAssignments: boolean;
@@ -82,6 +84,7 @@ export class EmployeesComponent implements OnInit {
 
     countdown: Number;
     previewPdf: Object;
+    pdfCurrentPagePreviewMax: string;
 
     private bookService: BookService;
 
@@ -186,6 +189,8 @@ export class EmployeesComponent implements OnInit {
                                         });
                                     }
                 }
+
+                this.loadAssignmentPreview();
             });
         });
 	}
@@ -768,22 +773,66 @@ export class EmployeesComponent implements OnInit {
         // $('#beforeChangePageOrBook').modal();
     }
 
+    togglePdfPreview() {
+      console.log('toggle preview');
+      if (this.viewPdf) {
+          this.viewPdf = false;
+          document.getElementById('thirdColumn').className = 'col-xl-10';
+          document.getElementById('fourthColumn').className = 'col-xl-0';
+          document.getElementById('fourthColumn').style.display = 'none';
+      } else {
+          this.viewPdf = true;
+          this.viewAssignments = false;
+          document.getElementById('secondColumn').className = 'col-xl-0';
+          document.getElementById('thirdColumn').className = 'col-xl-6';
+          document.getElementById('fourthColumn').className = 'col-xl-4';
+          document.getElementById('fourthColumn').style.display = 'block';
+      }
+    }
+
     loadAssignmentPreview() {
-      console.log(this.dataObj.books);
-      console.log(this.selectedAssignment);
+
+      let lesson;
       let book = [];
       for(let i = 0; i < this.dataObj.books.length; i++) {
         if(this.dataObj.books[i].ID === this.selectedAssignment.book_id) {
           book.push(this.dataObj.books[i]);
+
+          for(let j = 0; j < this.dataObj.books[i].LESSONS.length; j++) {
+            if(this.dataObj.books[i].LESSONS[j].ID === this.selectedAssignment.lesson_id) {
+              lesson = this.dataObj.books[i].LESSONS[j];
+            }
+          }
         }
       }
 
-      console.log(book);
 
       this.previewPdf = {
         url: `${this.bookService._api.endpoint}/read-pdf?path=${book[0].PDF_FILE}`,
         withCredentials: false
       };
+
+      this.pdfCurrentPagePreviewMax = book[0].TOTAL_PAGES + "";
+      this.pdfCurrentPagePreview = lesson.START_PAGE + "";
+    }
+
+    changedPdfPageNoPreview(pageNo: any) {
+      console.log('change');
+      /*
+      if (pageNo != null && pageNo !== '' && pageNo <= this.dataObj.selectedBook.TOTAL_PAGES) {
+          this.pdfCurrentPage = pageNo;
+      }
+      */
+    }
+
+    incrementPagePreview() {
+      console.log('inc');
+      this.pdfCurrentPagePreview = String(Number(this.pdfCurrentPagePreview) + 1);
+    }
+
+    decrementPagePreview() {
+      console.log('dec');
+      this.pdfCurrentPagePreview = String(Number(this.pdfCurrentPagePreview) - 1);
     }
 
     changePdfPageNo(pageNo: any) {
@@ -1040,9 +1089,16 @@ export class EmployeesComponent implements OnInit {
                 document.getElementById('thirdColumn').className = 'col-xl-4';
             }
         }
+
+        this.viewPdf = false;
+        document.getElementById('fourthColumn').className = 'col-xl-0';
+        document.getElementById('fourthColumn').style.display = 'none';
     }
 
     assignmentSelect(assignment, index) {
+      console.log('assignmentSelect');
+      console.log(assignment);
+      console.log(this.dataObj.selectedBook.LESSONS);
       this.countdown = new Date(1970, 0, 1).setSeconds(assignment.TIME_TO_COMPLETE);
         let assignments = document.getElementsByClassName('assignment-summary');
         for (let i = 0; i < assignments.length; i++) {
@@ -1188,7 +1244,7 @@ export class EmployeesComponent implements OnInit {
 				console.log(err);
 			});
 	} */
-	
+
     ngOnInit() {
 
         this.selectedGroup = this.groups[0];
