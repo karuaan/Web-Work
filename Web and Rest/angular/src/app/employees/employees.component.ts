@@ -42,11 +42,11 @@ export class EmployeesComponent implements OnInit {
 	newUser = false;
 	loginErrorMessage = "";
 	admin_password = "";
-	
-	newUserFirstName = "";
-	newUserLastName = "";
+
 	newPassword = "";
 	confirmPassword = "";
+    firstName = "";
+    lastName = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -121,10 +121,10 @@ export class EmployeesComponent implements OnInit {
 		this.loginErrorMessage = "";
 		this.admin_password = "";
 		
-		this.newUserFirstName = "";
-		this.newUserLastName = "";
 		this.newPassword = "";
 		this.confirmPassword = "";
+        this.firstName = "";
+        this.lastName = "";
 
         this.employees = [];
         this.groups = [];
@@ -147,64 +147,70 @@ export class EmployeesComponent implements OnInit {
     }
 
 	onAdminLogin(admin_id){
-		this.employeesService.getGroups(admin_id).subscribe(groups => {
-            this.groups = groups;
-            this.selectedGroup = groups[0] || null;
+        this.employeesService.getUserData(admin_id).subscribe(userData =>{
+            this.firstName = userData['first_name'];
+            this.lastName = userData['last_name'];
 
-            this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
+            this.employeesService.getGroups(admin_id).subscribe(groups => {
+                this.groups = groups;
+                this.selectedGroup = groups[0] || null;
 
-                if (assignments && assignments.hasOwnProperty('err')){
-                    this.assignments = [{
-                                        "assignment_id": -1,
-                                        "NAME": "No assignments",
-                                        "START_DATE": null,
-                                        "DUE_DATE": null,
-                                        "book_id": -1,
-                                        "lesson_id": -1,
-                                        "NOTES": ""
-                                    }];
-                    this.selectedAssignment = assignments[0];
-                                    if (this.selectedGroup && this.selectedAssignment){
-                                        this.employeesService.getEmployees(
-                                            this.selectedGroup.ID,
-                                            -1
-                                        ).subscribe(employees => {
-                                            this.employees = employees;
-                                        });
+                this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
+
+                    if (assignments && assignments.hasOwnProperty('err')){
+                        this.assignments = [{
+                                            "assignment_id": -1,
+                                            "NAME": "No assignments",
+                                            "START_DATE": null,
+                                            "DUE_DATE": null,
+                                            "book_id": -1,
+                                            "lesson_id": -1,
+                                            "NOTES": ""
+                                        }];
+                        this.selectedAssignment = assignments[0];
+                                        if (this.selectedGroup && this.selectedAssignment){
+                                            this.employeesService.getEmployees(
+                                                this.selectedGroup.ID,
+                                                -1
+                                            ).subscribe(employees => {
+                                                this.employees = employees;
+                                            });
+                                        }
+                    }else{
+                        this.assignments = assignments;
+                        this.selectedAssignment = assignments[0];
+                        if (this.selectedGroup && this.selectedAssignment){
+                            this.employeesService.getEmployees(
+                                this.selectedGroup.ID,
+                                this.selectedAssignment.assignment_id
+                            ).subscribe(employees => {
+                                this.employees = employees;
+
+                                let complete = 0;
+                                let total = employees.length;
+                                for(let i = 0; i < employees.length; i++) {
+                                  console.log(employees[i]);
+                                  if(employees[i].IS_COMPLETE !== null) {
+                                    if(employees[i].IS_COMPLETE.data[0] === 1) {
+                                      complete = complete + 1;
                                     }
-                }else{
-                    this.assignments = assignments;
-                    this.selectedAssignment = assignments[0];
-                                    if (this.selectedGroup && this.selectedAssignment){
-                                        this.employeesService.getEmployees(
-                                            this.selectedGroup.ID,
-                                            this.selectedAssignment.assignment_id
-                                        ).subscribe(employees => {
-                                            this.employees = employees;
+                                  }
+                                }
 
-                                            let complete = 0;
-                                            let total = employees.length;
-                                            for(let i = 0; i < employees.length; i++) {
-                                              console.log(employees[i]);
-                                              if(employees[i].IS_COMPLETE !== null) {
-                                                if(employees[i].IS_COMPLETE.data[0] === 1) {
-                                                  complete = complete + 1;
-                                                }
-                                              }
-                                            }
 
-                                            if(complete === 0) {
-                                              this.selectedAssignmentCompletion = 0 + "%";
-                                            } else {
-                                              this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
-                                            }
-                                        });
-                                    }
-                }
-
-                this.loadAssignmentPreview();
+                                if(complete === 0) {
+                                  this.selectedAssignmentCompletion = 0 + "%";
+                                } else {
+                                  this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
+                                }
+                            });
+                        }
+                    this.loadAssignmentPreview();
+                    }    
+                });
             });
         });
+		
 	}
 
     transformLessonModel(tempLession: Lesson) {
@@ -1279,15 +1285,15 @@ export class EmployeesComponent implements OnInit {
     }
 	
 	signInFirstTime(){
-		console.log(this.newUserFirstName);
-		console.log(this.newUserLastName);
+		console.log(this.firstName);
+		console.log(this.lastName);
 		console.log(this.newPassword == this.confirmPassword);
 		
-		if(this.newUserFirstName == ""){
+		if(this.firstName == ""){
 			this.loginErrorMessage = "First name cannot be empty";
 			this.isLoginError = true;
 		}
-		else if(this.newUserLastName == ""){
+		else if(this.lastName == ""){
 			this.loginErrorMessage = "Last name cannot be empty";
 			this.isLoginError = true;
 		}
