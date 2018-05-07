@@ -48,7 +48,12 @@
 	</div>
 	-->
 	<div class="name-container" style="width: 100%; height: 2em; margin-top:1em">
+	<img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu" src="assets/pngs/cog.png" />
 		<p style="margin: 0; float: right; font-size: 1.2em;">{{firstName}} {{lastName}}</p>
+		<div id="adminMenu">
+			<div>Add Admin</div>
+			<div>Log Out</div>
+		</div>
 	</div>
 	<div class="row" id="groupTabs">
 		<div class="btn-group btn-group-toggle" data-toggle="buttons">

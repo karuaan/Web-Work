@@ -505,3 +505,19 @@ pdf-viewer {
   margin: 0.5em 0em;
   font-size: 1.2em;
 }
+
+#adminMenu {
+  position: absolute;
+    right: 0;
+    margin: 1em;
+    top: 2em;
+    background: #FFFFFF;
+    width: 7em;
+    border: solid black 0.1em;
+    border-bottom-width: 0em;
+    padding: 0.5em;
+}
+
+#adminMenu div {
+  border-bottom: solid black 0.1em;
+}

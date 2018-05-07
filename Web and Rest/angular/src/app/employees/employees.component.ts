@@ -148,6 +148,8 @@ export class EmployeesComponent implements OnInit {
 
 	   onAdminLogin(admin_id) {
 
+       this.firstName = 'Luis';
+      this.lastName = 'Meneses';
        this.employeesService.getUserData(admin_id).subscribe(userData =>{
        this.firstName = userData['first_name'];
       this.lastName = userData['last_name'];
@@ -170,14 +172,14 @@ export class EmployeesComponent implements OnInit {
                                     }];
                     this.selectedAssignment = assignments[0];
                     this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
-                                    if (this.selectedGroup && this.selectedAssignment){
-                                        this.employeesService.getEmployees(
-                                            this.selectedGroup.ID,
-                                            -1
-                                        ).subscribe(employees => {
-                                            this.employees = employees;
-                                        });
-                                    }
+                    if (this.selectedGroup && this.selectedAssignment) {
+                      this.employeesService.getEmployees(
+                        this.selectedGroup.ID,
+                        -1
+                      ).subscribe(employees => {
+                        this.employees = employees;
+                      });
+                    }
                 }else{
                     this.assignments = assignments;
                     this.selectedAssignment = assignments[0];
@@ -610,6 +612,13 @@ export class EmployeesComponent implements OnInit {
 	  return text;
 	}
 
+  logout() {
+    console.log('logout');
+  }
+
+  adming() {
+    console.log('admin');
+  }
     inviteAdmin() {
         if (this.inviteAdminForm.invalid) {
             this.toastrService.warning('Invite', 'Enter Email address');
@@ -1164,54 +1173,61 @@ export class EmployeesComponent implements OnInit {
       console.log(this.selectedAssignment);
       var date = new Date(this.selectedAssignment.START_DATE);
       var month = (date.getMonth() + 1);
+      var monthString = "";
       if(month < 10) {
-        month = "0" + month;
+        monthString = "0" + month;
       }
       var day = date.getDate();
+      var dayString = "";
       if(day < 10) {
-        day = "0" + day;
+        dayString = "0" + day;
       }
       var year = date.getFullYear();
-      date = year + '-' + month + '-' + day;
-      document.getElementById('startDateEdit').value = date;
+      var yearString = "" + year;
+      var dateString = yearString + '-' + monthString + '-' + dayString;
+       (<HTMLInputElement>document.getElementById('startDateEdit')).value = dateString;
 
 
       date = new Date(this.selectedAssignment.DUE_DATE);
       month = (date.getMonth() + 1);
       if(month < 10) {
-        month = "0" + month;
+        monthString = "0" + month;
       }
       day = date.getDate();
       if(day < 10) {
-        day = "0" + day;
+        dayString = "0" + day;
       }
       year = date.getFullYear();
-      date = year + '-' + month + '-' + day;
-      document.getElementById('dueDateEdit').value = date;
+      yearString = "" + year;
+      dateString = yearString + '-' + monthString + '-' + dayString;
+       (<HTMLInputElement>document.getElementById('dueDateEdit')).value = dateString;
 
       var minutes = (Math.floor(this.selectedAssignment.TIME_TO_COMPLETE / 60));
       var seconds = this.selectedAssignment.TIME_TO_COMPLETE - (minutes * 60);
 
-      document.getElementById("minutesEdit").value = minutes;
-      document.getElementById("secondsEdit").value = seconds;
+      var minuteString = minutes + "";
+      var secondString = seconds + "";
+       (<HTMLInputElement>document.getElementById("minutesEdit")).value = minuteString;
+       (<HTMLInputElement>document.getElementById("secondsEdit")).value = secondString;
 
       var notes = this.selectedAssignment.NOTES;
       if(notes !== undefined && notes !== null && notes != "") {
-        document.getElementById("notesInputEdit").value = notes;
+         (<HTMLInputElement>document.getElementById("notesInputEdit")).value = notes;
       }
     }
 
     updateAssignment() {
-      let minute = parseInt(document.getElementById("minutesEdit").value);
+      let minute = parseInt( (<HTMLInputElement>document.getElementById("minutesEdit")).value);
       let seconds = "0";
-      if(document.getElementById("secondsEdit").value !== null && document.getElementById("secondsEdit").value !== undefined) {
-        seconds = parseInt(document.getElementById("secondsEdit").value);
+      var secondsInt = 0;
+      if( (<HTMLInputElement>document.getElementById("secondsEdit")).value !== null &&  (<HTMLInputElement>document.getElementById("secondsEdit")).value !== undefined) {
+        secondsInt = parseInt( (<HTMLInputElement>document.getElementById("secondsEdit")).value);
       }
-      let time_to_complete = (minute * 60) + seconds;
+      let time_to_complete = (minute * 60) + secondsInt;
 
-      let notes = document.getElementById("notesInputEdit").value;
-      let start_date = document.getElementById('startDateEdit').value;
-      let due_date = document.getElementById('dueDateEdit').value;
+      let notes =  (<HTMLInputElement>document.getElementById("notesInputEdit")).value;
+      let start_date =  (<HTMLInputElement>document.getElementById('startDateEdit')).value;
+      let due_date =  (<HTMLInputElement>document.getElementById('dueDateEdit')).value;
       const dataForm = {
           assignment_id: this.selectedAssignment.assignment_id,
           NAME: this.selectedAssignment.NAME,
