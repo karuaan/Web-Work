@@ -147,9 +147,6 @@ export class EmployeesComponent implements OnInit {
     }
 
 	   onAdminLogin(admin_id) {
-
-       this.firstName = 'Luis';
-      this.lastName = 'Meneses';
        this.employeesService.getUserData(admin_id).subscribe(userData =>{
        this.firstName = userData['first_name'];
       this.lastName = userData['last_name'];
@@ -614,14 +611,23 @@ export class EmployeesComponent implements OnInit {
 	  return text;
 	}
 
+  toggleMenu() {
+    if(document.getElementById('adminMenu').style.display === 'block') {
+      document.getElementById('adminMenu').style.display = 'none';
+    } else {
+      document.getElementById('adminMenu').style.display = 'block';
+    }
+  }
   logout() {
     console.log('logout');
   }
+  inviteAdminAction() {
 
-  adming() {
-    console.log('admin');
+    document.getElementById('adminMenu').style.display = 'none';
   }
     inviteAdmin() {
+
+        document.getElementById('adminMenu').style.display = 'none';
         if (this.inviteAdminForm.invalid) {
             this.toastrService.warning('Invite', 'Enter Email address');
             return;
