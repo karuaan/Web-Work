@@ -31,6 +31,11 @@ export class EmployeesService {
   convertToEmployeeArray(){
 	  
   }
+
+  getUserData(user_id){
+	var response = this.http.get(this.restURL + '/user/${user_id}');
+	return response;
+  }
   
   email(user_emails, message){
 	var response = this.http.post(this.restURL + '/emailToList', {'emailList': user_emails, 'text': message});

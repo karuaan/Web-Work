@@ -43,6 +43,11 @@ export class EmployeesComponent implements OnInit {
 	loginErrorMessage = "";
 	admin_password = "";
 
+	newPassword = "";
+	confirmPassword = "";
+    firstName = "";
+    lastName = "";
+
     testEmployee: Employee;
     employees: Employee[];
     groups: Group[];
@@ -116,6 +121,11 @@ export class EmployeesComponent implements OnInit {
 		this.loginErrorMessage = "";
 		this.admin_password = "";
 
+		this.newPassword = "";
+		this.confirmPassword = "";
+        this.firstName = "";
+        this.lastName = "";
+
         this.employees = [];
         this.groups = [];
         this.assignments = [];
@@ -136,7 +146,7 @@ export class EmployeesComponent implements OnInit {
 
     }
 
-	onAdminLogin(admin_id){
+	   onAdminLogin(admin_id) {
 		this.employeesService.getGroups(admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
@@ -192,14 +202,12 @@ export class EmployeesComponent implements OnInit {
                                               this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
                                             }
                                         });
-                                    }
-                }
-
-                this.loadAssignmentPreview();
+                        }
+                    this.loadAssignmentPreview();
+                    }
+                });
             });
-        });
-	}
-
+	         }
     transformLessonModel(tempLession: Lesson) {
         return new Lesson(
             tempLession.ID,
@@ -1321,15 +1329,19 @@ export class EmployeesComponent implements OnInit {
 					}
 					else{
 						if(res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined){
+							this.isLoginError = false;
 							this.newUser = true;
 						}
 						else{
-							if(res2[0]['IS_ADMIN'][0] === 1){
+							if(res2[0]['IS_ADMIN']['data'][0] == 1){
 								this.admin_id = res2[0]['ID'];
-								this.onAdminLogin(this.admin_id);
+								this.onAdminLogin(3);//HARDCODE FOR TESTING
+								//this.onAdminLogin(this.admin_id);
 								this.isLoggedIn = true;
 							}
 							else{
+								//console.log(res2[0]['IS_ADMIN']);
+								//console.log(this.admin_id);
 								this.isLoggedIn = true;
 							}
 						}
@@ -1365,6 +1377,34 @@ export class EmployeesComponent implements OnInit {
 				this.isLoginError = true;
 			});
     }
+
+	signInFirstTime(){
+		console.log(this.firstName);
+		console.log(this.lastName);
+		console.log(this.newPassword == this.confirmPassword);
+
+		if(this.firstName == ""){
+			this.loginErrorMessage = "First name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.lastName == ""){
+			this.loginErrorMessage = "Last name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword == ""){
+			this.loginErrorMessage = "Password cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword != this.confirmPassword){
+			this.loginErrorMessage = "Passwords must match";
+			this.isLoginError = true;
+		}
+		else{
+			this.loginErrorMessage = "SUCCESS!!! Reload page to login";
+			this.isLoginError = true;
+		}
+
+	}
 
 	//testAddUser(){
 	//	this.authService.signUpRegular("ggoldsht@stevens.edu", "");

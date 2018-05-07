@@ -14,6 +14,10 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -24,9 +28,13 @@ import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.activities.AssignmentsActivity;
 import com.novoholdings.safetybook.activities.GroupsActivity;
 import com.novoholdings.safetybook.common.AppProperties;
+import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.receivers.AssignmentReminder;
 
 import org.joda.time.DateTime;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.mozilla.javascript.ast.Assignment;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -44,6 +52,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final long threeDays = 259200000;
     private static final long oneDay = 129600000;
     private static final long oneHour = 5400000;
+    private static final long oneMinute = 45000;
 
 
     /**
@@ -74,11 +83,39 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
             //{notification_type=expandable, body=Please complete your assignment, title=Safety Reader}
             int notificationId = Integer.parseInt(remoteMessage.getData().get("assignment_id"));
+            long groupId = Long.parseLong(remoteMessage.getData().get("group_id"));
             String groupName = remoteMessage.getData().get("group_name");
             String assignmentName = remoteMessage.getData().get("assignment_name");
 
+            JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, AppProperties.DIR_SERVER_ROOT+"assignment/"+notificationId, null, new Response.Listener<JSONObject>() {
+                public void onResponse(JSONObject assignment) {
+                    try {
+                        if (assignment!=null){
+                            long serverId = assignment.getLong("id");
+                            String assignmentName = assignment.getString("name");
+                            String dueDate = assignment.getString("due_date");
+                            int startPage = assignment.getInt("start_page");
+                            int endPage = assignment.getInt("end_page");
+                            int readingTime = assignment.getInt("reading_time");
+
+                            AssignmentsDao assignmentsDao = new AssignmentsDao(MyFirebaseMessagingService.this);
+                            assignmentsDao.insertData(serverId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, false, startPage, endPage);
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+
+                }
+            });
+
             sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), notificationId);
-            SimpleDateFormat f = new SimpleDateFormat("dd-MMM-yyyy");
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
             try {
                 Date dueDate = f.parse(remoteMessage.getData().get("due_date"));
                 long millisecondsUntilDueDate = dueDate.getTime() - Calendar.getInstance().getTimeInMillis();
@@ -93,6 +130,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
                 if (millisecondsUntilDueDate >= oneDay){
                     scheduleNotification(millisecondsUntilDueDate-oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
+                }
+
+                if (millisecondsUntilDueDate >= oneMinute){
+                    scheduleNotification(oneMinute, notificationId, assignmentName, "Due now", groupName);
                 }
 
             } catch (ParseException e) {
@@ -144,9 +185,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentInfo(groupName)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
-                        .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText(notes))
                         .setContentIntent(pendingIntent);
+
+        if (!AppProperties.isNull(notes)){
+            notificationBuilder.setStyle(new NotificationCompat.BigTextStyle()
+                    .bigText(notes));
+        }
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -174,10 +218,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         manager.notify(newAssignmentNotification, newAssignmentNotifier.build());
-    }
-
-    private void generateExpandableNotification(String title, String message, String notes){
-
     }
 
     public void scheduleNotification(long delay, int notificationId, String assignmentName, String message, String groupName) {//delay is after how much time(in millis) from current time you want to schedule the notification
