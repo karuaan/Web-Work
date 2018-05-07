@@ -1,0 +1,163 @@
+<html>
+  <body>
+	<h3>New Book</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/new/book' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>PDF File</label>
+        <input type="file" name="book_file" />
+		<label>Book name</label>
+		<input type="text" name="book_name" />
+        <input type='submit' value='Upload!' />
+    </form>
+	<br/>
+	<h3>New User</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/new/userOkta' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>First name</label>
+		<input type="text" name="first_name" />
+		<label>Last name</label>
+		<input type="text" name="last_name" />
+		<label>Email</label>
+		<input type="text" name="email" />
+        <input type='submit' value='Upload!' />
+    </form>
+	<br />
+	<h3>New Admin</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/new/adminOkta' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>First name</label>
+		<input type="text" name="first_name" />
+		<label>Last name</label>
+		<input type="text" name="last_name" />
+		<label>Email</label>
+		<input type="text" name="email" />
+        <input type='submit' value='Upload!' />
+    </form>
+	<br />
+	<h3>New Group</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/new/group' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>Admin ID</label>
+		<input type="number" name="admin_id" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		
+		<label>Group Name</label>
+		<input type="text" name="group_name" />
+		
+        <input type='submit' value='Upload!' />
+    </form>
+	<br />
+	<h3>New Lesson</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/new/lesson' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>Book ID</label>
+		<input type="text" name="book_id" />
+		<label>Start Page</label>
+		<input type="text" name="start_page" />
+		<label>End Page</label>
+		<input type="text" name="end_page" />
+		<label>Name</label>
+		<input type="text" name="name" />
+		<label>PDF File</label>
+        <input type="file" name="lesson_file" />
+        <input type='submit' value='Upload!' />
+    </form>
+	<br/>
+	
+	<h3>New Assignment</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/new/assignment' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>Name</label>
+		<input type="text" name="name" />
+		<label>Lesson ID</label>
+		<input type="number" name="lesson_id" />
+		<label>Group ID</label>
+		<input type="number" name="group_id" />
+		<label>Due Date</label>
+		<input type="date" name="due_date" />
+		<label>Start Date</label>
+		<input type="date" name="start_date" />
+		<label>Reading Time (in seconds)</label>
+		<input type="number" name="time_to_complete" />
+        <input type='submit' value='Upload!' />
+    </form>
+	<br/>
+	
+	<h3>Add To Group</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/add/togroup' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>Group ID</label>
+		<input type="number" name="group_id" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_ids" />
+		
+        <input type='submit' value='Upload!' />
+    </form>
+	
+	<h3>Group</h3>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='http://localhost:3000/get/group' 
+      method='post' 
+      encType="multipart/form-data">
+		<label>Group ID</label>
+		<input type="number" name="group_id" />
+		<br/>
+		<label>User ID</label>
+		<input type="number" name="user_id" />
+		<br/>
+		
+        <input type='submit' value='Upload!' />
+    </form>
+	
+	
+  </body>
+</html>
