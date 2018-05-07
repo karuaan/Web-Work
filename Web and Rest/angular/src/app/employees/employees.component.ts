@@ -73,6 +73,8 @@ export class EmployeesComponent implements OnInit {
     testPdf: Object;
     viewPdf=false;
     lookAtAssignments = true;
+	
+	newUserError = undefined;
 
     viewAssignments: boolean;
     viewLessons: boolean;
@@ -1438,7 +1440,7 @@ export class EmployeesComponent implements OnInit {
 			this.isLoginError = true;
 		}
 		else{
-			newUserError = this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword)['error'];
+			this.newUserError = this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword)['error'];
 			if(newUserError === undefined){
 				this.loginErrorMessage = "Internal server error. Please contact an administrator";
 				console.log()
