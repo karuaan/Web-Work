@@ -2176,8 +2176,8 @@ app.post('/inviteAdmin', function(req, res){
 	});
 });
 
-function registerUsers(first_name, last_name, email, callback){
-	con.query("UPDATE USERS SET USERS.FIRST_NAME= "+ mysql.escape(first_name)  +", USERS.LAST_NAME=" + mysql.escape(last_name)+ "WHERE USERS.EMAIL="+ mysql.escape(email), function(err, rows){
+function registerUsers(first_name, last_name, email, phone_number, callback){
+	con.query("UPDATE USERS SET FIRST_NAME= "+ mysql.escape(first_name)  +", LAST_NAME=" + mysql.escape(last_name)+ ", PHONE_NUMBER="+ mysql.escape(phone_number) + " WHERE USERS.EMAIL="+ mysql.escape(email), function(err, rows){
 			if(err){
 				callback(err, null);
 			}
@@ -2189,7 +2189,7 @@ function registerUsers(first_name, last_name, email, callback){
 
 app.put('/registerUser', function(req, res)
 {
-	registerUsers(req.body.first_name, req.body.last_name, req.body.email, function(err, result)
+	registerUsers(req.body.first_name, req.body.last_name, req.body.email, req.body.phone_number, function(err, result)
 	{
 		if (err)
 		{

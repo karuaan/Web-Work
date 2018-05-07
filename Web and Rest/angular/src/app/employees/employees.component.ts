@@ -50,6 +50,7 @@ export class EmployeesComponent implements OnInit {
 	
 	newUserFirstName = "";
 	newUserLastName = "";
+	newUserPhoneNumber = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -1437,6 +1438,10 @@ export class EmployeesComponent implements OnInit {
 		}
 		else if(this.newPassword != this.confirmPassword){
 			this.loginErrorMessage = "Passwords must match";
+			this.isLoginError = true;
+		}
+		else if(this.newUserPhoneNumber.length < 10){
+			this.loginErrorMessage = "Please enter a valid phone number (at least 10 numbers)";
 			this.isLoginError = true;
 		}
 		else{

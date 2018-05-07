@@ -35,13 +35,13 @@ export class AuthService {
 	  return this.firebaseAuth.auth.currentUser.updatePassword(newPassword);
   }
   
-  updateUserNames(first_name, last_name, newPassword){
-		var response = this.http.put<Object>(this.restURL + '/updateUserNamesByEmail', {'email' : this.firebaseAuth.auth.currentUser.email, 'first_name' : first_name, 'last_name': last_name});
+  updateUserNames(first_name, last_name, newPassword, phone_number){
+		var response = this.http.put<Object>(this.restURL + '/updateUserNamesByEmail', {'email' : this.firebaseAuth.auth.currentUser.email, 'first_name' : first_name, 'last_name': last_name, 'phone_number': phone_number});
 		response.subscribe((res) => {
 			this.firebaseAuth.auth.currentUser.updatePassword(newPassword).then((res2) => {
 				return res;
 			}, (err2) => {
-				var response = this.http.put<Object>(this.restURL + '/updateUserNamesByEmail', {'email' : this.firebaseAuth.auth.currentUser.email, 'first_name' : "", 'last_name': ""});
+				var response = this.http.put<Object>(this.restURL + '/updateUserNamesByEmail', {'email' : this.firebaseAuth.auth.currentUser.email, 'first_name' : "", 'last_name': "", 'phone_number': null});
 				response.subscribe((res3) => {console.log(res3)}, (err3) => {return {'error': err3};});
 				return {'error': err2};
 			})
