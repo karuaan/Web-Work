@@ -2238,7 +2238,7 @@ app.post('/getUserByEmail', function(req, res){
 });
 
 function updateUserNamesByEmail(email, first_name, last_name, callback){
-	con.query("UPDATE USERS SET USERS.FIRST_NAME=" + mysql.escape(first_name) + " USERS.LAST_NAME=" + mysql.escape(last_name) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
+	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
 		if(err){
 			callback(err, null);
 		}
