@@ -1,5 +1,5 @@
 
-<div class=""container *ngIf="isLoggedIn==false">
+<div class=""container *ngIf="isLoggedIn==false && !newUser">
 	<form class="login-form" name="userform" method="post" #formCtrl="ngForm">
 
 	  <label for="exampleInputEmail1">Email address</label>
@@ -21,7 +21,19 @@
 	<!--<button (click)="testGetEmployee()">Test Get Employee by Email</button>-->
 	</div>
 </div>
-<div class="container" *ngIf="isLoggedIn && admin_id >= 0">
+<div class="container" *ngIf="newUser">
+	<form class="login-form" name="newUserForm" method="post">
+		<label>First Name</label>
+		<input type="text" class="form-control" id="firstName">
+		<label>Last Name</label>
+		<input type="text" class="form-control" id="lastName">
+		<label>New Password</label>
+		<input type="text" class="form-control" id="newPass">
+		<label>Confrim Password</label>
+		<input type="password" class="form-control" id="confirmPass">
+	</form>
+</div>
+<div class="container" *ngIf="isLoggedIn && admin_id >= 0 && !newUser">
 	<div class="row">
 	<button (click)="testGetEmployee()">Test Get Employee by Email</button>
 	</div>
