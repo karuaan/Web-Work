@@ -246,7 +246,7 @@ app.use(validator());
 
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
-	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.NAME as group_name, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, rows){
+	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, rows){
 		if (!err){
 			console.log(rows);
 			if (rows.length>0){
@@ -290,14 +290,24 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 										readingTimeStr += seconds + " seconds";
 									}
 									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
-									
-									if (!notes){
-										sendMessageToGroup(element, title, body, "standard");
-									}
-									else{
-										sendMessageToGroup(element, title, body, "expandable");	
-									}
-									
+									//headers for https request
+									/*headers:{
+											'Content-Type':'application/json',
+											Authorization:'key=AIzaSyDj3uGXUayslSgPJnwmpqHjwQ_c0ZCqBv4'
+										}*/
+									//options for firebase notification
+									let options = {
+										hostname: 'fcm.googleapis.com/fcm/send',
+										priority: 'normal',
+										notification: {
+											title: title,
+											body: body
+										}
+
+									};
+
+									//todo: send notification to topic: '/group<ID>'
+									//sendMessageToGroup("group1","Safety Reader","Please complete your assignment", "expandable");
 								});
 							}
 							else{
@@ -309,7 +319,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 						console.log(err);
 					}
 				});
-
+				
 			}
 		}
 		else{
@@ -358,17 +368,6 @@ function getLessons(callback){
 	})
 }
 
-function getAssignmentById(assignId, callback){
-	con.query("SELECT * FROM ASSIGNMENTS WHERE ID="+mysql.escape(assignId)+" LIMIT 1", function(err, row){
-		if (err){
-			callback(err, null);
-		}
-		else{
-			callback(null, row);
-		}
-	})
-}
-
 function getLessonsByBookId(book_id,callback){
     con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
         " LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS WHERE BOOK_ID = ?",[book_id], function(err, rows){
@@ -410,8 +409,52 @@ function getBooksQuery(callback){
 	});
 
 }
+//Done
+function getUsersQuery(callback){
 
+	var userQuery = con.query('SELECT * FROM USERS', function(err, rows, fields) {
+		if(!err){
+			if(rows){
+				callback(null, rows);
+			}
+		}
+		else{
+			callback(err, null);
+			console.log('Error getUsers query');
+		}
+	});
 
+}
+//Checks if the person is a user
+function isUser(email, callback){
+	var isUserQuery = con.query('SELECT ID FROM USERS WHERE EMAIL = ' + mysql.escape(email), function(err, rows){
+		if(!err){
+			if(rows){
+				callback(null, rows);
+			}
+			else{
+				callback(null, null);
+			}
+		}
+		else{
+			callback(err, null);
+			console.log('Error during isUser query')
+		}
+	});
+}
+//Not working
+function getGroups(email, callback){
+
+	con.query('SELECT DISTINCT BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, GROUPS WHERE users1.ID=GROUPS.USER_ID AND users2.ID=GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID', function(err, rows){
+		if(!err){
+			callback(null, rows);
+		}
+		else{
+			callback(err, null);
+		}
+	});
+
+}
 //Helper function to get things the way James wants
 function nest(theJson, index, array){
 	var assignment = {
@@ -440,6 +483,42 @@ function nest(theJson, index, array){
 function formatGroupAssignments(group, assignments){
 	group.assignments = assignments;
 	return group;
+}
+
+//May need rework in ordering
+function getGroups2(email, callback){
+
+	con.query('SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, LESSONS.PDF_FILE as file, STATUS.IS_COMPLETE as complete, RecordTable.group_name, RecordTable.group_id, RecordTable.book_name, RecordTable.book_file, RecordTable.admin_firstname, RecordTable.admin_lastname, RecordTable.admin_email FROM ASSIGNMENTS, LESSONS, STATUS, (SELECT DISTINCT GroupTable.user_id, BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT users1.ID as user_id, GROUPS.ID as group_id, GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, GROUPS WHERE users1.ID=GROUPS.USER_ID AND users2.ID=GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID GROUP BY GroupTable.group_id) as RecordTable WHERE RecordTable.user_id=STATUS.EMPLOYEE_ID AND RecordTable.group_id=STATUS.GROUP_ID AND STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID GROUP BY RecordTable.group_id', function(err, rows){
+		if(!err){
+			rows.forEach(function(element, index, array){
+				nest(element, index, array)
+				console.log(array)
+			})
+			callback(null, rows);
+		}
+		else{
+			callback(err, null);
+		}
+	});
+
+}
+
+//May need rework in ordering
+function getGroups3(email, callback){
+
+	con.query('SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, MIN(ASSIGNMENTS.DUE_DATE) as due_date, LESSONS.PDF_FILE as file, STATUS.IS_COMPLETE as complete, RecordTable.group_name, RecordTable.group_id, RecordTable.book_name, RecordTable.book_file, RecordTable.admin_firstname, RecordTable.admin_lastname, RecordTable.admin_email FROM ASSIGNMENTS, LESSONS, STATUS, (SELECT GroupTable.user_id, BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT users1.ID as user_id, GROUPS.ID as group_id, GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, GROUPS WHERE users1.ID=GROUPS.USER_ID AND users2.ID=GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID GROUP BY GroupTable.group_id) as RecordTable WHERE RecordTable.user_id=STATUS.EMPLOYEE_ID AND RecordTable.group_id=STATUS.GROUP_ID AND STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID AND STATUS.IS_COMPLETE=0 GROUP BY RecordTable.group_id', function(err, rows){
+		if(!err){
+			rows.forEach(function(element, index, array){
+				nest(element, index, array)
+				console.log(array)
+			})
+			callback(null, rows);
+		}
+		else{
+			callback(err, null);
+		}
+	});
+
 }
 
 function getGroups4(user_id, callback){
@@ -651,8 +730,8 @@ function addAssignment(lesson_id, group_id, due_date, time_to_complete, notes){
 	});
 }
 
-function editAssignment(assignment_id, group_id, start_date, due_date, time_to_complete, notes, callback){
-	con.query("UPDATE ASSIGNMENTS SET ASSIGNMENT.START_DATE= "+ mysql.escape(start_date)  +", ASSIGNMENTS.DUE_DATE=" + mysql.escape(due_date)+ ", ASSIGNMENTS.TIME_TO_COMPLETE="+ mysql.escape(time_to_complete) + ", ASSIGNMENTS.NOTES=" + mysql.esacpe(notes) + "WHERE ASSIGNMENTS.ID="+ mysql.escape(assignment_id), function(err, rows){
+function editAssignment(lesson_id, group_id, start_date, due_date, time_to_complete, notes, callback){
+	con.query("UPDATE ASSIGNMENTS SET ASSIGNMENT.START_DATE= "+ mysql.escape(start_date)  +", ASSIGNMENTS.DUE_DATE=" + mysql.escape(due_date)+ ", ASSIGNMENTS.TIME_TO_COMPLETE="+ mysql.escape(time_to_complete) + ", ASSIGNMENTS.NOTES=" + mysql.esacpe(notes) + "WHERE ASSIGNMENTS.LESSON_ID="+ mysql.escape(lesson_id) +", ASSIGNMENTS.GROUP_ID=" +mysql.escape(group_id), function(err, rows){
 			if(err){
 				callback(err, null);
 			}
@@ -665,7 +744,7 @@ function editAssignment(assignment_id, group_id, start_date, due_date, time_to_c
 
 app.put('/editAssignments', function(req, res)
 {
-	editAssignment(req.body.assignment_id, req.body.group_id, req.body.start_date, req.body.due_date, req.body.time_to_complete, req.body.notes, function(err, result)
+	editAssignment(req.body.lesson_id, req.body.group_id, req.body.due_date, req.body.time_to_complete, req.body.notes, function(err, result)
 	{
 		if (err)
 		{
@@ -673,33 +752,6 @@ app.put('/editAssignments', function(req, res)
 		}
 
 		else
-		{
-			res.json(result);
-		}
-	})
-})
-
-function registerUsers(first_name, last_name, email, callback){
-	con.query("UPDATE USERS SET USERS.FIRST_NAME= "+ mysql.escape(first_name)  +", USERS.LAST_NAME=" + mysql.escape(last_name)+ "WHERE USERS.EMAIL="+ mysql.escape(email), function(err, rows){
-			if(err){
-				callback(err, null);
-			}
-			else{
-				callback(null, rows);
-			}
-	})
-}
-
-app.put('/registerUsers', function(req, res)
-{
-	registerUsers(req.body.first_name, req.body.last_name, req.body.email, function(err, result)
-	{
-		if (err)
-		{
-			res.json(err);
-		}
-
-		else 
 		{
 			res.json(result);
 		}
@@ -1147,17 +1199,6 @@ function updateUserComplete(user_id, assignment_id, callback){
 	})
 
 }
-
-function getUserDetails(user_id, callback){
-	con.query("SELECT FIRST_NAME as first_name, LAST_NAME as last_name FROM USERS WHERE ID=" + mysql.escape(user_id)+" LIMIT 1", function(err, res){
-		if(err){
-			callback(err, null)
-		}
-		else{
-			callback(null, res[0])
-		}
-	});
-}
 function deleteUserByEmail(email, callback){
 
 	con.query("DELETE FROM USERS WHERE EMAIL=" + mysql.escape(email), function(err, res){
@@ -1280,18 +1321,6 @@ app.get('/code', (req, res) => res.sendFile('index.js', {root: __dirname}));
 
 //Echo
 app.post('/', (req, res) => res.json(req.body));
-
-app.get('/user/:id', (req, res)=>{
-	let id = Number(req.params.id);
-	getUserDetails(id, function(err, result){
-		if (err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	});
-})
 
 const BookService = require('./services/book.service')(app,con,fs,hummus,Busboy,uuid);
 
@@ -1767,20 +1796,6 @@ app.get('/groups/:id', function(req, res){
 
 });
 
-app.get('/assignment/:id', function(res, req){
-	let assignId = Number(req.params.id);
-	console.log(assignId);
-	getAssignmentById(assignId, function(err, result){
-		if (err){
-			console.log("assignment "+assignId + " not found");
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	})
-})
-
 function emailToList(emailList, text, callback){
 
 	var mailOptions = {
@@ -2076,24 +2091,16 @@ function sendMessageToUser(deviceIds, title, body,notification_type) {
     }
   });
 }
-
 app.post('/sendMessageToGroup', function(req,res){
-				let data = {
-					'group_name': 'Group Name',
-					'assignment_id': 8,
-					'assignment_name': 'Assignment Name',
-					'due_date': '2018-05-13',
-					'notes': 'djskaflsdj dfjkasdlk jtgjrekoqtu  dsjamfklds rngklej f jdwsaklsfj askljdsklatj ra cms fkdl jflkasd jakglrjla'
-				}
-				sendMessageToGroup(data, "group2","TOPIC - Safety Reader","Please complete your assignment", "expandable")
+				sendMessageToGroup("group1","TOPIC - Safety Reader","Please complete your assignment", "expandable")
 				res.status(200)
-				res.json(data);
+				res.json("Notification sent");
 
 });
 
 
 
-function sendMessageToGroup(data, topic, title, body,notification_type) {
+function sendMessageToGroup(topic, title, body,notification_type) {
   request({
     url: 'https://fcm.googleapis.com/fcm/send',
     method: 'POST',
@@ -2105,11 +2112,6 @@ function sendMessageToGroup(data, topic, title, body,notification_type) {
       { "data": {
       	"body": body,
         "title": title,
-        "group_name": data.group_name,
-        "assignment_id": data.assignment_id,
-        "assignment_name": data.assignment_name,
-        "due_date": data.due_date,
-        "notes": data.notes,
         "notification_type": notification_type
       },
         "to": "/topics/"+topic
@@ -2194,55 +2196,11 @@ app.put('/registerUser', function(req, res)
 			res.json(err);
 		}
 
-		else
+		else 
 		{
 			res.json(result);
 		}
 	})
 });
-
-function getUserByEmail(email, callback){
-	con.query("SELECT * FROM USERS WHERE EMAIL=" + mysql.escape(email), function(err, rows){
-		if(err){
-			callback(err, null);
-		}
-		else{
-			callback(null, rows);
-		}
-	});
-}
-
-app.post('/getUserByEmail', function(req, res){
-	getUserByEmail(req.body.email, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	})
-});
-
-function updateUserNamesByEmail(email, first_name, last_name, callback){
-	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
-		if(err){
-			callback(err, null);
-		}
-		else{
-			callback(null, rows);
-		}
-	})
-}
-
-app.put('/updateUserNamesByEmail', function(req, res){
-	updateUserNamesByEmail(req.body.email, req.body.first_name, req.body.last_name, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			res.json(result);
-		}
-	})
-})
 
 app.listen(3000, '0.0.0.0', () => console.log('server running on 3000'));
