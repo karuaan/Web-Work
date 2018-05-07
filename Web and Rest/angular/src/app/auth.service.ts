@@ -39,14 +39,14 @@ export class AuthService {
 		var response = this.http.put<Object>(this.restURL + '/updateUserNamesByEmail', {'email' : this.firebaseAuth.auth.currentUser.email, 'first_name' : first_name, 'last_name': last_name});
 		response.subscribe((res) => {
 			this.firebaseAuth.auth.currentUser.updatePassword(newPassword).then((res2) => {
-				console.log(res2);
+				return res;
 			}, (err2) => {
 				var response = this.http.put<Object>(this.restURL + '/updateUserNamesByEmail', {'email' : this.firebaseAuth.auth.currentUser.email, 'first_name' : "", 'last_name': ""});
-				response.subscribe((res3) => {console.log(res3)}, (err3) => {console.log(err3)});
-				console.log(err2);
+				response.subscribe((res3) => {console.log(res3)}, (err3) => {return {'error': err3};});
+				return {'error': err2};
 			})
 		}, (err) => {
-			console.log(err);
+			return {'error': err};
 		});
 	}
 
