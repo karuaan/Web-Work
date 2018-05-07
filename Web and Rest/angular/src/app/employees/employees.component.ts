@@ -1421,11 +1421,11 @@ export class EmployeesComponent implements OnInit {
 		console.log(this.newUserLastName);
 		console.log(this.newPassword == this.confirmPassword);
 
-		if(this.firstName == ""){
+		if(this.newUserFirstName == ""){
 			this.loginErrorMessage = "First name cannot be empty";
 			this.isLoginError = true;
 		}
-		else if(this.lastName == ""){
+		else if(this.newUserLastName == ""){
 			this.loginErrorMessage = "Last name cannot be empty";
 			this.isLoginError = true;
 		}
@@ -1438,7 +1438,7 @@ export class EmployeesComponent implements OnInit {
 			this.isLoginError = true;
 		}
 		else{
-			this.authService.updateUserNames(this.firstName, this.lastName, this.newPassword);
+			this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword);
 			this.loginErrorMessage = "SUCCESS!!! Reload page to login";
 			this.isLoginError = true;
 		}
