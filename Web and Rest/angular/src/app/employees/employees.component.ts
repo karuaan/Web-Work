@@ -39,6 +39,7 @@ export class EmployeesComponent implements OnInit {
     isLoggedIn = false;
 	isLoginError = false;
     newBookAdded = false;
+	newUser = false;
 	loginErrorMessage = "";
 	admin_password = "";
 
@@ -111,6 +112,7 @@ export class EmployeesComponent implements OnInit {
         this.userEmail = "";
         this.userPassword = "";
 		this.isLoginError = false;
+		this.newUser = false;
 		this.loginErrorMessage = "";
 		this.admin_password = "";
 
@@ -1207,7 +1209,32 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
-				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
+				this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
+					if(res2[0] == undefined){
+						this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went terribly wrong. Please contact an administrator";
+						this.isLoginError = true;
+						//this.isLoggedIn = true;
+					}
+					else{
+						if(res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined){
+							this.newUser = true;
+						}
+						else{
+							if(res2[0]['IS_ADMIN'][0] === 1){
+								this.admin_id = res2[0]['ID'];
+								this.onAdminLogin(this.admin_id);
+								this.isLoggedIn = true;
+							}
+							else{
+								this.isLoggedIn = true;
+							}
+						}
+					}
+				}, (err2) => {
+					this.loginErrorMessage = err2;
+					this.isLoginError = true;
+				});
+				/* this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
 						//this.loginErrorMessage = "You are not an admin";
 						//this.isLoginError = true;
@@ -1223,7 +1250,7 @@ export class EmployeesComponent implements OnInit {
 				(err) => {
 					this.loginErrorMessage = "Internal server error, please contact an admin: " + err;
 					this.isLoginError = true;
-				})
+				}) */
 
             })
             .catch((err) => {

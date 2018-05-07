@@ -1,6 +1,8 @@
 var sql = require("mssql");
 
-var getStatusQuery = function(callback) {
+var sqlQuery = "@variable";
+
+var generic = function(num, callback) {
 
     var config = {
         "server": "microsoft-sql-database.cgkepgzez06k.us-east-2.rds.amazonaws.com",
@@ -10,17 +12,22 @@ var getStatusQuery = function(callback) {
     };
 
     sql.connect(config, err => {
-        new sql.Request().query('SELECT * FROM STATUS', (err, results) => {
+        new sql.Request().input('variable', sql.Int, num)
+        .query(sqlQuery, (err, results) => {
             if(err) {
-                callback(err, null);
+                //callback(err, null);
+                console.log(err);
                 sql.close();
             }
             else {
-                callback(null, results['recordset']);
+                //callback(null, results['recordset']);
+                console.log(results['recordset'])
                 sql.close();
             }
         })
     });
+
+
 };
 
-exports.query = getStatusQuery;
+exports.query = generic;
