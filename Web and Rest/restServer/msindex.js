@@ -17,6 +17,9 @@ var scheduler = require('node-schedule');
 var getBooksQuery = require('./MSSQL/getBooksQuery').query;
 var getStatusQuery = require('./MSSQL/getStatusQuery').query;
 var getLessons = require('./MSSQL/getLessonsQuery').query;
+var getLessonsByBookId = require('./MSSQL/getLessonsByBookIdQuery').query;
+var getMasterTable = require('./MSSQL/getMasterTableQuery').query;
+var getEmployeesStatus = require("./MSSQL/getEmployeesStatusQuery").query;
 global.__basedir = __dirname;
 
 
@@ -361,17 +364,7 @@ app.get('/read-pdf', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	});
 });
 
-function getLessonsByBookId(book_id,callback){
-    con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
-        " LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS WHERE BOOK_ID = ?",[book_id], function(err, rows){
-		if(err){
-			callback(err, null)
-		}
-		else{
-			callback(null, rows)
-		}
-	});
-}
+
 
 app.get('/getlessons', function(req, res){
 	getLessons(function(err, result){
@@ -1566,25 +1559,6 @@ app.post('/getemployees', function(req, res){
 	})
 });
 
-function getEmployeesStatus(group_id, assignment_id, callback){
-	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, STATUS.IS_COMPLETE FROM USERS JOIN GROUPS ON USERS.ID=GROUPS.USER_ID LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=USERS.ID AND STATUS.ASSIGNMENT_ID=" + mysql.escape(assignment_id) + " WHERE GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
-		if(err){
-			console.log(err);
-			callback(err, null);
-		}
-		else{
-			if(rows[0]===undefined){
-				console.log(rows);
-				callback({"error": "no employees in this group"}, null);
-			}
-			else{
-				console.log(rows)
-				callback(null, rows)
-			}
-		}
-	});
-}
-
 app.post('/getemployeesstatus', function(req, res){
 	getEmployeesStatus(req.body.group_id, req.body.assignment_id, function(err, result){
 		if(err){
@@ -1856,42 +1830,6 @@ function getAdminID(email, callback){
 			callback(null, rows);
 		}
 	})
-}
-
-function getMasterTable(admin_id, callback){
-
-	con.query(
-		"SELECT " +
-		  "GROUP_USER_TABLE.USER_ID AS USER_ID, " +
-		  "GROUP_USER_TABLE.GROUP_ID AS GROUP_ID, "  +
-		  "GROUP_USER_TABLE.USER_FIRST_NAME AS USER_FIRST_NAME, " +
-		  "GROUP_USER_TABLE.USER_LAST_NAME AS USER_LAST_NAME, " +
-		  "GROUP_USER_TABLE.USER_EMAIL AS USER_EMAIL, " +
-		  "GROUP_USER_TABLE.GROUP_NAME AS GROUP_NAME, " +
-		  "STATUS.ASSIGNMENT_ID as ASSIGNMENT_ID, " +
-		  "STATUS.IS_COMPLETE as IS_COMPLETE, " +
-		  "ASSIGNMENTS.NAME as ASSIGNMENT_NAME " +
-		"FROM " +
-		"(SELECT " +
-		  "GROUPS.ID as GROUP_ID, " +
-		  "GROUPS.NAME as GROUP_NAME, " +
-		  "USERS.ID as USER_ID, " +
-		  "USERS.FIRST_NAME as USER_FIRST_NAME, " +
-		  "USERS.LAST_NAME as USER_LAST_NAME, " +
-		  "USERS.EMAIL as USER_EMAIL " +
-		 "FROM GROUPS JOIN USERS ON USERS.ID=GROUPS.USER_ID " +
-		 "WHERE GROUPS.ADMIN_ID=" + mysql.escape(admin_id) + ") as GROUP_USER_TABLE " +
-		 "LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=GROUP_USER_TABLE.USER_ID " +
-		 "LEFT JOIN ASSIGNMENTS ON STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID ",
-		function(err, rows){
-			if(err){
-				callback(err, null);
-			}
-			else{
-				callback(null, rows);
-			}
-		}
-	);
 }
 
 app.post('/getMasterTable', function(req, res){

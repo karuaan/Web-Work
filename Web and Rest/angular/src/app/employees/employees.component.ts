@@ -1180,14 +1180,9 @@ export class EmployeesComponent implements OnInit {
 	//	this.authService.signUpRegular("ggoldsht@stevens.edu", "");
 	//}
 
-	/* testGetEmployee(){
-		this.authService.testAdminGetUser()
-			.then((res) => {
-				console.log(res);
-			}, (err) => {
-				console.log(err);
-			});
-	} */
+	testGetEmployee(){
+		console.log(this.authService.testAdminGetUser());
+	}
 	
     ngOnInit() {
 

@@ -84,4 +84,9 @@ export class EmployeesService {
 		var response = this.http.post<Object>(this.restURL + '/getAdminID', {'email' : email});
 		return response;
 	}
+	
+	getUserByEmail(email): Observable<Object>{
+		var response = this.http.post<Object>(this.restURL + '/getUserByEmail', {'email' : email});
+		return response;
+	}
 }
