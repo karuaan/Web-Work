@@ -1228,7 +1228,7 @@ export class EmployeesComponent implements OnInit {
 								this.isLoggedIn = true;
 							}
 							else{
-								console.log(res2[0]);
+								console.log(res2[0]['IS_ADMIN']);
 								console.log(this.admin_id);
 								this.isLoggedIn = true;
 							}
