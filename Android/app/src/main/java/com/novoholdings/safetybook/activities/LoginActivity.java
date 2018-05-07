@@ -335,7 +335,7 @@ public class LoginActivity extends AppCompatActivity {
         Map<String,String> params = new HashMap<>();
         params.put("email",mAuth.getCurrentUser().getEmail());
         params.put("firebase_token", AppSharedPreference.getData(this,AppSharedPreference.FIREBASE_TOKEN,""));
-        JsonObjectRequest objectRequest = new JsonObjectRequest(Method.POST,"http://192.168.0.103:3000/getUserDetails", new JSONObject(params),
+        JsonObjectRequest objectRequest = new JsonObjectRequest(Method.POST,AppProperties.DIR_SERVER_ROOT+"getUserDetails", new JSONObject(params),
                 new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

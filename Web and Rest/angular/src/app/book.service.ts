@@ -30,6 +30,10 @@ export class BookService {
     return this.http.post<any>(`${this.restURL}/lessons/${lessionId}/assignment`, data);
   }
 
+  editAssignment(assignmentId, data): Observable<any[]> {
+    return this.http.put<any>(`${this.restURL}/editAssignments`, data);
+  }
+
   getStatuses(): Observable<any[]> {
     return this.http.get<any>(`${this.restURL}/getstatuses`);
   }

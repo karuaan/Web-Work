@@ -39,8 +39,14 @@ export class EmployeesComponent implements OnInit {
     isLoggedIn = false;
 	isLoginError = false;
     newBookAdded = false;
+	newUser = false;
 	loginErrorMessage = "";
 	admin_password = "";
+
+	newPassword = "";
+	confirmPassword = "";
+    firstName = "";
+    lastName = "";
 
     testEmployee: Employee;
     employees: Employee[];
@@ -54,6 +60,7 @@ export class EmployeesComponent implements OnInit {
     admin_id = -1;
     assignment_id: 1;
     pdfCurrentPage: string;
+    pdfCurrentPagePreview: string;
     pdfStartPage: Number;
     pdfEndPage: Number;
     employeesService: EmployeesService;
@@ -61,6 +68,7 @@ export class EmployeesComponent implements OnInit {
     emailContents: string;
     modalEmails: string;
     testPdf: Object;
+    viewPdf=false;
     lookAtAssignments = true;
 
     viewAssignments: boolean;
@@ -82,6 +90,7 @@ export class EmployeesComponent implements OnInit {
 
     countdown: Number;
     previewPdf: Object;
+    pdfCurrentPagePreviewMax: string;
 
     private bookService: BookService;
 
@@ -108,8 +117,14 @@ export class EmployeesComponent implements OnInit {
         this.userEmail = "";
         this.userPassword = "";
 		this.isLoginError = false;
+		this.newUser = false;
 		this.loginErrorMessage = "";
 		this.admin_password = "";
+
+		this.newPassword = "";
+		this.confirmPassword = "";
+        this.firstName = "";
+        this.lastName = "";
 
         this.employees = [];
         this.groups = [];
@@ -131,7 +146,7 @@ export class EmployeesComponent implements OnInit {
 
     }
 
-	onAdminLogin(admin_id){
+	   onAdminLogin(admin_id) {
 		this.employeesService.getGroups(admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
@@ -149,6 +164,7 @@ export class EmployeesComponent implements OnInit {
                                         "NOTES": ""
                                     }];
                     this.selectedAssignment = assignments[0];
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                                     if (this.selectedGroup && this.selectedAssignment){
                                         this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
@@ -160,6 +176,8 @@ export class EmployeesComponent implements OnInit {
                 }else{
                     this.assignments = assignments;
                     this.selectedAssignment = assignments[0];
+
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                                     if (this.selectedGroup && this.selectedAssignment){
                                         this.employeesService.getEmployees(
                                             this.selectedGroup.ID,
@@ -184,12 +202,12 @@ export class EmployeesComponent implements OnInit {
                                               this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
                                             }
                                         });
-                                    }
-                }
+                        }
+                    this.loadAssignmentPreview();
+                    }
+                });
             });
-        });
-	}
-
+	         }
     transformLessonModel(tempLession: Lesson) {
         return new Lesson(
             tempLession.ID,
@@ -429,6 +447,8 @@ export class EmployeesComponent implements OnInit {
                     this.selectedAssignment = assign;
 
 
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
+
                     this.dataObj.selectedBook.LESSONS.forEach((item) => {
                         if (item.ID == dataForm.LESSON_ID) {
                             console.log('itemitem',item);
@@ -647,6 +667,8 @@ export class EmployeesComponent implements OnInit {
                             "lesson_id": -1
                         }];
                         this.selectedAssignment = this.assignments[0];
+
+                        this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     }
                     for(let j = 0; j < this.dataObj.selectedBook.LESSONS.length; j++) {
                       if(this.dataObj.selectedBook.LESSONS[j].ID === assignment.lesson_id) {
@@ -768,22 +790,66 @@ export class EmployeesComponent implements OnInit {
         // $('#beforeChangePageOrBook').modal();
     }
 
+    togglePdfPreview() {
+      console.log('toggle preview');
+      if (this.viewPdf) {
+          this.viewPdf = false;
+          document.getElementById('thirdColumn').className = 'col-xl-10';
+          document.getElementById('fourthColumn').className = 'col-xl-0';
+          document.getElementById('fourthColumn').style.display = 'none';
+      } else {
+          this.viewPdf = true;
+          this.viewAssignments = false;
+          document.getElementById('secondColumn').className = 'col-xl-0';
+          document.getElementById('thirdColumn').className = 'col-xl-6';
+          document.getElementById('fourthColumn').className = 'col-xl-4';
+          document.getElementById('fourthColumn').style.display = 'block';
+      }
+    }
+
     loadAssignmentPreview() {
-      console.log(this.dataObj.books);
-      console.log(this.selectedAssignment);
+
+      let lesson;
       let book = [];
       for(let i = 0; i < this.dataObj.books.length; i++) {
         if(this.dataObj.books[i].ID === this.selectedAssignment.book_id) {
           book.push(this.dataObj.books[i]);
+
+          for(let j = 0; j < this.dataObj.books[i].LESSONS.length; j++) {
+            if(this.dataObj.books[i].LESSONS[j].ID === this.selectedAssignment.lesson_id) {
+              lesson = this.dataObj.books[i].LESSONS[j];
+            }
+          }
         }
       }
 
-      console.log(book);
 
       this.previewPdf = {
         url: `${this.bookService._api.endpoint}/read-pdf?path=${book[0].PDF_FILE}`,
         withCredentials: false
       };
+
+      this.pdfCurrentPagePreviewMax = book[0].TOTAL_PAGES + "";
+      this.pdfCurrentPagePreview = lesson.START_PAGE + "";
+    }
+
+    changedPdfPageNoPreview(pageNo: any) {
+      console.log('change');
+      /*
+      if (pageNo != null && pageNo !== '' && pageNo <= this.dataObj.selectedBook.TOTAL_PAGES) {
+          this.pdfCurrentPage = pageNo;
+      }
+      */
+    }
+
+    incrementPagePreview() {
+      console.log('inc');
+      this.pdfCurrentPagePreview = String(Number(this.pdfCurrentPagePreview) + 1);
+    }
+
+    decrementPagePreview() {
+      console.log('dec');
+      this.pdfCurrentPagePreview = String(Number(this.pdfCurrentPagePreview) - 1);
     }
 
     changePdfPageNo(pageNo: any) {
@@ -923,6 +989,8 @@ export class EmployeesComponent implements OnInit {
                 } else {
                     this.assignments = data2;
                     this.selectedAssignment = data2[0];
+
+                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     this.employeesService.getEmployees(this.selectedGroup.ID, this.selectedAssignment.assignment_id).subscribe(data3 => {
                         this.employees = data3;
 
@@ -956,6 +1024,8 @@ export class EmployeesComponent implements OnInit {
                     "lesson_id": -1
                 }];
                 this.selectedAssignment = this.assignments[0];
+
+                this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                 this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
                     this.employees = data3;
 
@@ -1040,9 +1110,14 @@ export class EmployeesComponent implements OnInit {
                 document.getElementById('thirdColumn').className = 'col-xl-4';
             }
         }
+
+        this.viewPdf = false;
+        document.getElementById('fourthColumn').className = 'col-xl-0';
+        document.getElementById('fourthColumn').style.display = 'none';
     }
 
     assignmentSelect(assignment, index) {
+      console.log(assignment);
       this.countdown = new Date(1970, 0, 1).setSeconds(assignment.TIME_TO_COMPLETE);
         let assignments = document.getElementsByClassName('assignment-summary');
         for (let i = 0; i < assignments.length; i++) {
@@ -1053,6 +1128,8 @@ export class EmployeesComponent implements OnInit {
             }
         }
         this.selectedAssignment = assignment;
+
+        this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
         this.employeesService.getEmployees(this.selectedGroup.ID, assignment.assignment_id).subscribe(data3 => {
             this.employees = data3;
 
@@ -1074,6 +1151,97 @@ export class EmployeesComponent implements OnInit {
 
         });
         this.loadAssignmentPreview();
+    }
+
+    editAssignment() {
+      console.log("edit");
+      console.log(this.selectedAssignment);
+      var date = new Date(this.selectedAssignment.START_DATE);
+      var month = (date.getMonth() + 1);
+      if(month < 10) {
+        month = "0" + month;
+      }
+      var day = date.getDate();
+      if(day < 10) {
+        day = "0" + day;
+      }
+      var year = date.getFullYear();
+      date = year + '-' + month + '-' + day;
+      document.getElementById('startDateEdit').value = date;
+
+
+      date = new Date(this.selectedAssignment.DUE_DATE);
+      month = (date.getMonth() + 1);
+      if(month < 10) {
+        month = "0" + month;
+      }
+      day = date.getDate();
+      if(day < 10) {
+        day = "0" + day;
+      }
+      year = date.getFullYear();
+      date = year + '-' + month + '-' + day;
+      document.getElementById('dueDateEdit').value = date;
+
+      var minutes = (Math.floor(this.selectedAssignment.TIME_TO_COMPLETE / 60));
+      var seconds = this.selectedAssignment.TIME_TO_COMPLETE - (minutes * 60);
+
+      document.getElementById("minutesEdit").value = minutes;
+      document.getElementById("secondsEdit").value = seconds;
+
+      var notes = this.selectedAssignment.NOTES;
+      if(notes !== undefined && notes !== null && notes != "") {
+        document.getElementById("notesInputEdit").value = notes;
+      }
+    }
+
+    updateAssignment() {
+      let minute = parseInt(document.getElementById("minutesEdit").value);
+      let seconds = "0";
+      if(document.getElementById("secondsEdit").value !== null && document.getElementById("secondsEdit").value !== undefined) {
+        seconds = parseInt(document.getElementById("secondsEdit").value);
+      }
+      let time_to_complete = (minute * 60) + seconds;
+
+      let notes = document.getElementById("notesInputEdit").value;
+      let start_date = document.getElementById('startDateEdit').value;
+      let due_date = document.getElementById('dueDateEdit').value;
+      const dataForm = {
+          assignment_id: this.selectedAssignment.assignment_id,
+          NAME: this.selectedAssignment.NAME,
+          LESSON_ID: this.selectedAssignment.lesson_id,
+          BOOK_ID: this.selectedAssignment.book_id,
+          GROUP_ID: this.selectedGroup.ID,
+          NOTES: notes,
+          DUE_DATE: due_date,
+          START_DATE: start_date,
+          TIME_TO_COMPLETE: time_to_complete
+      };
+
+      let assign: Assignment = {
+        NAME: this.selectedAssignment.NAME,
+        lesson_id: this.selectedAssignment.lesson_id,
+        book_id: this.selectedAssignment.book_id,
+        DUE_DATE: due_date,
+        START_DATE: start_date,
+        TIME_TO_COMPLETE: time_to_complete,
+        assignment_id : this.selectedAssignment.assignment_id
+      };
+      if(notes !== null && notes !== undefined && notes != "") {
+        assign.NOTES = notes;
+      }
+
+      for(let i = 0; i < this.assignments.length; i++) {
+        if (this.assignments[i].assignment_id == assign.assignment_id) {
+          this.assignments[i] = assign;
+        }
+      }
+
+      this.selectedAssignment = assign;
+
+      this.bookService.editAssignment(this.selectedAssignment.assignment_id, dataForm).subscribe((res: any) => {
+        console.log('complete');
+      });
     }
 
     lessonSelect(lesson) {
@@ -1151,6 +1319,39 @@ export class EmployeesComponent implements OnInit {
     signInWithEmail() {
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
+
+				/*
+				this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
+					if(res2[0] == undefined){
+						this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went terribly wrong. Please contact an administrator";
+						this.isLoginError = true;
+						//this.isLoggedIn = true;
+					}
+					else{
+						if(res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined){
+							this.isLoginError = false;
+							this.newUser = true;
+						}
+						else{
+							if(res2[0]['IS_ADMIN']['data'][0] == 1){
+								this.admin_id = res2[0]['ID'];
+								this.onAdminLogin(3);//HARDCODE FOR TESTING
+								//this.onAdminLogin(this.admin_id);
+								this.isLoggedIn = true;
+							}
+							else{
+								//console.log(res2[0]['IS_ADMIN']);
+								//console.log(this.admin_id);
+								this.isLoggedIn = true;
+							}
+						}
+					}
+				}, (err2) => {
+					this.loginErrorMessage = err2;
+					this.isLoginError = true;
+				});
+				//*/
+				///*
 				this.employeesService.getAdminID(this.userEmail).subscribe((res2) => {
 					if(res2[0] == undefined){
 						//this.loginErrorMessage = "You are not an admin";
@@ -1168,6 +1369,7 @@ export class EmployeesComponent implements OnInit {
 					this.loginErrorMessage = "Internal server error, please contact an admin: " + err;
 					this.isLoginError = true;
 				})
+				//*/
 
             })
             .catch((err) => {
@@ -1176,14 +1378,47 @@ export class EmployeesComponent implements OnInit {
 			});
     }
 
+	signInFirstTime(){
+		console.log(this.firstName);
+		console.log(this.lastName);
+		console.log(this.newPassword == this.confirmPassword);
+
+		if(this.firstName == ""){
+			this.loginErrorMessage = "First name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.lastName == ""){
+			this.loginErrorMessage = "Last name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword == ""){
+			this.loginErrorMessage = "Password cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword != this.confirmPassword){
+			this.loginErrorMessage = "Passwords must match";
+			this.isLoginError = true;
+		}
+		else{
+			this.loginErrorMessage = "SUCCESS!!! Reload page to login";
+			this.isLoginError = true;
+		}
+
+	}
+
 	//testAddUser(){
 	//	this.authService.signUpRegular("ggoldsht@stevens.edu", "");
 	//}
 
-	testGetEmployee(){
-		console.log(this.authService.testAdminGetUser());
-	}
-	
+	/* testGetEmployee(){
+		this.authService.testAdminGetUser()
+			.then((res) => {
+				console.log(res);
+			}, (err) => {
+				console.log(err);
+			});
+	} */
+
     ngOnInit() {
 
         this.selectedGroup = this.groups[0];

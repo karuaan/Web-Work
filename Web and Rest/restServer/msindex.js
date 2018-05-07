@@ -20,6 +20,8 @@ var getLessons = require('./MSSQL/getLessonsQuery').query;
 var getLessonsByBookId = require('./MSSQL/getLessonsByBookIdQuery').query;
 var getMasterTable = require('./MSSQL/getMasterTableQuery').query;
 var getEmployeesStatus = require("./MSSQL/getEmployeesStatusQuery").query;
+var getAssignments = require("./MSSQL/getAssignmentsQuery").query;
+var getGroups = require("./MSSQL/getGroupsQuery").query;
 global.__basedir = __dirname;
 
 
@@ -1493,30 +1495,6 @@ app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ functi
 	});
 });
 
-function getAssignments(group_id, callback){
-	con.query("SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
-	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
-	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
-//	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
-	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id),
-		function(err, rows){
-			if(err){
-				console.log(err);
-				callback(err, null);
-			}
-			else{
-				if(rows[0]===undefined){
-					console.log(rows);
-					callback({'err': 'no results'}, null)
-				}
-				else{
-					console.log(rows);
-					callback(null, rows);
-				}
-			}
-		}
-	)
-}
 
 app.post('/getassignments', function(req, res){
 	getAssignments(req.body.group_id, function(err, result){
@@ -1646,14 +1624,14 @@ app.post('/getAssignmentsUser', function(req, res){
 
 // added new group call to get the list of groups created by that admin id
 app.post('/getgroups',function(req,res){
-
-	console.log(req.body.admin_id)
-	con.query("SELECT DISTINCT ID, NAME FROM GROUPS WHERE ADMIN_ID = "+mysql.escape(req.body.admin_id)+";",function(err,data,fields){
-		if(!err){
-			res.json(data);
+    getGroups(req.body.admin_id, function(err, result){
+		if(err){
+			res.json(err);
 		}
-	});
-
+		else{
+			res.json(result);
+		}
+	})
 });
 
 app.post('/getGroupsUser', function(req, res){
