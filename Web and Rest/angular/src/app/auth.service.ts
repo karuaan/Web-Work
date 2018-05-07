@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
-
 import { AngularFireAuth } from 'angularfire2/auth';
-
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../environments/environment';
 import * as firebase from 'firebase/app';
-
 import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class AuthService {
   user: Observable<firebase.User>;
 
-  constructor(private firebaseAuth: AngularFireAuth) {
+  constructor(private firebaseAuth: AngularFireAuth, private http: HttpClient) {
     this.user = firebaseAuth.authState;
+	this.restURL = environment.restURL;
   }
 
   signUpRegular(email: string, password : string) {
