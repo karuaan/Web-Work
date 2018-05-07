@@ -290,21 +290,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 										readingTimeStr += seconds + " seconds";
 									}
 									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
-									//headers for https request
-									/*headers:{
-											'Content-Type':'application/json',
-											Authorization:'key=AIzaSyDj3uGXUayslSgPJnwmpqHjwQ_c0ZCqBv4'
-										}*/
-									//options for firebase notification
-									let options = {
-										hostname: 'fcm.googleapis.com/fcm/send',
-										priority: 'normal',
-										notification: {
-											title: title,
-											body: body
-										}
-
-									};
+									
 									if (!notes){
 										sendMessageToGroup(element, title, body, "standard");
 									}
