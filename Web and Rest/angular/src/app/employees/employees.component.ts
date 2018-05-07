@@ -1229,6 +1229,7 @@ export class EmployeesComponent implements OnInit {
 					}
 					else{
 						if(res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined){
+							this.isLoginError = false;
 							this.newUser = true;
 						}
 						else{
@@ -1281,6 +1282,28 @@ export class EmployeesComponent implements OnInit {
 		console.log(this.newUserFirstName);
 		console.log(this.newUserLastName);
 		console.log(this.newPassword == this.confirmPassword);
+		
+		if(this.newUserFirstName == ""){
+			this.loginErrorMessage = "First name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newUserLastName == ""){
+			this.loginErrorMessage = "Last name cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword == ""){
+			this.loginErrorMessage = "Password cannot be empty";
+			this.isLoginError = true;
+		}
+		else if(this.newPassword != this.confirmPassword){
+			this.loginErrorMessage = "Passwords must match";
+			this.isLoginError = true;
+		}
+		else{
+			this.loginErrorMessage = "SUCCESS!!! Reload page to login";
+			this.isLoginError = true;
+		}
+		
 	}
 
 	//testAddUser(){

@@ -26,7 +26,7 @@
 		<label>First Name</label>
 		<input type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
 		<label>Last Name</label>
-		<input type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
+		<input type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
 		<label>New Password</label>
 		<input type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
 		<label>Confrim Password</label>
@@ -37,6 +37,9 @@
 		   </button>
 		</div>
 	</form>
+	<div *ngIf="isLoginError==true" class="alert alert-danger">
+	  <p>{{loginErrorMessage}}</p>
+	</div>
 </div>
 <div class="container" *ngIf="isLoggedIn && admin_id >= 0 && !newUser">
 	<!--
