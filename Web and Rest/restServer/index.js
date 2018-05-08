@@ -7,13 +7,13 @@ const mysql = require('mysql')
 const fs = require('fs');
 const path = require('path')
 const https = require('https');
-const fileupload = require('express-fileupload');
 const admin_functions = require('./functions/admin_functions');
 const hummus = require('hummus');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
+var multer = require('multer');
 global.__basedir = __dirname;
 
 
@@ -319,7 +319,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 						console.log(err);
 					}
 				});
-				
+
 			}
 		}
 		else{
@@ -386,9 +386,20 @@ app.get('/getlessons', function(req, res){
 			res.json(err);
 		}
 		else{
-			res.json(result)
+			res.json(result);
 		}
 	})
+});
+
+app.get('/getPercentages', function(req, res) {
+    getPercentages(function (err, result) {
+        if(err) {
+            res.json(err);
+        }
+        else {
+            res.json(result);
+        }
+    })
 });
 
 //Done
@@ -1344,6 +1355,36 @@ app.get('/getstatuses',function(req,res){
 	});
 });
 
+var location = __dirname + "/public"
+var upload = multer({dest: location});
+
+app.post('/apk', upload.single("file"), function(req, res, next) {
+    if(req.files) {
+        con.query("SELECT MAX(version_number) AS max FROM ANDROID_VERSION", function(err, rows) {
+            if(err) {
+                console.log(err);
+            }
+            var nextVersion = rows[0]["max"] + 1;
+            var url = __dirname + "/" + req.files["file"]["file"];
+            con.query("INSERT INTO ANDROID_VERSION VALUES (" + mysql.escape(url) + ", " + mysql.escape(nextVersion) + ");", function(err, rows) {
+                if(err) {
+                    console.log(err);
+                }
+                else {
+                    res.end("New APK Uploaded")
+                }
+            });
+        });
+    }
+    else {
+        res.end("Missing file")
+    }
+
+});
+
+
+
+
 //Done
 app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if(req.body.book_name =='' || req.body.book_name == null){
@@ -2273,14 +2314,14 @@ function registerUsers(first_name, last_name, email, phone_number, callback){
 
 app.put('/registerUser', function(req, res)
 {
-	registerUsers(req.body.first_name, req.body.last_name, req.body.email, req.body.phone_number, function(err, result)
+	registerUsers(req.body.first_name, req.body.last_name, req.body.email, function(err, result)
 	{
 		if (err)
 		{
 			res.json(err);
 		}
 
-		else 
+		else
 		{
 			res.json(result);
 		}
