@@ -63,7 +63,7 @@ export class EmployeesService {
   }
   
   getAssignments(group_id): Observable<Assignment[]>{
-	  var response = this.http.post<Assignment[]>(this.restURL + '/getassignments', {'group_id': group_id});
+	  var response = this.http.post<Assignment[]>(this.restURL + '/getassignments2', {'group_id': group_id});
 	  return response;
   }
   
