@@ -1592,7 +1592,7 @@ function getAssignments2(group_id, callback){
 	)
 }
 app.post('/getassignments2', function(req, res){
-	getAssignments(req.body.group_id, function(err, result){
+	getAssignments2(req.body.group_id, function(err, result){
 		if(err){
 			res.json(err);
 		}
