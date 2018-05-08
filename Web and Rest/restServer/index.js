@@ -2217,6 +2217,49 @@ app.post('/inviteAdmin', function(req, res){
 	});
 });
 
+function getUserByEmail(email, callback){
+	con.query("SELECT * FROM USERS WHERE EMAIL=" + mysql.escape(email), function(err, rows){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, rows);
+		}
+	});
+}
+
+app.post('/getUserByEmail', function(req, res){
+	getUserByEmail(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+});
+
+function updateUserNamesByEmail(email, first_name, last_name, callback){
+	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, rows);
+		}
+	})
+}
+
+app.put('/updateUserNamesByEmail', function(req, res){
+	updateUserNamesByEmail(req.body.email, req.body.first_name, req.body.last_name, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+})
 function registerUsers(first_name, last_name, email, phone_number, callback){
 	con.query("UPDATE USERS SET FIRST_NAME= "+ mysql.escape(first_name)  +", LAST_NAME=" + mysql.escape(last_name)+ ", PHONE_NUMBER="+ mysql.escape(phone_number) + " WHERE USERS.EMAIL="+ mysql.escape(email), function(err, rows){
 			if(err){
