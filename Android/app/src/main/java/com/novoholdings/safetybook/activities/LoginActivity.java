@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.android.volley.BuildConfig;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.Response;
@@ -41,7 +42,6 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.novoholdings.safetybook.BuildConfig;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.common.AppProperties;
@@ -144,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateChecker()
     {
-        int currentVersionNumber = BuildConfig.VERSION_CODE;
+        int currentVersionNumber = com.android.volley.BuildConfig.VERSION_CODE;
 
         String url = AppProperties.DIR_SERVER_ROOT + "androidVersionTable";
 
@@ -293,7 +293,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkIfInstalled( int latestVersionNumber) {
-        int checkedVersionNumber = BuildConfig.VERSION_CODE;
+        int checkedVersionNumber = com.android.volley.BuildConfig.VERSION_CODE;
 
         if (checkedVersionNumber != latestVersionNumber) {
             AlertDialog.Builder installAlert = new AlertDialog.Builder(LoginActivity.this);

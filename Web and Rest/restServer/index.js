@@ -642,7 +642,7 @@ function addBook(name, filename, callback){
 	})
 
 }
-//Done
+//Done/
 function addLesson(plan_id, book_id, start_page, end_page, name, filepath, callback){
 	console.log('A1');
 	con.query("SELECT * FROM LESSONS WHERE LESSONS.NAME=" + mysql.escape(name) + " AND LESSONS.BOOK_ID=" + mysql.escape(book_id), function(err, rows){
