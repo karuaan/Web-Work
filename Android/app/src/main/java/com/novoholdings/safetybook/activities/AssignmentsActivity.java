@@ -29,9 +29,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.LongSparseArray;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -74,6 +76,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.Inflater;
 
 import static com.novoholdings.safetybook.common.AppProperties.YES;
 import static com.novoholdings.safetybook.common.AppProperties.getFileNameFromPath;
@@ -121,6 +124,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         if (actionBar!=null){
             actionBar.setTitle(groupName);
             actionBar.setSubtitle("Choose an assignment");
+
         }
 
         /*
@@ -793,6 +797,8 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.assignment_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -824,6 +830,12 @@ public class AssignmentsActivity extends AppCompatActivity{
             else{
                 finish();
             }
+        }
+
+        else if (item.getItemId() == R.id.email_admin)
+        {
+            Intent i = new Intent(Intent.ACTION_SENDTO, Uri.fromParts( "mailto", AppProperties.NVL(adminEmail, "email@example.com"), null));
+            startActivity(Intent.createChooser(i, "Send email..."));
         }
         return super.onOptionsItemSelected(item);
     }
