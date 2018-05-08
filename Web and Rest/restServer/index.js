@@ -1561,6 +1561,47 @@ app.post('/getassignments', function(req, res){
 	});
 });
 
+function getAssignments2(group_id, callback){
+	con.query(
+	"SELECT assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME, book_id, lesson_id, percent_complete "+
+	"FROM (SELECT SUM(IS_COMPLETE)/COUNT(*) as percent_complete, " +
+		"ASSIGNMENT_ID as join_assignment_id " + 
+		"FROM STATUS WHERE GROUP_ID=" + mysql.escape(group_id) + " GROUP BY ASSIGNMENT_ID) JOIN " + 
+	
+	"(SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
+	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
+	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
+//	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
+	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id) + ") ON join_assignment_id=assignment_id",
+		function(err, rows){
+			if(err){
+				console.log(err);
+				callback(err, null);
+			}
+			else{
+				if(rows[0]===undefined){
+					console.log(rows);
+					callback({'err': 'no results'}, null)
+				}
+				else{
+					console.log(rows);
+					callback(null, rows);
+				}
+			}
+		}
+	)
+}
+app.post('/getassignments2', function(req, res){
+	getAssignments(req.body.group_id, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	});
+});
+
 function getEmployees(group_id, callback){
 	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL FROM USERS JOIN GROUPS ON USERS.ID=GROUPS.USER_ID WHERE GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
 		if(err){
