@@ -1445,7 +1445,7 @@ export class EmployeesComponent implements OnInit {
 			this.isLoginError = true;
 		}
 		else{
-			this.newUserError = this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword)['error'];
+			this.newUserError = this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword, this.newUserPhoneNumber)['error'];
 			if(this.newUserError === undefined){
 				this.loginErrorMessage = "Internal server error. Please contact an administrator";
 				console.log(this.newUserError);
