@@ -8,7 +8,7 @@ con = mysql.createConnection(
 )
 
 
-function dailyOverdueReport(callback){
+function getOverdueList(callback){
 
     getAllOverdue = "SELECT * FROM STATUS JOIN ASSIGNMENTS ON ASSIGNMENTS.ID = STATUS.ASSIGNMENT_ID JOIN USERS ON STATUS.EMPLOYEE_ID = USERS.ID WHERE STATUS.IS_COMPLETE = 0 AND USERS.IS_ADMIN = 0 AND ASSIGNMENTS.DUE_DATE < CURRENT_DATE();";
 
@@ -145,4 +145,4 @@ function dailyOverdueReport(callback){
 });
 }
 
-exports.dailyOverdueReport = dailyOverdueReport;
+exports.overdue = getOverdueList;

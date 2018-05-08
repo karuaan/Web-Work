@@ -11,7 +11,7 @@ const admin_functions = require('./functions/admin_functions');
 const hummus = require('hummus');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
-const emailOverdueQuery = require("./emailOverdueQuery");
+const emailReporting = require("./emailOverdueQuery");
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
 var multer = require('multer');
@@ -317,30 +317,22 @@ function sendEmailReport(rows){
 }
 
 app.get('/sendEmailReport', function(req, res){
-	 emailOverdueQuery.dailyOverdueReport(function(err, result){
-	 	if (err){
-	 		res.json(err);
-	 	}else{
-	 		res.json(result);
-		 	sendEmailReport(result);
-
-	 	}
-	 });
+	 
 });
 
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
-	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, rows){
+	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, assignments){
 		if (!err){
-			console.log(rows);
-			if (rows.length>0){
+			console.log(assignments);
+			if (assignments.length>0){
 				let statusQuery = "INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ";
-				rows.forEach(function(element, index, array){
+				assignments.forEach(function(element, index, array){
 					if (index>0){
 						statusQuery+=", "
 					}
 					statusQuery+="(SELECT "+mysql.escape(element.group_id)+", USER_ID, "+mysql.escape(element.assignment_id)+", 0 "+
-					"FROM GROUPS WHERE ID="+mysql.escape(element.group_id)+")";
+					"FROM GROUPS WHERE ID="+mysql.escape(element.group_id)+" AND IS_ADMIN=0)";
 				});
 				statusQuery+=";";
 				console.log(statusQuery);
@@ -348,7 +340,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 					if (!err){
 						console.log(result);
 						let availableQuery = "UPDATE ASSIGNMENTS SET AVAILABLE=1 WHERE";
-						rows.forEach(function(element, index, array){
+						assignments.forEach(function(element, index, array){
 							if (index>0){
 								availableQuery+=" AND"
 							}
@@ -358,13 +350,10 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 						con.query(availableQuery, function(err, result){
 							if (!err){
 								console.log(result);
-								rows.forEach(function(element, index, array){
+								assignments.forEach(function(element, index, array){
 									//send notification
-									//NILESH: this should be an expandable notification that show the notes attribute when expanded (if possible)
-									// thank you :-)
 									let title = element.assignment_name + " now available";
 									let minutes = Math.floor(element.reading_time / 60);
-									let notes = element.notes; //could be null
 									let seconds = element.reading_time - minutes * 60;
 									let readingTimeStr = "";
 									if (minutes > 0){
@@ -374,8 +363,15 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 										readingTimeStr += seconds + " seconds";
 									}
 									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
+									let notes;
+									if (element.notes){
+										notes = body+"\n"+element.notes;
+									} //could be null
+									else{
+										notes = body;
+									}
 
-									sendMessageToGroup("group1","Safety Reader","Please complete your assignment", "expandable");
+									sendMessageToGroup("group"+element.group_id,title,body, "expandable");
 								});
 							}
 							else{
@@ -400,20 +396,15 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 
 var sendOverdueReports = scheduler.scheduleJob('0 8 * * *', function(){
 	//query goes here
-	con.query('STATEMENT', function(err, rows){
-/*		row contains:
-		user email
-		user fullname
-		assignment name
-		assignment due date
-		today's date
-		group name
-		admin name
-		admin email
-*/
-		sendOverdueReports(rows);
-	});
-	
+	emailReporting.overdue(function(err, result){
+	 	if (err){
+	 		res.json(err);
+	 	}else{
+	 		res.json(result);
+		 	sendEmailReport(result);
+
+	 	}
+	 });
 
 });
 

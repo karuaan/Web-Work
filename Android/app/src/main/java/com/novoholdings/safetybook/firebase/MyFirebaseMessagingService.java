@@ -25,6 +25,7 @@ import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.novoholdings.safetybook.R;
+import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.activities.AssignmentsActivity;
 import com.novoholdings.safetybook.activities.GroupsActivity;
 import com.novoholdings.safetybook.common.AppProperties;
@@ -52,7 +53,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final long threeDays = 259200000;
     private static final long oneDay = 129600000;
     private static final long oneHour = 5400000;
-    private static final long oneMinute = 45000;
 
 
     /**
@@ -89,6 +89,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
             JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, AppProperties.DIR_SERVER_ROOT+"assignment/"+notificationId, null, new Response.Listener<JSONObject>() {
                 public void onResponse(JSONObject assignment) {
+                    boolean saved = true;
                     try {
                         if (assignment!=null){
                             long serverId = assignment.getLong("id");
@@ -104,41 +105,48 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        saved = false;
+                    }
+
+                    if (saved){
+
+                        sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), notificationId);
+                        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                        try {
+                            Date dueDate = f.parse(remoteMessage.getData().get("due_date"));
+                            long millisecondsUntilDueDate = dueDate.getTime() - Calendar.getInstance().getTimeInMillis();
+
+                            if (millisecondsUntilDueDate >= oneWeek){
+                                scheduleNotification(oneWeek, notificationId, assignmentName, "Due in one week", groupName);
+                            }
+
+                            if (millisecondsUntilDueDate >= threeDays){
+                                scheduleNotification(threeDays, notificationId, assignmentName, "Due in 3 days", groupName);
+                            }
+
+                            if (millisecondsUntilDueDate >= oneDay){
+                                scheduleNotification(oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
+                            }
+
+                            if (millisecondsUntilDueDate >= oneDay){
+                                scheduleNotification(oneHour, notificationId, assignmentName, "Due tomorrow", groupName);
+                            }
+
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-
+                    error.printStackTrace();
                 }
             });
 
-            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), notificationId);
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-            try {
-                Date dueDate = f.parse(remoteMessage.getData().get("due_date"));
-                long millisecondsUntilDueDate = dueDate.getTime() - Calendar.getInstance().getTimeInMillis();
+            RequestQueue.getInstance(MyFirebaseMessagingService.this).addToRequestQueue(getComplete);
 
-                if (millisecondsUntilDueDate >= oneWeek){
-                    scheduleNotification( millisecondsUntilDueDate - oneWeek, notificationId, assignmentName, "Due in one week", groupName);
-                }
-
-                if (millisecondsUntilDueDate >= threeDays){
-                    scheduleNotification( millisecondsUntilDueDate - threeDays, notificationId, assignmentName, "Due in 3 days", groupName);
-                }
-
-                if (millisecondsUntilDueDate >= oneDay){
-                    scheduleNotification(millisecondsUntilDueDate-oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
-                }
-
-                if (millisecondsUntilDueDate >= oneMinute){
-                    scheduleNotification(oneMinute, notificationId, assignmentName, "Due now", groupName);
-                }
-
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
         }
 
         // Check if message contains a notification payload.
@@ -168,7 +176,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      *
      * @param messageBody FCM message body received.
      */
-    private void sendNotification(String title,String messageBody, String groupName, String notes, int id) {
+    private void sendNotification(String title,String messageBody, String groupName, String notes, int assignId, int groupId) {
         Intent intent = new Intent(this, AssignmentsActivity.class);
         intent.putExtra("assignment_id", id);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

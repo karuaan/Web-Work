@@ -1,35 +1,18 @@
 package com.novoholdings.safetybook.activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.android.volley.BuildConfig;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.Response;
@@ -37,12 +20,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.stetho.Stetho;
-import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.RequestQueue;
@@ -51,33 +32,16 @@ import com.novoholdings.safetybook.common.AppSharedPreference;
 import com.novoholdings.safetybook.common.Utils;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
+import com.novoholdings.safetybook.http.UpdateResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.security.acl.Group;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import okhttp3.OkHttpClient;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -152,68 +116,7 @@ public class LoginActivity extends AppCompatActivity {
 
         String url = AppProperties.DIR_SERVER_ROOT + "androidVersionTable";
 
-        JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            public void onResponse(JSONObject response) {
-                try {
-                    int latestVersionNumber = response.getInt("version_number");
-                    String downloadLinkStr = response.getString("version_url");
-                    Uri downloadLinkUri = Uri.parse(downloadLinkStr);
-
-                    if (currentVersionNumber < latestVersionNumber) {
-                        AlertDialog.Builder downloadAlert = new AlertDialog.Builder(LoginActivity.this);
-                        downloadAlert.setTitle("Update Available.")
-                                .setMessage("Please download the latest update to continue using Safety Book Reader.")
-                                .setPositiveButton("Download", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        downloadUpdate(downloadLinkUri);
-                                        checkIfInstalled(latestVersionNumber);
-
-                                    }
-                                })
-                                .setNegativeButton("Update Later", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        intent.putExtra("EXIT", true);
-                                        startActivity(intent);
-
-                                        if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
-                                            finish();
-                                        }
-                                    }
-                                })
-                                .show();
-                    } else {
-                        loginButton = (Button) findViewById(R.id.loginButton);
-                        forgotPass = (Button) findViewById(R.id.forgetPass);
-
-                        mAuth = FirebaseAuth.getInstance();
-
-                        if (mAuth.getCurrentUser() == null) {
-                            AuthUI.IdpConfig.EmailBuilder emailBuilder = new AuthUI.IdpConfig.EmailBuilder();
-                            emailBuilder.setAllowNewAccounts(false);
-                            startActivityForResult(// Get an instance of AuthUI based on the default app
-                                    AuthUI
-                                            .getInstance()
-                                            .createSignInIntentBuilder()
-                                            .setAvailableProviders(providers)
-                                            .setIsSmartLockEnabled(false /* credentials */, true /* hints */)
-                                            .build(),
-                                    RC_SIGN_IN);
-                        } else {
-                            Intent i = new Intent(LoginActivity.this, GroupsActivity.class);
-                            startActivity(i);
-                        }
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }, new Response.ErrorListener() {
+        JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new UpdateResponse(LoginActivity.this), new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 AlertDialog.Builder alert = new AlertDialog.Builder(LoginActivity.this);
@@ -286,60 +189,6 @@ public class LoginActivity extends AppCompatActivity {
         mySnackbar.setAction(R.string.undo_string, new MyUndoListener());
         mySnackbar.show();*/
 
-    }
-
-    private void downloadUpdate(Uri uri)
-    {
-        try {
-            downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-            DownloadManager.Request request = new DownloadManager.Request(uri);
-            File file = new File(Environment.getExternalStorageDirectory(), "reader");
-            request.setDestinationUri(Uri.fromFile(file));
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            Long reference = downloadManager.enqueue(request);
-            apk_value = reference;
-        }
-        catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    BroadcastReceiver onComplete=new BroadcastReceiver() {
-        public void onReceive(Context ctxt, Intent intent) {
-            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            if (referenceId == apk_value){
-                Intent install = new Intent(Intent.ACTION_VIEW);
-                // Needs to be changed
-                install.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/Android/data/com.temp.tempaa/files/Download/update.apk")), "application/vnd.android.package-archive");
-                install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(install);
-            }
-        }
-    };
-
-    private void checkIfInstalled( int latestVersionNumber) {
-        int checkedVersionNumber = com.android.volley.BuildConfig.VERSION_CODE;
-
-        if (checkedVersionNumber != latestVersionNumber) {
-            AlertDialog.Builder installAlert = new AlertDialog.Builder(LoginActivity.this);
-            installAlert.setTitle("Please Install.")
-                    .setMessage("Please go to your download manager and install the latest application update.")
-                    .setNeutralButton("OK.", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            intent.putExtra("EXIT", true);
-                            startActivity(intent);
-
-                            if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
-                                finish();
-                            }
-                        }
-                    })
-                    .show();
-        }
     }
 
     private void getLoginScreen(){

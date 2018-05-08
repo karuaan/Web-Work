@@ -111,6 +111,7 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     private CountDownTimer countDownTimer;
 
+
     private AssignmentBean currentAssignment;
 
 
@@ -177,12 +178,6 @@ public class AssignmentsActivity extends AppCompatActivity{
 
 
         downloadManager =  (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-       /* int check = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (check == PackageManager.PERMISSION_GRANTED) {
-            //Do something
-        } else {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1024);
-        }*/
     }
 
     protected void postAndNotifyAdapter(final Handler handler, final RecyclerView recyclerView) {
