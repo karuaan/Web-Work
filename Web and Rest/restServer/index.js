@@ -11,6 +11,7 @@ const admin_functions = require('./functions/admin_functions');
 const hummus = require('hummus');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
+const emailOverdueQuery = require("./emailOverdueQuery");
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
 var multer = require('multer');
@@ -244,6 +245,89 @@ app.get('/createalltables', function(req, res){
 app.use(cors());
 app.use(validator());
 
+function sendEmailReport(rows){
+	console.log(rows);
+	rows.forEach(function(element, index, array){
+		let adminName = element.admin_firstname+" "+element.admin_lastname;
+		let adminEmail = element.admin_email;
+		let groups = element.groups;
+
+		let htmlBody = '<h1>Daily Overdue Report</h1>';
+
+		groups.forEach(function(element, index, array){
+			let groupName = element.name;
+			let overdueList = element.overdue_assignments;
+
+			htmlBody+='<h2>'+groupName+'</h2>';
+			htmlBody+='<table>';
+			htmlBody+='<tr><th>Assignment</th><th>Employee</th><th>Email</th><th>Phone</th></tr>';
+
+			overdueList.forEach(function(element, index, array){
+				let assignmentName = element.name;
+				let dueDate = new Date(element.due_date);
+				let today = new Date();
+				let employees = element.overdue_employees;
+
+				let timeDiff = Math.abs(today.getTime() - dueDate.getTime());
+				let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+
+				let lateText;
+				if (diffDays==1){
+					lateText='(1 day late)'
+				}
+				else{
+					lateText='('+diffDays+' days late'+')';
+				}
+
+				assignCell = assignmentName+'<br/>'+lateText;
+
+
+				htmlBody+='<tr><td style=\"vertical-align:top;text-align:left;padding:0\" rowspan='+employees.length+'>'+assignCell+'</td>';
+				employees.forEach(function(element, index, array){
+					let employeeName = element.first_name+" "+element.last_name;
+					let employeeEmail = element.email;
+					let employeePhone = element.phone;
+
+					if (index>0){
+						htmlBody+='<tr>'
+					}
+
+					htmlBody+='<td>'+employeeName+'</td> <td>'+employeeEmail+'</td><td>'+employeePhone+'</td></tr>';
+
+				});
+			});
+			htmlBody+='</table>';
+			//send one email per admin
+			var mailOptions = {
+				from: 'libertyelevatorreader@gmail.com',
+				to: ['mr.sketch99@gmail.com', 'karuaan@gmail.com', 'jschwar3@stevens.edu', 'ggoldsht@stevens.edu'],
+				subject: '[Safety Training] Overdue Report',
+				html: htmlBody
+			};
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					console.log(error);
+				}
+				else{
+					callback(null, info)
+				}
+			});
+		});
+	});
+}
+
+app.get('/sendEmailReport', function(req, res){
+	 emailOverdueQuery.dailyOverdueReport(function(err, result){
+	 	if (err){
+	 		res.json(err);
+	 	}else{
+	 		res.json(result);
+		 	sendEmailReport(result);
+
+	 	}
+	 });
+});
+
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, rows){
@@ -290,24 +374,8 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 										readingTimeStr += seconds + " seconds";
 									}
 									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
-									//headers for https request
-									/*headers:{
-											'Content-Type':'application/json',
-											Authorization:'key=AIzaSyDj3uGXUayslSgPJnwmpqHjwQ_c0ZCqBv4'
-										}*/
-									//options for firebase notification
-									let options = {
-										hostname: 'fcm.googleapis.com/fcm/send',
-										priority: 'normal',
-										notification: {
-											title: title,
-											body: body
-										}
 
-									};
-
-									//todo: send notification to topic: '/group<ID>'
-									//sendMessageToGroup("group1","Safety Reader","Please complete your assignment", "expandable");
+									sendMessageToGroup("group1","Safety Reader","Please complete your assignment", "expandable");
 								});
 							}
 							else{
@@ -326,6 +394,27 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 			console.log(error);
 		}
 	})
+});
+
+
+
+var sendOverdueReports = scheduler.scheduleJob('0 8 * * *', function(){
+	//query goes here
+	con.query('STATEMENT', function(err, rows){
+/*		row contains:
+		user email
+		user fullname
+		assignment name
+		assignment due date
+		today's date
+		group name
+		admin name
+		admin email
+*/
+		sendOverdueReports(rows);
+	});
+	
+
 });
 
 app.get('/email/test', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
