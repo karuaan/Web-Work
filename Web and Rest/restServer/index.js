@@ -1566,13 +1566,13 @@ function getAssignments2(group_id, callback){
 	"SELECT assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME, book_id, lesson_id, percent_complete "+
 	"FROM (SELECT SUM(IS_COMPLETE)/COUNT(*) as percent_complete, " +
 		"ASSIGNMENT_ID as join_assignment_id " + 
-		"FROM STATUS WHERE GROUP_ID=" + mysql.escape(group_id) + " GROUP BY ASSIGNMENT_ID) JOIN " + 
+		"FROM STATUS WHERE GROUP_ID=" + mysql.escape(group_id) + " GROUP BY ASSIGNMENT_ID) as PERCENT_TABLE JOIN " + 
 	
 	"(SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
 	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
 	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
 //	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
-	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id) + ") ON join_assignment_id=assignment_id",
+	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id) + ") as ASSIGNMENTS_TABLE ON PERCENT_TABLE.join_assignment_id=ASSIGNMENTS_TABLE.assignment_id",
 		function(err, rows){
 			if(err){
 				console.log(err);
