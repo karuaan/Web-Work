@@ -6,6 +6,7 @@ import android.app.DownloadManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -56,6 +58,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -102,6 +105,7 @@ public class LoginActivity extends AppCompatActivity {
 
     RequestQueue requestQueue;
     ProgressDialog progressDialog;
+    long apk_value;
 
 
     @Override
@@ -163,7 +167,6 @@ public class LoginActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         downloadUpdate(downloadLinkUri);
-
                                         checkIfInstalled(latestVersionNumber);
 
                                     }
@@ -284,13 +287,36 @@ public class LoginActivity extends AppCompatActivity {
         mySnackbar.show();*/
 
     }
+
     private void downloadUpdate(Uri uri)
     {
-        downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        Long reference = downloadManager.enqueue(request);
+        try {
+            downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+            File file = new File(Environment.getExternalStorageDirectory(), "reader");
+            request.setDestinationUri(Uri.fromFile(file));
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            Long reference = downloadManager.enqueue(request);
+            apk_value = reference;
+        }
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+
     }
+
+    BroadcastReceiver onComplete=new BroadcastReceiver() {
+        public void onReceive(Context ctxt, Intent intent) {
+            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            if (referenceId == apk_value){
+                Intent install = new Intent(Intent.ACTION_VIEW);
+                // Needs to be changed
+                install.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/Android/data/com.temp.tempaa/files/Download/update.apk")), "application/vnd.android.package-archive");
+                install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(install);
+            }
+        }
+    };
 
     private void checkIfInstalled( int latestVersionNumber) {
         int checkedVersionNumber = com.android.volley.BuildConfig.VERSION_CODE;
