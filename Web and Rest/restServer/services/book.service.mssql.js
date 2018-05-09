@@ -21,7 +21,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
      const insertBook = (bookReq) => {
         return new Promise((resolve,reject) => {
-            con.query('INSERT INTO BOOKS (NAME, PDF_FILE,TOTAL_PAGES) VALUES (?,?,?)', [
+            con.query('INSERT INTO BOOKS (NAME, PDF_FILE,TOTAL_PAGES) VALUES (@Name,@PDF_FILE,@TOTAL_PAGES)', [
                 bookReq.NAME,
                 bookReq.PDF_FILE,
                 bookReq.TOTAL_PAGES,
@@ -199,7 +199,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
     
       var insertLesson = (lesson)=>{
         return new Promise( (resolve, reject) => {
-            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE) VALUES (?,?,?,?,?)";
+            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE) VALUES (@BOOK_ID,@START_PAGE,@END_PAGE,@NAME,@PDF_FILE)";
             console.log('insertQuery',lesson);
                 con.query(insertQuery,[
                   lesson.BOOK_ID,
@@ -229,7 +229,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
       const updateLesson = (lesson)=>{
         return new Promise( (resolve, reject) => {
-            var updateQuery = "UPDATE LESSONS SET BOOK_ID = ?, START_PAGE = ?, END_PAGE = ?, NAME = ?, PDF_FILE = ? WHERE LESSONS.ID = ?";
+            var updateQuery = "UPDATE LESSONS SET BOOK_ID = @BOOK_ID, START_PAGE = @START_PAGE, END_PAGE = @END_PAGE, NAME = @NAME, PDF_FILE = @PDF_FILE WHERE LESSONS.ID = @ID";
                 con.query(updateQuery,[
                     lesson.BOOK_ID,
                     lesson.START_PAGE,
@@ -318,7 +318,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
        const checkGroupExist = (name)=> {
         console.log('checkGroupExist : ',name);
         return new Promise((resolve, reject) => {
-              con.query("SELECT GROUPS.ID as GROUP_ID FROM GROUPS WHERE GROUPS.NAME=? group by GROUPS.ID",[name], (err, rows) => {
+              con.query("SELECT GROUPS.ID as GROUP_ID FROM GROUPS WHERE GROUPS.NAME=@name group by GROUPS.ID",[name], (err, rows) => {
                   console.log('checkgroupexists : ',rows);
                   if (rows != undefined && rows.length > 0 && rows[0]['GROUP_ID']){
                       resolve(rows[0]['GROUP_ID']);
@@ -485,7 +485,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
        const getEmployeeByEmail = (email) => {
             return new Promise(async (resolve,reject) => {
-                con.query('SELECT * FROM USERS WHERE EMAIL = USERS.EMAIL',[email],(err,rows) =>{
+                con.query('SELECT * FROM USERS WHERE @email = USERS.EMAIL',[email],(err,rows) =>{
                     resolve({
                         status : true,
                         data : rows.length > 0 ? rows[0] : null
@@ -688,7 +688,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                 });
 
 
-                con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?', [users], function(err4, rows4){
+                con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES @users', [users], function(err4, rows4){
                         if(!err4){
                             resolve({
                                 status : true,
@@ -799,7 +799,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
      const insertStatus = (result) => {
         return new Promise((resolve,reject) => {
-            con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?', [result], function(err4, rows4){
+            con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES @result', [result], function(err4, rows4){
                 if(!err4){
                     resolve({
                         status : true,
