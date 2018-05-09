@@ -1,5 +1,6 @@
 
 <div class=""container *ngIf="isLoggedIn==false && !newUser">
+	<img class="logo" src="assets/pngs/Liberty Logo.png" />
 	<form class="login-form" name="userform" method="post" #formCtrl="ngForm">
 
 	  <label for="exampleInputEmail1">Email address</label>
@@ -113,7 +114,7 @@
 							<div class="due-holder">
 								<p class="due-title">Percent Complete: </p><p class="due-value">{{assignment.percent_complete | percent}}</p>
 							</div>
-							
+
 						</div>
 					</div>
 				</div>

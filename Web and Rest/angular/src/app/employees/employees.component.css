@@ -524,3 +524,9 @@ pdf-viewer {
   padding: 0.5em;
   cursor: pointer;
 }
+
+.logo {
+  width: 30em;
+  margin: auto;
+  display: block;
+}
