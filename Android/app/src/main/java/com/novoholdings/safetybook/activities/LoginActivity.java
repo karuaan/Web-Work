@@ -1,5 +1,6 @@
 package com.novoholdings.safetybook.activities;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
@@ -7,10 +8,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
@@ -37,6 +41,7 @@ import com.novoholdings.safetybook.common.Utils;
 import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
 import com.novoholdings.safetybook.http.UpdateResponse;
+import com.novoholdings.safetybook.receivers.DownloadReceiver;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,6 +68,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private GroupsDao groupsDao;
     private AssignmentsDao assignmentsDao;
+    private DownloadReceiver downloadReceiver;
 
     private FirebaseAuth mAuth;
 
@@ -74,7 +80,8 @@ public class LoginActivity extends AppCompatActivity {
 
     RequestQueue requestQueue;
     ProgressDialog progressDialog;
-    private long apkDownload;
+
+    private final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE=2233;
 
 
     @Override
@@ -106,6 +113,8 @@ public class LoginActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main);
             Stetho.initializeWithDefaults(this);
 
+
+
 //        forgotPass.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -117,6 +126,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateChecker()
     {
+        downloadReceiver = new DownloadReceiver(LoginActivity.this);
+        IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        registerReceiver(downloadReceiver, intentFilter);
         int currentVersionNumber = com.android.volley.BuildConfig.VERSION_CODE;
 
         String url = AppProperties.DIR_SERVER_ROOT + "androidVersionTable";
@@ -129,7 +141,7 @@ public class LoginActivity extends AppCompatActivity {
                 try {
                     int latestVersionNumber = response.getInt("version_number");
                     String downloadLinkStr = response.getString("version_url");
-                    Uri downloadLinkUri = Uri.parse(downloadLinkStr);
+                    Uri downloadLinkUri = Uri.parse(AppProperties.DIR_SERVER_ROOT + downloadLinkStr);
 
                     if (currentVersionNumber < latestVersionNumber) {
                         AlertDialog.Builder downloadAlert = new AlertDialog.Builder(LoginActivity.this);
@@ -205,13 +217,23 @@ public class LoginActivity extends AppCompatActivity {
     private void downloadUpdate(Uri uri)
     {
         try {
+            String localFolderPath = AppProperties.SDCARD_APP_FOLDER_NAME;
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             DownloadManager.Request request = new DownloadManager.Request(uri);
-            File file = new File(Environment.getExternalStorageDirectory(), "reader");
-            request.setDestinationUri(Uri.fromFile(file));
+            Environment.getExternalStoragePublicDirectory(localFolderPath).mkdirs();
+            //File file = new File(Environment.getExternalStorageDirectory(), "reader");
+            //request.setDestinationUri(Uri.fromFile(file));
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            Long reference = downloadManager.enqueue(request);
-            apkDownload = reference;
+            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            downloadReceiver.apkDownload = downloadManager.enqueue(request
+                            .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI |
+                                    DownloadManager.Request.NETWORK_MOBILE)
+                            .setAllowedOverRoaming(false)
+                            .setTitle(uri.getLastPathSegment().toString())
+                            .setDescription("Newest app version")
+                            .setVisibleInDownloadsUi(true)
+                            .setDestinationInExternalPublicDir(localFolderPath, uri.getLastPathSegment()));
+
         }
         catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -219,18 +241,27 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    BroadcastReceiver onComplete=new BroadcastReceiver() {
-        public void onReceive(Context ctxt, Intent intent) {
-            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            if (referenceId == apkDownload){
-                Intent install = new Intent(Intent.ACTION_VIEW);
-                // Needs to be changed
-                install.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/Android/data/com.temp.tempaa/files/Download/update.apk")), "application/vnd.android.package-archive");
-                install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(install);
-            }
+
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String permissions[],
+            int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    Toast.makeText(LoginActivity.this, "Permission granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
+                }
         }
-    };
+    }
+
+
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
@@ -347,7 +378,6 @@ public class LoginActivity extends AppCompatActivity {
         finish();
 
     }
-
 
 }
 
