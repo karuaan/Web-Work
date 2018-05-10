@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
@@ -93,6 +94,14 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog.setMessage("Loading please wait ..");
         mAuth = FirebaseAuth.getInstance();
 
+        int permissionCheck = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            showExplanation("Storage permission needed", "", Manifest.permission.READ_PHONE_STATE, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+        } else {
+
         if (Utils.isOnline(LoginActivity.this)) {
             updateChecker();
         } else {
@@ -112,6 +121,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             setContentView(R.layout.activity_main);
             Stetho.initializeWithDefaults(this);
+        }
 
 
 
@@ -243,23 +253,6 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode,
-            String permissions[],
-            int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    Toast.makeText(LoginActivity.this, "Permission granted", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(LoginActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
-                }
-        }
-    }
-
 
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -370,6 +363,45 @@ public class LoginActivity extends AppCompatActivity {
         requestQueue.addToRequestQueue(objectRequest);
 
 
+    }
+
+    private void showExplanation(String title,
+                                 String message,
+                                 final String permission,
+                                 final int permissionRequestCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        requestPermission(permissionRequestCode);
+                    }
+                });
+        builder.create().show();
+    }
+
+    private void requestPermission(int permissionRequestCode) {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionRequestCode);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String permissions[],
+            int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //fetchUserInfo(mAuth.getCurrentUser());
+
+                    Toast.makeText(LoginActivity.this, "Permission granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    requestPermission(REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+                    Toast.makeText(LoginActivity.this, "Permission denied", Toast.LENGTH_SHORT).show();
+                }
+        }
     }
 
     private void nextScreen(){

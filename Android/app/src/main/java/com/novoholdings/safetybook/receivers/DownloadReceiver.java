@@ -33,7 +33,7 @@ public class DownloadReceiver extends BroadcastReceiver {
             // Needs to be changed
 
             Uri uri = MyFileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", new File(
-                    Environment.getExternalStorageDirectory() + AppProperties.SDCARD_APP_FOLDER_NAME +"/app_debug-1.apk"));
+                    Environment.getExternalStorageDirectory() + AppProperties.SDCARD_APP_FOLDER_NAME +"/app-full-release.apk"));
             install.setDataAndType(uri, "application/vnd.android.package-archive");
             install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
