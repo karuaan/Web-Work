@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Environment;
 
 import com.android.volley.Response;
+import com.firebase.ui.auth.AuthUI;
 import com.novoholdings.safetybook.BuildConfig;
 import com.novoholdings.safetybook.activities.LoginActivity;
 
@@ -48,10 +49,7 @@ public class UpdateResponse implements Response.Listener<JSONObject> {
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                Intent intent = new Intent(mContext, LoginActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                intent.putExtra("EXIT", true);
-                                mContext.startActivity(intent);
+
 
                             }
                         })

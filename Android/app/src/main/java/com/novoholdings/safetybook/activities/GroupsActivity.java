@@ -391,6 +391,9 @@ public class GroupsActivity extends AppCompatActivity {
                         String adminEmail = group.getString("admin_email");
                         String bookName = group.getString("book_name");
                         String bookServerPath = group.getString("book_path");
+                        if (bookServerPath.substring(0, 7).equals("public/")){
+                            bookServerPath = bookServerPath.substring(6);
+                        }
 
                         //add group
                         if (!AppDatabase.alreadyExists(GroupsDao.TABLE_NAME, "server_id=" + groupId)) {

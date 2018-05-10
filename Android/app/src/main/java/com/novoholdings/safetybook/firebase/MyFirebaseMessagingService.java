@@ -83,16 +83,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
             //{notification_type=expandable, body=Please complete your assignment, title=Safety Reader}
             int notificationId = Integer.parseInt(remoteMessage.getData().get("assignment_id"));
-            long groupId = Long.parseLong(remoteMessage.getData().get("group_id"));
             String groupName = remoteMessage.getData().get("group_name");
-            String assignmentName = remoteMessage.getData().get("assignment_name");
 
             JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, AppProperties.DIR_SERVER_ROOT+"assignment/"+notificationId, null, new Response.Listener<JSONObject>() {
                 public void onResponse(JSONObject assignment) {
                     boolean saved = true;
                     try {
                         if (assignment!=null){
-                            long serverId = assignment.getLong("id");
+                            long assignId = assignment.getLong("assignment_id");
+                            long groupId = assignment.getLong("group_id");
                             String assignmentName = assignment.getString("name");
                             String dueDate = assignment.getString("due_date");
                             int startPage = assignment.getInt("start_page");
@@ -100,42 +99,40 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             int readingTime = assignment.getInt("reading_time");
 
                             AssignmentsDao assignmentsDao = new AssignmentsDao(MyFirebaseMessagingService.this);
-                            assignmentsDao.insertData(serverId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, false, startPage, endPage);
+                            assignmentsDao.insertData(assignId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, false, startPage, endPage);
+
+                            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), (int)assignId, (int)groupId);
+
+                            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                            try {
+                                Date date = f.parse(remoteMessage.getData().get("due_date"));
+                                long millisecondsUntilDueDate = date.getTime() - Calendar.getInstance().getTimeInMillis();
+
+                                if (millisecondsUntilDueDate >= oneWeek){
+                                    scheduleNotification(oneWeek, notificationId, assignmentName, "Due in one week", groupName);
+                                }
+
+                                if (millisecondsUntilDueDate >= threeDays){
+                                    scheduleNotification(threeDays, notificationId, assignmentName, "Due in 3 days", groupName);
+                                }
+
+                                if (millisecondsUntilDueDate >= oneDay){
+                                    scheduleNotification(oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
+                                }
+
+                                if (millisecondsUntilDueDate >= oneDay){
+                                    scheduleNotification(oneHour, notificationId, assignmentName, "Due tomorrow", groupName);
+                                }
+
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        saved = false;
                     }
 
-                    if (saved){
-
-                        sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), notificationId);
-                        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-                        try {
-                            Date dueDate = f.parse(remoteMessage.getData().get("due_date"));
-                            long millisecondsUntilDueDate = dueDate.getTime() - Calendar.getInstance().getTimeInMillis();
-
-                            if (millisecondsUntilDueDate >= oneWeek){
-                                scheduleNotification(oneWeek, notificationId, assignmentName, "Due in one week", groupName);
-                            }
-
-                            if (millisecondsUntilDueDate >= threeDays){
-                                scheduleNotification(threeDays, notificationId, assignmentName, "Due in 3 days", groupName);
-                            }
-
-                            if (millisecondsUntilDueDate >= oneDay){
-                                scheduleNotification(oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
-                            }
-
-                            if (millisecondsUntilDueDate >= oneDay){
-                                scheduleNotification(oneHour, notificationId, assignmentName, "Due tomorrow", groupName);
-                            }
-
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }
 
                 }
             }, new Response.ErrorListener() {
@@ -178,7 +175,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     private void sendNotification(String title,String messageBody, String groupName, String notes, int assignId, int groupId) {
         Intent intent = new Intent(this, AssignmentsActivity.class);
-        intent.putExtra("assignment_id", id);
+        intent.putExtra("assignment_id", assignId);
+        intent.putExtra("group_id", groupId);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);

@@ -407,7 +407,7 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     public void startDownload() {
 
-        Uri uri = Uri.parse("https://dl.dropboxusercontent.com/s/lwui5ay1cnciibs/NEII%20Safety%20Handbook.pdf");
+        Uri uri = Uri.parse(serverFilePath);
         startButton.setEnabled(false);
         startButton.setText("Downloading...");
 

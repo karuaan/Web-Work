@@ -3,11 +3,14 @@ package com.novoholdings.safetybook.activities;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
@@ -25,6 +28,7 @@ import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.novoholdings.safetybook.BuildConfig;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.RequestQueue;
 import com.novoholdings.safetybook.common.AppProperties;
@@ -38,6 +42,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
 
     RequestQueue requestQueue;
     ProgressDialog progressDialog;
-    long apk_value;
+    private long apkDownload;
 
 
     @Override
@@ -79,6 +84,7 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setMessage("Loading please wait ..");
+        mAuth = FirebaseAuth.getInstance();
 
         if (Utils.isOnline(LoginActivity.this)) {
             updateChecker();
@@ -86,7 +92,6 @@ public class LoginActivity extends AppCompatActivity {
             loginButton = (Button) findViewById(R.id.loginButton);
             forgotPass = (Button) findViewById(R.id.forgetPass);
 
-            mAuth = FirebaseAuth.getInstance();
 
             if (mAuth.getCurrentUser() == null) {
                 startActivityForResult(// Get an instance of AuthUI based on the default app
@@ -116,7 +121,55 @@ public class LoginActivity extends AppCompatActivity {
 
         String url = AppProperties.DIR_SERVER_ROOT + "androidVersionTable";
 
-        JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new UpdateResponse(LoginActivity.this), new Response.ErrorListener() {
+        JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                int currentVersionNumber = BuildConfig.VERSION_CODE;
+
+                try {
+                    int latestVersionNumber = response.getInt("version_number");
+                    String downloadLinkStr = response.getString("version_url");
+                    Uri downloadLinkUri = Uri.parse(downloadLinkStr);
+
+                    if (currentVersionNumber < latestVersionNumber) {
+                        AlertDialog.Builder downloadAlert = new AlertDialog.Builder(LoginActivity.this);
+                        downloadAlert.setTitle("Update Available.")
+                                .setMessage("Please download the latest update to continue using Safety Book Reader.")
+                                .setPositiveButton("Download", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        downloadUpdate(downloadLinkUri);
+                                    }
+                                })
+                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        if (mAuth.getCurrentUser()!=null){
+                                            getDetailsFromServer();
+                                        }
+                                        else{
+                                            startActivityForResult(// Get an instance of AuthUI based on the default app
+                                                    AuthUI
+                                                            .getInstance()
+                                                            .createSignInIntentBuilder()
+                                                            .setAvailableProviders(providers)
+                                                            .setIsSmartLockEnabled(true /* credentials */, true /* hints */)
+                                                            .build(),
+                                                    RC_SIGN_IN);
+                                        }
+
+                                    }
+                                })
+                                .show();
+                    } else {
+
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 AlertDialog.Builder alert = new AlertDialog.Builder(LoginActivity.this);
@@ -149,6 +202,35 @@ public class LoginActivity extends AppCompatActivity {
         Volley.newRequestQueue(this).add(getComplete);
     }
 
+    private void downloadUpdate(Uri uri)
+    {
+        try {
+            DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+            File file = new File(Environment.getExternalStorageDirectory(), "reader");
+            request.setDestinationUri(Uri.fromFile(file));
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            Long reference = downloadManager.enqueue(request);
+            apkDownload = reference;
+        }
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    BroadcastReceiver onComplete=new BroadcastReceiver() {
+        public void onReceive(Context ctxt, Intent intent) {
+            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            if (referenceId == apkDownload){
+                Intent install = new Intent(Intent.ACTION_VIEW);
+                // Needs to be changed
+                install.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/Android/data/com.temp.tempaa/files/Download/update.apk")), "application/vnd.android.package-archive");
+                install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(install);
+            }
+        }
+    };
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
@@ -156,14 +238,14 @@ public class LoginActivity extends AppCompatActivity {
 
             progressDialog.show();
             //nextScreen();
-            getDetailsFromServer();
 
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             // Successfully signed in
             if (resultCode == RESULT_OK) {
-                startActivity(GroupsActivity.createIntent(this, response));
-                finish();
+                mAuth = FirebaseAuth.getInstance();
+                getDetailsFromServer();
+
             } else {
                 // Sign in failed
                 if (response == null) {
