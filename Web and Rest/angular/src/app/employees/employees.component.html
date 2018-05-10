@@ -56,6 +56,7 @@
 		<div id="adminMenu">
 			<div (click)="inviteAdminAction()" data-toggle="modal" data-target="#inviteAdminModal">Add Admin</div>
 			<div (click)="logout()" >Log Out</div>
+			<div><a class="support" href="mailto:libertyelevatorreader@gmail.com">Contact Support</a></div>
 		</div>
 	</div>
 	<div class="row" id="groupTabs">
@@ -182,7 +183,7 @@
                                                                   name="lession[][end_page]" [(ngModel)]="lesson.END_PAGE" min="0">
                                                        </td>
                                                        <td>
-                                                           <button class="btn btn-sm btn-success"
+                                                           <button style="width: 10em" class="btn btn-sm btn-success"
                                                                    *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)">
 
                                                                <i class="fa fa-check"></i> Assigned
@@ -199,7 +200,7 @@
                                                            </button>
 																												 -->
 
-                                                           <button class="btn btn-sm btn-info" data-toggle="modal"
+                                                           <button style="width: 10em" class="btn btn-sm btn-info" data-toggle="modal"
                                                                    (click)="selectLesson(lesson)"
                                                                    data-target="#newAssignment"
                                                                    *ngIf="!lesson.isAssignedByGroupId(selectedGroup.ID) && lesson.ID">

@@ -47,7 +47,7 @@ export class EmployeesComponent implements OnInit {
 	confirmPassword = "";
     firstName = "";
     lastName = "";
-	
+
 	newUserFirstName = "";
 	newUserLastName = "";
 	newUserPhoneNumber = "";
@@ -74,7 +74,7 @@ export class EmployeesComponent implements OnInit {
     testPdf: Object;
     viewPdf=false;
     lookAtAssignments = true;
-	
+
 	newUserError = undefined;
 
     viewAssignments: boolean;
@@ -131,7 +131,7 @@ export class EmployeesComponent implements OnInit {
 		this.confirmPassword = "";
         this.firstName = "";
         this.lastName = "";
-		
+
 		this.newUserFirstName = "";
 		this.newUserLastName = "";
 
@@ -746,7 +746,7 @@ export class EmployeesComponent implements OnInit {
               elipsesRegex = /^( *\.){2,}/g,
               pageNumberRegex = /^\d+ ?(?!\.)/;
           let lessons = [];
-          let lesson = null;
+          let lesson = new Lesson;
           let title = "";
           let lessonFinished = false, endOfIndex = false, indexStarted = false;
           for (var i = 0; i < texts.length; i++) {

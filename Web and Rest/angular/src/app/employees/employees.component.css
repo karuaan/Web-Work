@@ -514,7 +514,7 @@ pdf-viewer {
     margin: 1em;
     top: 2em;
     background: #FFFFFF;
-    width: 7em;
+    width: 9em;
     border: solid black 0.1em;
     border-bottom-width: 0em;
 }
@@ -529,4 +529,13 @@ pdf-viewer {
   width: 30em;
   margin: auto;
   display: block;
+}
+
+a {
+  color: #59CBE8
+}
+
+.support {
+  color: #000000;
+  text-decoration: none;
 }
