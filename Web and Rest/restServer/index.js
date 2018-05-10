@@ -273,7 +273,7 @@ function sendEmailReport(rows){
 
 				let lateText;
 				if (diffDays==1){
-					lateText='(1 day late)'
+					lateText='(1 day late)';
 				}
 				else{
 					lateText='('+diffDays+' days late'+')';
@@ -300,8 +300,8 @@ function sendEmailReport(rows){
 			//send one email per admin
 			var mailOptions = {
 				from: 'libertyelevatorreader@gmail.com',
-				to: ['mr.sketch99@gmail.com', 'karuaan@gmail.com', 'jschwar3@stevens.edu', 'ggoldsht@stevens.edu'],
-				subject: '[Safety Training] Overdue Report',
+				to: adminEmail,
+				subject: '[Liberty Elevator Safety Training] Overdue Report',
 				html: htmlBody
 			};
 			transporter.sendMail(mailOptions, function(error, info){
@@ -322,7 +322,7 @@ app.get('/sendEmailReport', function(req, res){
 
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
-	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, assignments){
+	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id, GROUPS.NAME as group_name from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, assignments){
 		if (!err){
 			console.log(assignments);
 			if (assignments.length>0){
@@ -371,7 +371,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 										notes = body;
 									}
 
-									sendMessageToGroup("group"+element.group_id,title,body, "expandable");
+									sendMessageToGroup("group"+element.group_id,title,body, "expandable", element.group_name);
 								});
 							}
 							else{
@@ -1608,7 +1608,7 @@ app.post('/lessons/remove-assignment',function(req,res){
 
 app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if (req.body.lessons && req.body.lessons.length > 0){
-		BookService.saveLesssons(req.body.lessons).then(function(results){
+		BookService.saveLessons(req.body.lessons, req.body.group_id).then(function(results){
 			// console.log('results',results);
 			res.json({
 				results: results,
@@ -2262,7 +2262,7 @@ app.post('/sendMessageToGroup', function(req,res){
 
 
 
-function sendMessageToGroup(topic, title, body,notification_type) {
+function sendMessageToGroup(topic, title, body, notification_type, group_name) {
   request({
     url: 'https://fcm.googleapis.com/fcm/send',
     method: 'POST',
@@ -2274,6 +2274,7 @@ function sendMessageToGroup(topic, title, body,notification_type) {
       { "data": {
       	"body": body,
         "title": title,
+        "group_name": group_name,
         "notification_type": notification_type
       },
         "to": "/topics/"+topic

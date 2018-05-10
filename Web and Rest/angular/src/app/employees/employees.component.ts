@@ -27,6 +27,7 @@ export class EmployeesComponent implements OnInit {
         books: [],
         employee_status: [],
         book_lessons: [],
+        selected_group: null,
         selectedBook: null,
         selectedLessonPlan: null,
         selectedLesson: null,
@@ -157,9 +158,9 @@ export class EmployeesComponent implements OnInit {
 
 	   onAdminLogin(admin_id) {
        this.employeesService.getUserData(admin_id).subscribe(userData =>{
-       this.firstName = userData['first_name'];
-      this.lastName = userData['last_name'];
-    });
+          this.firstName = userData['first_name'];
+          this.lastName = userData['last_name'];
+        });
 		this.employeesService.getGroups(admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
@@ -434,6 +435,7 @@ export class EmployeesComponent implements OnInit {
         if (this.assignmentForm.notes && this.assignmentForm.notes != ""){
             dataForm['NOTES'] = this.assignmentForm.notes;
         }
+        console.log(this.assignmentForm.time_to_complete);
         this.bookService.saveAssignment(this.assignmentForm.lesson_id, dataForm).subscribe((res: any) => {
                 console.log('res',res);
                 if (res.status && res.data && res.data.ID) {
@@ -447,7 +449,7 @@ export class EmployeesComponent implements OnInit {
                             START_DATE: this.assignmentForm.start_date,
                             NOTES: this.assignmentForm.notes,
                             assignment_id : res.data.ID,
-                            TIME_TO_COMPLETE: res.assignmentForm.time_to_complete
+                            TIME_TO_COMPLETE: this.assignmentForm.time_to_complete
                         };
 
                     console.log('NEW assignMENT', assign);
@@ -746,7 +748,7 @@ export class EmployeesComponent implements OnInit {
               elipsesRegex = /^( *\.){2,}/g,
               pageNumberRegex = /^\d+ ?(?!\.)/;
           let lessons = [];
-          let lesson = new Lesson;
+          let lesson = {};
           let title = "";
           let lessonFinished = false, endOfIndex = false, indexStarted = false;
           for (var i = 0; i < texts.length; i++) {
@@ -765,7 +767,7 @@ export class EmployeesComponent implements OnInit {
                 if (lessonFinished) {
                   //lesson object complete
                   lessons.push(lesson);
-                  lesson = new Object();
+                  lesson = {};
                   lessonFinished = false;
                 }
                 if (titleRegex.test(textSnippet)) {
@@ -888,7 +890,7 @@ export class EmployeesComponent implements OnInit {
         }
     }
 
-    saveLessions(): void {
+    saveLessons(): void {
         const new_lessons: any[] = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
             let validation = item.NAME != '' && item.START_PAGE > 0 && item.END_PAGE > 0;
             if ((item.changed_state && item.validationCheck(this.dataObj.selectedBook.TOTAL_PAGES) && validation) || (item.ID == null && validation)) {
