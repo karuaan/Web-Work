@@ -1445,7 +1445,7 @@ app.post('/apk', upload.single("file"), function(req, res, next) {
                 console.log(err);
             }
             var nextVersion = rows[0]["max"] + 1;
-            var url = __dirname + "/" + req.files["file"]["file"];
+			var url = req.files["file"]["uuid"] + "/file/" + req.files["file"]["filename"];
             con.query("INSERT INTO ANDROID_VERSION VALUES (" + mysql.escape(url) + ", " + mysql.escape(nextVersion) + ");", function(err, rows) {
                 if(err) {
                     console.log(err);
