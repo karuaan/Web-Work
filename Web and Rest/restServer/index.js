@@ -460,7 +460,7 @@ function getLessonsByBookId(book_id,callback){
 	});
 }
 
-app.get('/getlessons', function(req, res){
+app.post('/getlessons', function(req, res){
 	getLessons(req.body.group_id, function(err, result){
 		if(err){
 			res.json(err);

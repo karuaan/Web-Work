@@ -53,7 +53,7 @@ export class EmployeesService {
   }
   
   getLessons(group_id): Observable<Lesson[]>{
-	  var response = this.http.get<Lesson[]>(this.restURL + '/getlessons', {'group_id' : group_id});
+	  var response = this.http.post<Lesson[]>(this.restURL + '/getlessons', {'group_id' : group_id});
 	  return response;
   }
   
