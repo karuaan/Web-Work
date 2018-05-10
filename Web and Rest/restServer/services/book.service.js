@@ -125,7 +125,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                 var data = await updateLesson(lesson);
             }else{
                 console.log('new lesson');
-                var data = await insertLesson(lesson);
+                var data = await insertLesson(lesson, group_id);
             }
             console.log('data', data);
              if (data.status){
@@ -152,14 +152,14 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
         });
     };
     
-    const saveLesssons =(lessons) => {
+    const saveLessons =(lessons, group_id) => {
         return new Promise(async (resolve, reject) => {
             console.log('lessons',lessons);
             var allLesson = [];
             // lessons.forEach((item,key) => {
                 for(var i=0;i<lessons.length;i++){
                     var is_exist = lessons[i].action != 'new';
-                    var lessonResData = await addLessonIfNotExists(lessons[i],is_exist);
+                    var lessonResData = await addLessonIfNotExists(lessons[i],group_id,is_exist);
                     if(lessonResData.status && lessonResData.data){
                         allLesson.push(Object.assign(lessonResData.data,{
                             action : !is_exist ? 'new' : 'existing'
@@ -197,16 +197,17 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
     
     
     
-      var insertLesson = (lesson)=>{
+      var insertLesson = (lesson, group_id)=>{
         return new Promise( (resolve, reject) => {
-            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE) VALUES (?,?,?,?,?)";
+            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE, GROUP_ID) VALUES (?,?,?,?,?)";
             console.log('insertQuery',lesson);
                 con.query(insertQuery,[
                   lesson.BOOK_ID,
                   lesson.START_PAGE,
                   lesson.END_PAGE,
                   lesson.NAME,
-                  lesson.PDF_FILE
+                  lesson.PDF_FILE,
+                  group_id
                ],function(err,results) {
                    if (!err){
                        var data = {
@@ -859,7 +860,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
     
     
-       module_methods.saveLesssons = saveLesssons;
+       module_methods.saveLessons = saveLessons;
        module_methods.addLessonIfNotExists = addLessonIfNotExists;
        module_methods.checkLessonExist = checkLessonExist;
        module_methods.insertLesson = insertLesson;

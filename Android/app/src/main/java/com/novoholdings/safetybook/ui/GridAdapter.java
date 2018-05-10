@@ -21,10 +21,12 @@ import android.widget.Toast;
 import com.novoholdings.safetybook.R;
 import com.novoholdings.safetybook.activities.AssignmentsActivity;
 import com.novoholdings.safetybook.beans.AssignmentBean;
-import com.novoholdings.safetybook.beans.AssignmentJson;
+import com.novoholdings.safetybook.beans.AssignmentBean;
 import com.novoholdings.safetybook.beans.GroupBean;
 import com.novoholdings.safetybook.common.AppProperties;
 import com.novoholdings.safetybook.database.AssignmentsDao;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.text.ParseException;
@@ -42,14 +44,14 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class GridAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<GroupBean> groupList;
-    private HashMap<Long, AssignmentJson> assignmentGroupMap;
+    private HashMap<Long, AssignmentBean> assignmentGroupMap;
     private AssignmentsDao assignmentsDao;
     private long lastDownload;
     private DownloadManager downloadManager;
-    private LongSparseArray<AssignmentJson> assignmentDownloadIdServerIdMap;
+    private LongSparseArray<AssignmentBean> assignmentDownloadIdServerIdMap;
 
 
-    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList, HashMap<Long, AssignmentJson> assignmentsList) {
+    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList, HashMap<Long, AssignmentBean> assignmentsList) {
         this.assignmentsDao = assignmentsDao;
         this.mContext = context;
         this.groupList = groupList;
@@ -106,9 +108,11 @@ public class GridAdapter extends BaseAdapter {
 
         final GroupBean group = getItem(position);
 
-        if (assignmentGroupMap!=null && assignmentGroupMap.size()>0){
+        ArrayList<AssignmentBean> list = assignmentsDao.getData(AssignmentsDao.QUERY_GET_ALL+" WHERE "+AssignmentsDao.COLUMN_IS_COMPLETE+"="+AppProperties.NO+" ORDER BY date("+AssignmentsDao.COLUMN_DUE_DATE+") DESC Limit 1");
 
-            final AssignmentJson assignment = assignmentGroupMap.get(group.getId());
+        if (list.size()>0){
+
+            final AssignmentBean assignment = list.get(0);
 
             String currentChapter = assignment.getName();
             String completionStatus = (assignment.isComplete()) ? "Finished!" : "Incomplete";
@@ -129,6 +133,9 @@ public class GridAdapter extends BaseAdapter {
             else {
                 dueDate.setVisibility(View.GONE);
             }
+        }
+        else {
+
         }
 
         final String email = group.getAdminEmail();
@@ -165,52 +172,4 @@ public class GridAdapter extends BaseAdapter {
 
         return convertView;
     }
-
-    BroadcastReceiver onComplete=new BroadcastReceiver() {
-        public void onReceive(Context ctxt, Intent intent) {
-//check if the broadcast message is for our enqueued download
-            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-
-            //update group card
-            if (assignmentDownloadIdServerIdMap.get(referenceId) != null){
-
-                assignmentDownloadIdServerIdMap.remove(referenceId);
-            }
-            Toast toast = Toast.makeText(mContext,
-                    "Download Complete", Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.TOP, 25, 400);
-            toast.show();
-        }
-    };
-
-
-    /*public void startDownload(Uri uri, AssignmentBean assignment, String groupName) {
-
-        if (downloadManager==null)
-            downloadManager = (DownloadManager)mContext.getSystemService(DOWNLOAD_SERVICE);
-
-        if (assignmentDownloadIdServerIdMap==null)
-            assignmentDownloadIdServerIdMap = new LongSparseArray<AssignmentBean>();
-
-        String fileName = assignment.getFileName();
-
-        String localFilePath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName;
-
-        Environment
-                .getExternalStoragePublicDirectory(localFilePath)
-                .mkdirs();
-
-        lastDownload=
-                downloadManager.enqueue(new DownloadManager.Request(uri)
-                        .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI |
-                                DownloadManager.Request.NETWORK_MOBILE)
-                        .setAllowedOverRoaming(false)
-                        .setTitle(fileName)
-                        .setDescription("Safety Handbook Chapter")
-                        .setVisibleInDownloadsUi(false)
-                        .setDestinationInExternalPublicDir(localFilePath,
-                                fileName));
-
-        assignmentDownloadIdServerIdMap.append(lastDownload, assignment);
-    }*/
 }

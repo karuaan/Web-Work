@@ -97,11 +97,11 @@
 
                 <ImageView
                     android:id="@+id/adminIcon"
-                    android:layout_width="60dp"
+                    android:layout_width="20dp"
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:background="@drawable/rounded_corners_email"
-                    android:padding="5dp"
+                    android:padding="10dp"
                     android:src="@drawable/ic_email"
                     android:maxHeight="60dp"
                     android:maxWidth="60dp" android:contentDescription="TODO" />
@@ -115,7 +115,7 @@
                     android:text="@string/admin_name"
                     android:textColor="#fff"
                     android:textSize="18sp"
-                    android:gravity="center"
+                    android:gravity="left"
                     android:background="@drawable/rounded_corners_text_view"
                     android:maxHeight="60dp"
                     android:maxWidth="60dp"/>

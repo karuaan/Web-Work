@@ -7,13 +7,14 @@ const mysql = require('mysql')
 const fs = require('fs');
 const path = require('path')
 const https = require('https');
-const fileupload = require('express-fileupload');
 const admin_functions = require('./functions/admin_functions');
 const hummus = require('hummus');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
+const emailReporting = require("./emailOverdueQuery");
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
+var multer = require('multer');
 global.__basedir = __dirname;
 
 
@@ -199,8 +200,8 @@ function create_all_tables(){
 "NAME text,                                                                "+
 "LESSON_ID int unsigned,                                                   "+
 "GROUP_ID int unsigned,                                                    "+
-"DUE_DATE DATETIME,                                                        "+
-"START_DATE DATETIME,                                                      "+
+"DUE_DATE DATE,                                                        	   "+
+"START_DATE DATE,                                                      	   "+
 "END_DATE DATETIME,                                                        "+
 "TIME_TO_COMPLETE int unsigned,                                            "+
 "AVAILABLE bit(1),														   "+
@@ -213,12 +214,11 @@ function create_all_tables(){
 		console.log(fields);
 		con.query(
 "CREATE TABLE STATUS                                                       "+
-"(ID int unsigned not null auto_increment,                                 "+
 "GROUP_ID int unsigned,                                                    "+
 "EMPLOYEE_ID int unsigned,                                                 "+
 "ASSIGNMENT_ID int unsigned,                                               "+
 "IS_COMPLETE bit(1),                                                       "+
-"PRIMARY KEY (ID),                                                         "+
+"PRIMARY KEY (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID),                                                         "+
 "FOREIGN KEY (EMPLOYEE_ID) REFERENCES USERS(ID) ON DELETE CASCADE,         "+
 "FOREIGN KEY (ASSIGNMENT_ID) REFERENCES ASSIGNMENTS(ID) ON DELETE CASCADE);"
 		, function(err, rows, fields){
@@ -245,19 +245,94 @@ app.get('/createalltables', function(req, res){
 app.use(cors());
 app.use(validator());
 
+function sendEmailReport(rows){
+	console.log(rows);
+	rows.forEach(function(element, index, array){
+		let adminName = element.admin_firstname+" "+element.admin_lastname;
+		let adminEmail = element.admin_email;
+		let groups = element.groups;
+
+		let htmlBody = '<h1>Daily Overdue Report</h1>';
+
+		groups.forEach(function(element, index, array){
+			let groupName = element.name;
+			let overdueList = element.overdue_assignments;
+
+			htmlBody+='<h2>'+groupName+'</h2>';
+			htmlBody+='<table>';
+			htmlBody+='<tr><th>Assignment</th><th>Employee</th><th>Email</th><th>Phone</th></tr>';
+
+			overdueList.forEach(function(element, index, array){
+				let assignmentName = element.name;
+				let dueDate = new Date(element.due_date);
+				let today = new Date();
+				let employees = element.overdue_employees;
+
+				let timeDiff = Math.abs(today.getTime() - dueDate.getTime());
+				let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+
+				let lateText;
+				if (diffDays==1){
+					lateText='(1 day late)';
+				}
+				else{
+					lateText='('+diffDays+' days late'+')';
+				}
+
+				assignCell = assignmentName+'<br/>'+lateText;
+
+
+				htmlBody+='<tr><td style=\"vertical-align:top;text-align:left;padding:0\" rowspan='+employees.length+'>'+assignCell+'</td>';
+				employees.forEach(function(element, index, array){
+					let employeeName = element.first_name+" "+element.last_name;
+					let employeeEmail = element.email;
+					let employeePhone = element.phone;
+
+					if (index>0){
+						htmlBody+='<tr>'
+					}
+
+					htmlBody+='<td>'+employeeName+'</td> <td>'+employeeEmail+'</td><td>'+employeePhone+'</td></tr>';
+
+				});
+			});
+			htmlBody+='</table>';
+			//send one email per admin
+			var mailOptions = {
+				from: 'libertyelevatorreader@gmail.com',
+				to: adminEmail,
+				subject: '[Liberty Elevator Safety Training] Overdue Report',
+				html: htmlBody
+			};
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					console.log(error);
+				}
+				else{
+					callback(null, info)
+				}
+			});
+		});
+	});
+}
+
+app.get('/sendEmailReport', function(req, res){
+	 
+});
+
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
-	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, rows){
+	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id, GROUPS.NAME as group_name from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, assignments){
 		if (!err){
-			console.log(rows);
-			if (rows.length>0){
+			console.log(assignments);
+			if (assignments.length>0){
 				let statusQuery = "INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ";
-				rows.forEach(function(element, index, array){
+				assignments.forEach(function(element, index, array){
 					if (index>0){
 						statusQuery+=", "
 					}
 					statusQuery+="(SELECT "+mysql.escape(element.group_id)+", USER_ID, "+mysql.escape(element.assignment_id)+", 0 "+
-					"FROM GROUPS WHERE ID="+mysql.escape(element.group_id)+")";
+					"FROM GROUPS WHERE ID="+mysql.escape(element.group_id)+" AND IS_ADMIN=0)";
 				});
 				statusQuery+=";";
 				console.log(statusQuery);
@@ -265,7 +340,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 					if (!err){
 						console.log(result);
 						let availableQuery = "UPDATE ASSIGNMENTS SET AVAILABLE=1 WHERE";
-						rows.forEach(function(element, index, array){
+						assignments.forEach(function(element, index, array){
 							if (index>0){
 								availableQuery+=" AND"
 							}
@@ -275,13 +350,10 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 						con.query(availableQuery, function(err, result){
 							if (!err){
 								console.log(result);
-								rows.forEach(function(element, index, array){
+								assignments.forEach(function(element, index, array){
 									//send notification
-									//NILESH: this should be an expandable notification that show the notes attribute when expanded (if possible)
-									// thank you :-)
 									let title = element.assignment_name + " now available";
 									let minutes = Math.floor(element.reading_time / 60);
-									let notes = element.notes; //could be null
 									let seconds = element.reading_time - minutes * 60;
 									let readingTimeStr = "";
 									if (minutes > 0){
@@ -291,24 +363,15 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 										readingTimeStr += seconds + " seconds";
 									}
 									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
-									//headers for https request
-									/*headers:{
-											'Content-Type':'application/json',
-											Authorization:'key=AIzaSyDj3uGXUayslSgPJnwmpqHjwQ_c0ZCqBv4'
-										}*/
-									//options for firebase notification
-									let options = {
-										hostname: 'fcm.googleapis.com/fcm/send',
-										priority: 'normal',
-										notification: {
-											title: title,
-											body: body
-										}
+									let notes;
+									if (element.notes){
+										notes = body+"\n"+element.notes;
+									} //could be null
+									else{
+										notes = body;
+									}
 
-									};
-
-									//todo: send notification to topic: '/group<ID>'
-									
+									sendMessageToGroup("group"+element.group_id,title,body, "expandable", element.group_name);
 								});
 							}
 							else{
@@ -320,13 +383,29 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 						console.log(err);
 					}
 				});
-				
+
 			}
 		}
 		else{
 			console.log(error);
 		}
 	})
+});
+
+
+
+var sendOverdueReports = scheduler.scheduleJob('0 8 * * *', function(){
+	//query goes here
+	emailReporting.overdue(function(err, result){
+	 	if (err){
+	 		res.json(err);
+	 	}else{
+	 		res.json(result);
+		 	sendEmailReport(result);
+
+	 	}
+	 });
+
 });
 
 app.get('/email/test', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
@@ -357,9 +436,9 @@ app.get('/read-pdf', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	});
 });
 
-function getLessons(callback){
+function getLessons(group_id, callback){
     con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
-	" LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS", function(err, rows){
+	" LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS WHERE LESSONS.GROUP_ID=" + mysql.escape(group_id), function(err, rows){
 		if(err){
 			callback(err, null)
 		}
@@ -381,15 +460,26 @@ function getLessonsByBookId(book_id,callback){
 	});
 }
 
-app.get('/getlessons', function(req, res){
-	getLessons(function(err, result){
+app.post('/getlessons', function(req, res){
+	getLessons(req.body.group_id, function(err, result){
 		if(err){
 			res.json(err);
 		}
 		else{
-			res.json(result)
+			res.json(result);
 		}
 	})
+});
+
+app.get('/getPercentages', function(req, res) {
+    getPercentages(function (err, result) {
+        if(err) {
+            res.json(err);
+        }
+        else {
+            res.json(result);
+        }
+    })
 });
 
 //Done
@@ -481,6 +571,11 @@ function nest(theJson, index, array){
 
 }
 
+function formatGroupAssignments(group, assignments){
+	group.assignments = assignments;
+	return group;
+}
+
 //May need rework in ordering
 function getGroups2(email, callback){
 
@@ -518,19 +613,12 @@ function getGroups3(email, callback){
 }
 
 function getGroups4(user_id, callback){
-	let groupQuery = 'SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name '+
-					'FROM GROUPS '+
-				  	'INNER JOIN USERS '+
-					    'ON GROUPS.ADMIN_ID=USERS.ID '+
-					  'INNER JOIN LESSON_PLANS '+
-					    'ON LESSON_PLANS.GROUP_ID = GROUPS.ID '+
-					  'INNER JOIN LESSONS '+
-					    'ON LESSONS.ID = LESSONS.LESSON_PLAN_ID '+
-					  'INNER JOIN BOOKS '+
-					    'ON BOOKS.ID = LESSON_PLANS.BOOK_ID '+
-		    		'INNER JOIN STATUS '+
-			    		'ON STATUS.GROUP_ID = GROUPS.ID '+
-					'WHERE STATUS.IS_COMPLETE = 0 AND GROUPS.USER_ID = '+mysql.escape(user_id);
+	let groupQuery = 'SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email '+
+					'FROM GROUPS INNER JOIN USERS ON GROUPS.ADMIN_ID=USERS.ID '+
+					'INNER JOIN LESSONS ON LESSONS.GROUP_ID = GROUPS.ID '+
+					'INNER JOIN BOOKS ON BOOKS.ID = LESSONS.BOOK_ID '+
+					'WHERE GROUPS.USER_ID = '+mysql.escape(user_id)+
+					' GROUP BY GROUPS.ID;';
 	con.query(groupQuery, function(err, rows){
 		if (!err){
 			callback(null, rows);
@@ -580,13 +668,13 @@ function addUser(first_name, last_name, email, callback){
 
 }
 //Done
-function addAdmin(first_name, last_name, email, callback){
+function addAdmin(email, callback){
 
 	con.query('SELECT * FROM USERS WHERE USERS.EMAIL=' + mysql.escape(email), function(err, rows){
 		if(!err){
 			if(rows[0] === undefined){
 				console.log("ROWS ARE EMPTY")
-				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ('+ mysql.escape(first_name) + ',' + mysql.escape(last_name) + ','+ mysql.escape(email) +', 1)', function(err2, result){
+				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ("", "",'+ mysql.escape(email) +', 1)', function(err2, result){
 					if(!err2){
 						con.commit(function(err3){
 							if(err3){con.rollback(function(){callback(err3, null)})}
@@ -645,7 +733,7 @@ function addBook(name, filename, callback){
 	})
 
 }
-//Done
+//Done/
 function addLesson(plan_id, book_id, start_page, end_page, name, filepath, callback){
 	console.log('A1');
 	con.query("SELECT * FROM LESSONS WHERE LESSONS.NAME=" + mysql.escape(name) + " AND LESSONS.BOOK_ID=" + mysql.escape(book_id), function(err, rows){
@@ -732,6 +820,34 @@ function addAssignment(lesson_id, group_id, due_date, time_to_complete, notes){
 		}
 	});
 }
+
+function editAssignment(lesson_id, group_id, start_date, due_date, time_to_complete, notes, callback){
+	con.query("UPDATE ASSIGNMENTS SET ASSIGNMENT.START_DATE= "+ mysql.escape(start_date)  +", ASSIGNMENTS.DUE_DATE=" + mysql.escape(due_date)+ ", ASSIGNMENTS.TIME_TO_COMPLETE="+ mysql.escape(time_to_complete) + ", ASSIGNMENTS.NOTES=" + mysql.esacpe(notes) + "WHERE ASSIGNMENTS.LESSON_ID="+ mysql.escape(lesson_id) +", ASSIGNMENTS.GROUP_ID=" +mysql.escape(group_id), function(err, rows){
+			if(err){
+				callback(err, null);
+			}
+			else{
+				callback(null, rows);
+			}
+	})
+}
+
+
+app.put('/editAssignments', function(req, res)
+{
+	editAssignment(req.body.lesson_id, req.body.group_id, req.body.due_date, req.body.time_to_complete, req.body.notes, function(err, result)
+	{
+		if (err)
+		{
+			res.json(err);
+		}
+
+		else
+		{
+			res.json(result);
+		}
+	})
+})
 
 //Done
 function addGroup(admin_id, user_ids, name, callback){
@@ -1319,6 +1435,36 @@ app.get('/getstatuses',function(req,res){
 	});
 });
 
+var location = __dirname + "/public"
+var upload = multer({dest: location});
+
+app.post('/apk', upload.single("file"), function(req, res, next) {
+    if(req.files) {
+        con.query("SELECT MAX(version_number) AS max FROM ANDROID_VERSION", function(err, rows) {
+            if(err) {
+                console.log(err);
+            }
+            var nextVersion = rows[0]["max"] + 1;
+			var url = req.files["file"]["uuid"] + "/file/" + req.files["file"]["filename"];
+            con.query("INSERT INTO ANDROID_VERSION VALUES (" + mysql.escape(url) + ", " + mysql.escape(nextVersion) + ");", function(err, rows) {
+                if(err) {
+                    console.log(err);
+                }
+                else {
+                    res.end("New APK Uploaded")
+                }
+            });
+        });
+    }
+    else {
+        res.end("Missing file")
+    }
+
+});
+
+
+
+
 //Done
 app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if(req.body.book_name =='' || req.body.book_name == null){
@@ -1462,7 +1608,7 @@ app.post('/lessons/remove-assignment',function(req,res){
 
 app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if (req.body.lessons && req.body.lessons.length > 0){
-		BookService.saveLesssons(req.body.lessons).then(function(results){
+		BookService.saveLessons(req.body.lessons, req.body.group_id).then(function(results){
 			// console.log('results',results);
 			res.json({
 				results: results,
@@ -1527,6 +1673,47 @@ function getAssignments(group_id, callback){
 
 app.post('/getassignments', function(req, res){
 	getAssignments(req.body.group_id, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	});
+});
+
+function getAssignments2(group_id, callback){
+	con.query(
+	"SELECT assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, NAME, book_id, lesson_id, percent_complete "+
+	"FROM (SELECT SUM(IS_COMPLETE)/COUNT(*) as percent_complete, " +
+		"ASSIGNMENT_ID as join_assignment_id " + 
+		"FROM STATUS WHERE GROUP_ID=" + mysql.escape(group_id) + " GROUP BY ASSIGNMENT_ID) as PERCENT_TABLE JOIN " + 
+	
+	"(SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME as NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
+	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
+	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
+//	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
+	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id) + ") as ASSIGNMENTS_TABLE ON PERCENT_TABLE.join_assignment_id=ASSIGNMENTS_TABLE.assignment_id",
+		function(err, rows){
+			if(err){
+				console.log(err);
+				callback(err, null);
+			}
+			else{
+				if(rows[0]===undefined){
+					console.log(rows);
+					callback({'err': 'no results'}, null)
+				}
+				else{
+					console.log(rows);
+					callback(null, rows);
+				}
+			}
+		}
+	)
+}
+app.post('/getassignments2', function(req, res){
+	getAssignments2(req.body.group_id, function(err, result){
 		if(err){
 			res.json(err);
 		}
@@ -1621,32 +1808,51 @@ app.post('/getUID', function(req, res){
 	})
 })
 
-function getAssignmentsUser(user_id, group_id, callback){
+function getAssignmentsUser(user_id, group_id){
 
-	con.query('select STATUS.IS_COMPLETE as is_complete, LESSONS.START_PAGE as start_page, LESSONS.PDF_FILE as lesson_pdf, LESSONS.END_PAGE as end_page, LESSONS.NAME as name, '+
-	'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id FROM LESSONS '+
-	'JOIN ASSIGNMENTS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID JOIN STATUS ON STATUS.ASSIGNMENT_ID='+
-	'ASSIGNMENTS.ID WHERE ASSIGNMENT.START_DATE<=CURRENT_DATE() STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
-//	con.query('Select * FROM USERS '+
-//	'JOIN GROUPS ON USERS.ID=GROUPS.USER_ID '+
-//	'JOIN ASSIGNMENTS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID '+
-//	'JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID ' +
-//	'JOIN STATUS ON STATUS.EMPLOYEE_ID=USERS.ID '+
-//	'WHERE USERS.ID='+mysql.escape(user_id) + ' ' +
-//	'AND GROUPS.ID='+mysql.escape(group_id)
-		, function(err, rows){
+	return new Promise(function(resolve, reject){
+		con.query('select STATUS.IS_COMPLETE as is_complete, LESSONS.START_PAGE as start_page, LESSONS.PDF_FILE as lesson_pdf, LESSONS.END_PAGE as end_page, LESSONS.NAME as name, '+
+		'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id, ASSIGNMENTS.GROUP_ID as group_id FROM LESSONS '+
+		'JOIN ASSIGNMENTS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID JOIN STATUS ON STATUS.ASSIGNMENT_ID='+
+		'ASSIGNMENTS.ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
+			, function(err, rows){
+				if(err){
+					reject(err);
+				}
+				else{
+					rows.forEach(function(element, index, array){
+						element.is_complete = element.is_complete[0]===1;
+					});
+					resolve(rows);
+				}
+			});
 
-		if(err){
-			callback(err, null)
-		}
-		else{
-			callback(null, rows)
-		}
 
-	})
+	});
 
 }
+function updateReadingStatus(status, user_id, callback){
+	let query = 'UPDATE STATUS SET IS_COMPLETE=1 ';
+	query+=' WHERE EMPLOYEE_ID='+mysql.escape(user_id)+ ' AND (';
 
+	for (var i = 0; i < status.length; i++){
+		if (i>0){
+			query+=' OR';
+		}
+		query+=' ASSIGNMENT_ID='+mysql.escape(Number(status[i]));
+	}
+	query+=')';
+	console.log(query);
+	con.query(query, function(err, rows){
+		if (!err){
+			callback(null, rows);
+		}else
+		{
+			callback(err, null);
+		}
+
+	});
+}
 app.get('/getAssignmentsUser', function(req, res){
 	getAssignmentsUser(5, 1, function(err, result){
 		if(err){
@@ -1682,54 +1888,75 @@ app.post('/getgroups',function(req,res){
 
 });
 
-app.post('/getGroupsUser', function(req, res){
-	getGroups4(req.body.user_id, function(err, rows){
+app.post('/groups/:user_id', function(req, res){
+	getGroups4(Number(req.params.user_id), function(err, groups){
 		if(err){
 			res.json(err);
 		}
 		else{
 			if (req.body.completed_assignments){
-				let query = 'INSERT INTO STATUS (IS_COMPLETE) VALUES ';
-				//VALUES
-				for (var i = 0; i < req.body.completed_assignments.length; i++){
-					if (i>0){
-						query+=', ';
-					}
-					query+='(1)';
-				}
-				query+=' WHERE user_id='+mysql.escape(req.body.user_id)+ 'AND (';
-
-				for (var i = 0; i < req.body.completed_assignments.length; i++){
-					if (i>0){
-						query+=' OR';
-					}
-					query+=' ASSIGNMENT_ID='+mysql.escape(req.body.completed_assignments[i]);
-				}
-				query+=')';
-				con.query(query, function(err, data, fields){
+				updateReadingStatus(req.body.completed_assignments, Number(req.params.user_id), function(err, result){
 					if (!err){
-						rows.forEach(function(element, index, array){
-							getAssignmentsUser(req.body.user_id, element.group_id, function(err, results){
-								nest(element, results);
-							});
+						let assignmentPromises = [];
+						groups.forEach(function(element, index, array){
+							assignmentPromises.push(getAssignmentsUser(Number(req.params.user_id), element.group_id).then(function(assignments){
+								return formatGroupAssignments(element, assignments);
+							}, function(error){
+								return error;
+							}));
+
 						});
-						res.json(results);
+						return Promise.all(assignmentPromises).then(function(array){
+							res.json(array);
+						});
+					}
+					else{
+						res.json(err);
 					}
 				});
 
 			}
 			else{
-				getAssignments
-				res.json(results);
-				
+				let assignmentPromises = [];
+				groups.forEach(function(element, index, array){
+					assignmentPromises.push(getAssignmentsUser(req.params.user_id, element.group_id).then(function(assignments){
+						return formatGroupAssignments(element, assignments);
+					}, function(error){
+						return error;
+					}));
+
+				});
+				return Promise.all(assignmentPromises).then(function(array){
+					res.json(array);
+				});
 			}
 		}
 	});
 });
 
-app.get('/getGroupsUser', function(req, res){
+app.get('/groups/:id', function(req, res){
+	console.log(Number(req.params.id));
+	getGroups4(req.param('id'), function(err, groups){
+		if(err){
+			res.json(err);
+		}
+		else{
+			let assignmentPromises = [];
+			groups.forEach(function(element, index, array){
+				assignmentPromises.push(getAssignmentsUser(Number(req.params.id), element.group_id).then(function(assignments){
+					return formatGroupAssignments(element, assignments);
+				}, function(error){
+					return error;
+				}));
 
-})
+			});
+			return Promise.all(assignmentPromises).then(function(array){
+				res.json(array);
+			});
+		}
+	});
+
+});
 
 function emailToList(emailList, text, callback){
 
@@ -1787,7 +2014,7 @@ function getLatestVersion(callback)
 			{
 				callback(err, null);
 			}
-			else if (rows.length>=1) 
+			else if (rows.length>=1)
 			{
 				callback(null, rows[0]);
 			}
@@ -1829,7 +2056,7 @@ app.post('/androidVersionTable', function(req, res)
 			res.json(result);
 		}
 	});
-})
+});
 
 app.get('/androidVersionTable', function(req, res)
 {
@@ -1845,7 +2072,7 @@ app.get('/androidVersionTable', function(req, res)
 			res.json(rows);
 		}
 	});
-})
+});
 
 function getAdminID(email, callback){
 	con.query("SELECT ID FROM USERS WHERE USERS.IS_ADMIN=1 AND USERS.EMAIL=" + mysql.escape(email), function(err, rows){
@@ -1919,8 +2146,267 @@ app.post('/getAdminID', function(req, res){
 
 })
 
+
+app.post('/getUserDetails', function(req,res){
+	if (req.body.hasOwnProperty("email") && req.body.hasOwnProperty("firebase_token")){
+
+			con.query("update  USERS  set FIREBASE_ID = '"+ req.body.firebase_token+"' WHERE EMAIL = '"+req.body.email+"';");
+
+			con.query("SELECT * FROM USERS WHERE EMAIL='"+req.body.email+"';", function(err, rows){
+			if(err){
+				res.json(err);
+			}else if (rows.length === 0){
+				res.status(204);
+				res.send('No user found');
+
+			}
+			else{
+				var userData = rows[0];
+				con.query("SELECT ID FROM GROUPS WHERE USER_ID='"+userData["ID"]+"';", function(err, rows){
+					//  suscribe_to_topics  is an array as user belongs to multiple groups
+
+					var suscribe_to_topics = [];
+					if (err){
+						console.log(err)
+						// do nothing
+					}else {
+						for (var i = 0; i < rows.length; i++) {
+						suscribe_to_topics.push("group"+rows[i]["ID"].toString());
+					}
+					// currently added a dummy group1 as i dont belong to any group
+					// remove the below line
+					suscribe_to_topics.push("group1");
+					userData["SUSCRIBE_TOPICS"] = suscribe_to_topics;
+					res.json(userData);
+					}
+				})
+
+			}
+		})
+
+	}else {
+		res.status(302);
+		res.send('Bad request');
+
+	}
+
+
+})
+app.post('/sendNotification', function(req,res){
+	// 52 is user id of mamidi.nilesh@gmail.com
+	// add the user ids in in clause to get and send to multple users at once
+
+			con.query("SELECT FIREBASE_ID  FROM USERS WHERE ID IN (52);", function(err, rows){
+			if(err){
+				res.json(err);
+			}
+			else{
+				console.log(rows.toString())
+				var firebase_tokens = [];
+				for (var i = 0; i < rows.length; i++) {
+						firebase_tokens.push(rows[i]["FIREBASE_ID"].toString());
+
+				}
+				;
+				//notification_type: currently handling 2 type normal and expandable
+				sendMessageToUser(firebase_tokens,"Safety Reader","Please complete your assignment", "expandable")
+				res.status(200)
+				res.json("Notification sent");
+			}
+		})
+
+
+
+})
+
+
+
+function sendMessageToUser(deviceIds, title, body,notification_type) {
+  request({
+    url: 'https://fcm.googleapis.com/fcm/send',
+    method: 'POST',
+    headers: {
+      'Content-Type' :' application/json',
+      'Authorization': 'key=AIzaSyD_eYHs27nVu8f94PJRIXHVw7zcu-UTyAA'
+    },
+    body: JSON.stringify(
+      { "data": {
+      	"body": body,
+        "title": title,
+        "notification_type": notification_type
+      },
+        "registration_ids": deviceIds
+      }
+    )
+  }, function(error, response, body) {
+    if (error) {
+    	//res.json(error);
+      console.error(error, response, body);
+    }
+    else if (response.statusCode >= 400) {
+    	//res.status(302);
+      console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body);
+    }
+    else {
+      console.log('Done!')
+      //res.status(200);
+    }
+  });
+}
+app.post('/sendMessageToGroup', function(req,res){
+				sendMessageToGroup("group1","TOPIC - Safety Reader","Please complete your assignment", "expandable")
+				res.status(200)
+				res.json("Notification sent");
+
+});
+
+
+
+function sendMessageToGroup(topic, title, body, notification_type, group_name) {
+  request({
+    url: 'https://fcm.googleapis.com/fcm/send',
+    method: 'POST',
+    headers: {
+      'Content-Type' :' application/json',
+      'Authorization': 'key=AIzaSyD_eYHs27nVu8f94PJRIXHVw7zcu-UTyAA'
+    },
+    body: JSON.stringify(
+      { "data": {
+      	"body": body,
+        "title": title,
+        "group_name": group_name,
+        "notification_type": notification_type
+      },
+        "to": "/topics/"+topic
+      }
+    )
+  }, function(error, response, body) {
+    if (error) {
+    	//res.json(error);
+      console.error(error, response, body);
+    }
+    else if (response.statusCode >= 400) {
+    	//res.status(302);
+      console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body);
+    }
+    else {
+      console.log('Done!')
+      //res.status(200);
+    }
+  });
+}
+
+
+
+
+
 //admin_oidc.on('ready', () => {
 //	user_oidc.on('ready', () => {
-		app.listen(3000, () => console.log('server running on 3000'))
+//app.listen(3000, () => console.log('server running on 3000'))
 //	});
 //});
+function makepass() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < 20; i++){
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+app.post('/inviteAdmin', function(req, res){
+	addAdmin(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			var mailOptions = {
+				from: 'libertyelevatorreader@gmail.com',
+				to: [req.body.email],
+				subject: 'You have been added to Liberty Elevator Reader app!',
+				text: 'Please login using your email address and this temporary password: ' + req.body.pass
+			}
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					res.json(error);
+				}
+				else{
+					res.json(info);
+				}
+			});
+		}
+	});
+});
+
+function getUserByEmail(email, callback){
+	con.query("SELECT * FROM USERS WHERE EMAIL=" + mysql.escape(email), function(err, rows){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, rows);
+		}
+	});
+}
+
+app.post('/getUserByEmail', function(req, res){
+	getUserByEmail(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+});
+
+function updateUserNamesByEmail(email, first_name, last_name, callback){
+	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, rows);
+		}
+	})
+}
+
+app.put('/updateUserNamesByEmail', function(req, res){
+	updateUserNamesByEmail(req.body.email, req.body.first_name, req.body.last_name, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+})
+function registerUsers(first_name, last_name, email, phone_number, callback){
+	con.query("UPDATE USERS SET FIRST_NAME= "+ mysql.escape(first_name)  +", LAST_NAME=" + mysql.escape(last_name)+ ", PHONE_NUMBER="+ mysql.escape(phone_number) + " WHERE USERS.EMAIL="+ mysql.escape(email), function(err, rows){
+			if(err){
+				callback(err, null);
+			}
+			else{
+				callback(null, rows);
+			}
+	})
+}
+
+app.put('/registerUser', function(req, res)
+{
+	registerUsers(req.body.first_name, req.body.last_name, req.body.email, function(err, result)
+	{
+		if (err)
+		{
+			res.json(err);
+		}
+
+		else
+		{
+			res.json(result);
+		}
+	})
+});
+
+app.listen(3000, '0.0.0.0', () => console.log('server running on 3000'));

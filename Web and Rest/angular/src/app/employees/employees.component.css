@@ -60,12 +60,12 @@
 
 #groupTabs {
   padding-top: 1em;
-  border-bottom: solid black 0.2em;
+  border-bottom: solid black 0.1em;
 }
 
 #groupTabs label {
-  border-top: solid black 0.2em;
-  border-bottom: solid black 0.2em;
+  border-top: solid black 0.1em;
+  border-bottom: solid black 0.1em;
   border-left: solid black 0.1em;
   border-right: solid black 0.1em;
   transform: translate(0%, 0.2em);
@@ -74,21 +74,21 @@
 }
 
 #groupTabs label:first-child {
-  border-left: solid black 0.2em;
+  border-left: solid black 0.1em;
 }
 
 #groupTabs button {
-  border-top: solid black 0.2em;
-  border-bottom: solid black 0.2em;
+  border-top: solid black 0.1em;
+  border-bottom: solid black 0.1em;
   border-left: solid black 0.1em;
-  border-right: solid black 0.2em;
+  border-right: solid black 0.1em;
   transform: translate(0%, 0.2em);
   border-top-left-radius: 1em;
   border-top-right-radius: 1em;
 }
 
 #mainContainer {
-  border: solid black 0.2em;
+  border: solid black 0.1em;
   border-top: solid black 0em;
   background-color: #FFFFFF;
 }
@@ -123,8 +123,8 @@
 }
 
 .date-header {
-  border-top: solid black 0.2em;
-  border-bottom: solid black 0.2em;
+  border-top: solid black 0.1em;
+  border-bottom: solid black 0.1em;
   padding: 1em;
 }
 
@@ -139,8 +139,8 @@
 
 @media (min-width: 1200px) {
   #secondaryContainer {
-    border-left: solid black 0.2em;
-    border-right: solid black 0.2em;
+    border-left: solid black 0.1em;
+    border-right: solid black 0.1em;
   }
 
   .date-header {
@@ -179,8 +179,9 @@
 
 .assignment-summary {
   padding: 1em;
-  border-bottom: solid black 0.2em;
+  border-bottom: solid black 0.1em;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .assignment-summary-selected,
@@ -199,7 +200,7 @@
 
 .empty-assignments {
   padding: 1em;
-  border-bottom: solid black 0.2em;
+  border-bottom: solid black 0.1em;
 }
 
 .col-xl-2 {
@@ -321,8 +322,8 @@
 
 @media (max-width: 1200px) {
   #lessonsContainer {
-    border-top: solid black 0.2em;
-    border-bottom: solid black 0.2em;
+    border-top: solid black 0.1em;
+    border-bottom: solid black 0.1em;
   }
 }
 
@@ -412,8 +413,8 @@ pdf-viewer {
 
 @media (min-width: 1000px) {
   #secondaryContainer {
-    border-left: solid black 0.2em;
-    border-right: solid black 0.2em;
+    border-left: solid black 0.1em;
+    border-right: solid black 0.1em;
   }
 }
 
@@ -464,14 +465,77 @@ pdf-viewer {
   height: 2.5em;
 }
 
-#thirdColumn {
-  min-height: 55em;
-}
-
 #deleteLessonButton {
   display: none;
 }
 
 #deleteLessonButton.show {
   display: inline-block;
+}
+
+.notes {
+  position: relative;
+}
+
+.notes img {
+  height: 1.5em;
+  margin: 0.5em 0em;
+}
+
+.notes-hover {
+  display: none;
+  position: absolute;
+    border: solid 0.1em #CCCCCC;
+    background: #FFFFFF;
+    border-radius: 2em;
+    padding: 0.5em;
+}
+
+.notes:hover .notes-hover {
+  display:block;
+}
+
+#groupTabs label {
+  min-width: 10em;
+}
+
+#notesDisplay {
+  width: 100%;
+  word-wrap: break-word;
+  margin: 0.5em 0em;
+  font-size: 1.2em;
+}
+
+#adminMenu {
+  display: none;
+  z-index: 1;
+  position: absolute;
+    right: 0;
+    margin: 1em;
+    top: 2em;
+    background: #FFFFFF;
+    width: 9em;
+    border: solid black 0.1em;
+    border-bottom-width: 0em;
+}
+
+#adminMenu div {
+  border-bottom: solid black 0.1em;
+  padding: 0.5em;
+  cursor: pointer;
+}
+
+.logo {
+  width: 30em;
+  margin: auto;
+  display: block;
+}
+
+a {
+  color: #59CBE8
+}
+
+.support {
+  color: #000000;
+  text-decoration: none;
 }

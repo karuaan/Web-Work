@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+
 
     <compatible-screens>
         <!-- all small size screens -->
@@ -34,7 +36,7 @@
         </activity>
         <activity android:name="com.novoholdings.safetybook.activities.GroupsActivity" />
         <activity android:name=".activities.AssignmentsActivity"
-            android:configChanges="orientation|screenSize"/>
+            android:configChanges="orientation|screenSize" />
 
         <service
             android:name=".firebase.MyFirebaseInstanceIDService">
@@ -49,6 +51,27 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
+
+        <receiver android:name=".receivers.AssignmentReminder"/>
+        <receiver android:name=".receivers.DownloadReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name= "android.intent.action.DOWNLOAD_COMPLETE"
+               android:enabled = "true" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name=".common.MyFileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_path"/>
+        </provider>
+
     </application>
 
 

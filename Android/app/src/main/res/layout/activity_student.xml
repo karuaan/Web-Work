@@ -47,17 +47,24 @@
             android:background="#fff"
             android:textColor="#000" />
 
-        <GridView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_below="@id/studentWelcome"
-            android:horizontalSpacing="10dp"
-            android:verticalSpacing="10dp"
-            android:numColumns="2"
             android:layout_margin="20dp"
-            android:id="@+id/studentGrid"
-            android:layout_marginTop="100dp"
-            android:layout_weight="7" />
+            android:layout_weight="7">
+            <GridView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/studentWelcome"
+                android:horizontalSpacing="10dp"
+                android:verticalSpacing="10dp"
+                android:numColumns="2"
+                android:id="@+id/studentGrid"
+                android:layout_marginTop="100dp" />
+        </android.support.v4.widget.SwipeRefreshLayout>
+
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>
