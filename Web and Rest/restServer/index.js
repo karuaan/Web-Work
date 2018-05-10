@@ -436,9 +436,9 @@ app.get('/read-pdf', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	});
 });
 
-function getLessons(callback){
+function getLessons(group_id, callback){
     con.query("SELECT *,(select GROUP_CONCAT(ASSIGNMENTS.GROUP_ID) from ASSIGNMENTS WHERE ASSIGNMENTS.LESSON_ID =" +
-	" LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS", function(err, rows){
+	" LESSONS.ID) as ASSIGNMENTS_GROUP_IDS FROM LESSONS WHERE LESSONS.GROUP_ID=" + mysql.escape(group_id), function(err, rows){
 		if(err){
 			callback(err, null)
 		}
@@ -461,7 +461,7 @@ function getLessonsByBookId(book_id,callback){
 }
 
 app.get('/getlessons', function(req, res){
-	getLessons(function(err, result){
+	getLessons(req.body.group_id, function(err, result){
 		if(err){
 			res.json(err);
 		}

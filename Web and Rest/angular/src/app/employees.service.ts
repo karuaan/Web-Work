@@ -52,8 +52,8 @@ export class EmployeesService {
 	  return response;
   }
   
-  getLessons(): Observable<Lesson[]>{
-	  var response = this.http.get<Lesson[]>(this.restURL + '/getlessons');
+  getLessons(group_id): Observable<Lesson[]>{
+	  var response = this.http.get<Lesson[]>(this.restURL + '/getlessons', {'group_id' : group_id});
 	  return response;
   }
   

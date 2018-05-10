@@ -11,7 +11,7 @@ export class Lesson {
     changed_state?: boolean = false;
     is_valid?: boolean = false;
     ASSIGNMENT_GROUPS?: number[] = [];
-
+	constructor();
     constructor(id: number, name: string, book_id: number, start: number, end: number, PDF_FILE: string, groupIds?: string) {
         this.ID = id;
         this.NAME = name;

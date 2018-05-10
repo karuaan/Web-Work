@@ -250,18 +250,25 @@ export class EmployeesComponent implements OnInit {
                     return book;
                 });
             };
-
-            this.employeesService.getLessons().subscribe(data => {
-                this.dataObj.books = bookMapping(res.books, data);
-                this.dataObj.selectedBook = this.dataObj.books[0];
-                this.selectedBook = this.dataObj.books[0].ID;
-                this.updatePdfBookPreview();
-            }, (err) => {
-                this.dataObj.books = bookMapping(res.books, []);
-                this.dataObj.selectedBook = this.dataObj.books[0];
-                this.selectedBook = this.dataObj.books[0].ID;
-                this.updatePdfBookPreview();
-            });
+			if(this.selectedGroup !== undefined && this.selectedGroup !== null){
+				this.employeesService.getLessons(this.selectedGroup.ID).subscribe(data => {
+					this.dataObj.books = bookMapping(res.books, data);
+					this.dataObj.selectedBook = this.dataObj.books[0];
+					this.selectedBook = this.dataObj.books[0].ID;
+					this.updatePdfBookPreview();
+				}, (err) => {
+					this.dataObj.books = bookMapping(res.books, []);
+					this.dataObj.selectedBook = this.dataObj.books[0];
+					this.selectedBook = this.dataObj.books[0].ID;
+					this.updatePdfBookPreview();
+				});
+			}
+			else{
+				this.dataObj.books = bookMapping(res.books, []);
+				this.dataObj.selectedBook = this.dataObj.books[0];
+				this.selectedBook = this.dataObj.books[0].ID;
+				this.updatePdfBookPreview();
+			}
         });
     }
 
@@ -1465,6 +1472,9 @@ export class EmployeesComponent implements OnInit {
 
 	logout(){
 		this.authService.logout();
+		this.loginErrorMessage = "";
+		this.isLoginError = false;
+		this.isLoggedIn = false;
 	}
 
     ngOnInit() {
