@@ -12,11 +12,18 @@ const hummus = require('hummus');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
 const emailReporting = require("./emailOverdueQuery");
+
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
 var multer = require('multer');
 global.__basedir = __dirname;
 
+var firebaseAdmin = require('firebase-admin');
+var serviceAccount = require('firebase_key.json');
+
+firebaseAdmin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 //const filesys = require('fs')
 ///*
@@ -2339,6 +2346,30 @@ function makepass() {
 }
 
 app.post('/inviteAdmin', function(req, res){
+	addAdmin(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			var mailOptions = {
+				from: 'libertyelevatorreader@gmail.com',
+				to: [req.body.email],
+				subject: 'You have been added to Liberty Elevator Reader app!',
+				text: 'Please login using your email address and this temporary password: ' + req.body.pass
+			}
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					res.json(error);
+				}
+				else{
+					res.json(info);
+				}
+			});
+		}
+	});
+});
+
+app.post('/inviteUser', function(req, res){
 	addAdmin(req.body.email, function(err, result){
 		if(err){
 			res.json(err);
