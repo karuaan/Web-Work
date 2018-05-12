@@ -167,7 +167,7 @@ export class EmployeesComponent implements OnInit {
             this.selectedGroup = groups[0] || null;
 
             this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
-
+				console.log(this.selectedGroup);
                 if (assignments && assignments.hasOwnProperty('err')){
                     this.assignments = [{
                                         "assignment_id": -1,
@@ -180,7 +180,7 @@ export class EmployeesComponent implements OnInit {
                                         "TIME_TO_COMPLETE": 0
                                     }];
                     this.selectedAssignment = assignments[0];
-                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
+                    this.countdown = new Date(1970, 0, 1).setSeconds(0);
                     if (this.selectedGroup && this.selectedAssignment) {
                       this.employeesService.getEmployees(
                         this.selectedGroup.ID,
@@ -655,7 +655,39 @@ export class EmployeesComponent implements OnInit {
 			pass: this.admin_password
         };
 
-        this.employeesService.sendInvitation(inviteData).subscribe((res: any) => {
+        this.employeesService.sendInvitationAdmin(inviteData).subscribe((res: any) => {
+            if (res && !res.status && res.message) {
+                this.toastrService.warning('Invite', res.message);
+            } else {
+				this.authService.signUpRegular(inviteData.email, inviteData.pass).then(data => {
+					this.toastrService.success('Invite', 'Success');
+					this.inviteAdminForm.reset();
+					$('#inviteAdminModal').modal('hide');
+				})
+				.catch(err => {
+					this.toastrService.warning('Invite', 'Internal server error');
+				});
+
+            }
+        }, (err) => {
+            this.toastrService.warning('Invite', 'Internal server error');
+        });
+    }
+	
+	inviteUser() {
+
+        document.getElementById('adminMenu').style.display = 'none';
+        if (this.inviteAdminForm.invalid) {
+            this.toastrService.warning('Invite', 'Enter Email address');
+            return;
+        }
+		this.admin_password = this.makepass();
+        const inviteData = {
+            email: this.inviteAdminForm.value.email,
+			pass: this.admin_password
+        };
+
+        this.employeesService.sendInvitationUser(inviteData).subscribe((res: any) => {
             if (res && !res.status && res.message) {
                 this.toastrService.warning('Invite', res.message);
             } else {
