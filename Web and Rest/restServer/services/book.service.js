@@ -218,6 +218,9 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                        };
                        resolve(data);
                    }else{
+					   console.log("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
+					   console.log(err);
+					   console.log("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
                        resolve({
                            status : false,
                            data : null
