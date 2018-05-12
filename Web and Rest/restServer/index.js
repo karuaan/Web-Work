@@ -1290,6 +1290,29 @@ function updateUserComplete(user_id, assignment_id, callback){
 	})
 
 }
+//Added back from 5/7
+function getUserDetails(user_id, callback){
+	con.query("SELECT FIRST_NAME as first_name, LAST_NAME as last_name FROM USERS WHERE ID=" + mysql.escape(user_id)+" LIMIT 1", function(err, res){
+		if(err){
+			callback(err, null)
+		}
+		else{
+			callback(null, res[0])
+		}
+	});
+}
+app.get('/user/:id', (req, res)=>{
+	let id = Number(req.params.id);
+	getUserDetails(id, function(err, result){
+		if (err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	});
+})
+//End add
 function deleteUserByEmail(email, callback){
 
 	con.query("DELETE FROM USERS WHERE EMAIL=" + mysql.escape(email), function(err, res){
