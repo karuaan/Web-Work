@@ -20,7 +20,7 @@ var firebaseAdmin = require('firebase-admin');
 var serviceAccount = require('./firebase_key.json');
 
 firebaseAdmin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: firebaseAdmin.credential.cert(serviceAccount)
 });
 
 //const filesys = require('fs')
