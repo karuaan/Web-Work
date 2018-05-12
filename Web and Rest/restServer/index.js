@@ -2396,10 +2396,10 @@ app.post('/inviteUser', function(req, res){
 	if(req.body.email!=null){
 		addUser('', '', req.body.email, function(err, result){
 			if(err){
-				res.json(err, null)
+				res.json(err)
 			}
 			else{
-				res.json(null, result)
+				res.json(result)
 			}
 		});
 	}
