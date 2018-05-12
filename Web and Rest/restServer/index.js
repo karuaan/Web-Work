@@ -276,7 +276,8 @@ function sendEmailReport(rows){
 			let overdueList = element.overdue_assignments;
 
 			htmlBody+='<h2>'+groupName+'</h2>';
-			htmlBody+='<table>';
+			//todo add borders
+			htmlBody+='<table >';
 			htmlBody+='<tr><th>Assignment</th><th>Employee</th><th>Email</th><th>Phone</th></tr>';
 
 			overdueList.forEach(function(element, index, array){
@@ -334,7 +335,15 @@ function sendEmailReport(rows){
 }
 
 app.get('/sendEmailReport', function(req, res){
-	 
+	 emailReporting.overdue(function(err, result){
+	 	if (err){
+	 		res.json(err);
+	 	}else{
+	 		res.json(result);
+		 	sendEmailReport(result);
+
+	 	}
+	 });
 });
 
 //run every day to add status records for newly available assignments
@@ -660,13 +669,8 @@ function addUser(first_name, last_name, email, callback){
 			if(rows[0] === undefined){
 				console.log("ROWS ARE EMPTY")
 				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ('+ mysql.escape(first_name) + ',' + mysql.escape(last_name) + ','+ mysql.escape(email) +', 0)', function(err2, result){
-					if(!err2){
-						con.commit(function(err3){
-							if(err3){con.rollback(function(){callback(err3, null)})}
-							else{
-								callback(null, result)
-							}
-						});
+					if(err2){
+						con.rollback(function(){callback(err2, null)})
 					}
 					else{
 						firebaseAdmin.auth().createUser({
@@ -1509,7 +1513,7 @@ app.get('/getstatuses',function(req,res){
 	});
 });
 
-var location = __dirname + "/public"
+var location = __dirname + "/public/android"
 var upload = multer({dest: location});
 
 app.post('/apk', upload.single("file"), function(req, res, next) {
@@ -2414,27 +2418,20 @@ app.post('/inviteAdmin', function(req, res){
 });
 
 app.post('/inviteUser', function(req, res){
-	addAdmin(req.body.email, function(err, result){
-		if(err){
-			res.json(err);
-		}
-		else{
-			var mailOptions = {
-				from: 'libertyelevatorreader@gmail.com',
-				to: [req.body.email],
-				subject: 'You have been added to Liberty Elevator Reader app!',
-				text: 'Please login using your email address and this temporary password: ' + req.body.pass
+	console.log(req.body.email);
+	if(req.body.email!=null){
+		addUser('', '', req.body.email, function(err, result){
+			if(err){
+				res.json(err)
 			}
-			transporter.sendMail(mailOptions, function(error, info){
-				if(error){
-					res.json(error);
-				}
-				else{
-					res.json(info);
-				}
-			});
-		}
-	});
+			else{
+				res.json(result)
+			}
+		});
+	}
+	else{
+		res.json({'err': 'requires email'}, null);
+	}
 });
 
 function getUserByEmail(email, callback){

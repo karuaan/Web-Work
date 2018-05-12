@@ -49,6 +49,10 @@ export class BookService {
   saveGroup(data): Observable<Book[]> {
     return this.http.post<any>(`${this.restURL}/groups/save`, data);
   }
+  
+  addUser(data): Observable<any>{
+	  return this.http.post<any>(`${this.restURL}/addToGroupEmail`, data);
+  }
 
   batchSaveLesson(data): Observable<any[]> {
     return this.http.post<any>(this.restURL + '/batch-save/lessons', data);
