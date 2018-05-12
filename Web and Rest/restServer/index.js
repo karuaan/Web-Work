@@ -9,19 +9,14 @@ const path = require('path')
 const https = require('https');
 const admin_functions = require('./functions/admin_functions');
 const hummus = require('hummus');
+const firebaseAdmin = require("firebase-admin");
+const serviceAccount = require("./firebase_key.json");
 const emailReporting = require("./emailOverdueQuery");
 
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
 var multer = require('multer');
 global.__basedir = __dirname;
-
-var firebaseAdmin = require('firebase-admin');
-var serviceAccount = require('./firebase_key.json');
-
-firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.cert(serviceAccount)
-});
 
 //const filesys = require('fs')
 ///*
@@ -657,6 +652,40 @@ function addUser(first_name, last_name, email, callback){
 						});
 					}
 					else{
+						firebaseAdmin.auth().({
+							  'email': email,
+							  emailVerified: false,
+							  password: "secretPassword",
+							  disabled: false
+							}).then((record) => {
+								var mailOptions = {
+									from: 'libertyelevatorreader@gmail.com',
+									to: [email],
+									subject: 'You have been invited to the liberty elevator app!',
+									text: 'Follow this link. Use this email and the provided password to login, then follow the steps. secretPassword'
+								}
+								transporter.sendMail(mailOptions, function(error, info){
+									if(error){
+										
+										/*TODO - ADD ROLLBACK
+											- delete user from firebase
+											- delete user from database
+										*/
+										console.log(error);
+										callback(error, null);
+										
+									}
+									else{
+										callback(null, info)
+									}
+								});
+							},
+							(firebase_err) => {
+								/*TODO - ADD ROLLBACK
+											- delete user from database
+										*/
+								callback(firebase_err, null);
+							})
 						callback(err2, null);
 					}
 				})
