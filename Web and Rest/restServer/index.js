@@ -645,7 +645,7 @@ function addUser(first_name, last_name, email, callback){
 				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ('+ mysql.escape(first_name) + ',' + mysql.escape(last_name) + ','+ mysql.escape(email) +', 0)', function(err2, result){
 					if(err2){
 						con.rollback(function(){callback(err2, null)})
-					};
+					}
 					else{
 						firebaseAdmin.auth().createUser({
 							  'email': email,
