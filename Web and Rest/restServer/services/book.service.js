@@ -90,17 +90,17 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
 
 
-     const addLessonIfNotExists = (lesson,isExist) => {
+     const addLessonIfNotExists = (lesson,group_id) => {
         return new Promise(async (resolve,reject) => {
             var status = true;
-        if(isExist){
+        if(lesson.ID != null){
             status = false;
         }else{
             status = await checkLessonExist(lesson);
             console.log('status',status);
         }
         
-         if(isExist){
+         if(lesson.ID != null){
            var old_file_deleted =  deleteFile(__basedir+'/'+lesson.PDF_FILE);
          }
          
@@ -120,7 +120,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
              lesson['PDF_FILE'] = lessonPdfSplit.data['file_name'];
             
             
-            if(isExist){
+            if(lesson.ID != null){
                 console.log('update lesson');
                 var data = await updateLesson(lesson);
             }else{
@@ -131,7 +131,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
              if (data.status){
                  resolve({
                     data:data.data,
-                    isExist : isExist,
+                    isExist : lesson.ID != null,
                     status : true,
                     message : lesson.NAME+' saved'
                 });
@@ -159,7 +159,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
             // lessons.forEach((item,key) => {
                 for(var i=0;i<lessons.length;i++){
                     var is_exist = lessons[i].action != 'new';
-                    var lessonResData = await addLessonIfNotExists(lessons[i],group_id,is_exist);
+                    var lessonResData = await addLessonIfNotExists(lessons[i],group_id);
                     if(lessonResData.status && lessonResData.data){
                         allLesson.push(Object.assign(lessonResData.data,{
                             action : !is_exist ? 'new' : 'existing'
@@ -199,7 +199,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
     
       var insertLesson = (lesson, group_id)=>{
         return new Promise( (resolve, reject) => {
-            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE, GROUP_ID) VALUES (?,?,?,?,?)";
+            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE, GROUP_ID) VALUES (?,?,?,?,?,?)";
             console.log('insertQuery',lesson);
                 con.query(insertQuery,[
                   lesson.BOOK_ID,
@@ -218,6 +218,9 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                        };
                        resolve(data);
                    }else{
+					   console.log("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
+					   console.log(err);
+					   console.log("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-");
                        resolve({
                            status : false,
                            data : null

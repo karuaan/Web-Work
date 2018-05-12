@@ -12,11 +12,11 @@ const hummus = require('hummus');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
 const emailReporting = require("./emailOverdueQuery");
+
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
 var multer = require('multer');
 global.__basedir = __dirname;
-
 
 //const filesys = require('fs')
 ///*
@@ -669,6 +669,40 @@ function addUser(first_name, last_name, email, callback){
 						});
 					}
 					else{
+						firebaseAdmin.auth().createUser({
+							  'email': email,
+							  emailVerified: false,
+							  password: "secretPassword",
+							  disabled: false
+							}).then((record) => {
+								var mailOptions = {
+									from: 'libertyelevatorreader@gmail.com',
+									to: [email],
+									subject: 'You have been invited to the liberty elevator app!',
+									text: 'Follow this link. Use this email and the provided password to login, then follow the steps. secretPassword'
+								}
+								transporter.sendMail(mailOptions, function(error, info){
+									if(error){
+										
+										/*TODO - ADD ROLLBACK
+											- delete user from firebase
+											- delete user from database
+										*/
+										console.log(error);
+										callback(error, null);
+										
+									}
+									else{
+										callback(null, info)
+									}
+								});
+							},
+							(firebase_err) => {
+								/*TODO - ADD ROLLBACK
+											- delete user from database
+										*/
+								callback(firebase_err, null);
+							})
 						callback(err2, null);
 					}
 				})
@@ -1307,6 +1341,29 @@ function updateUserComplete(user_id, assignment_id, callback){
 	})
 
 }
+//Added back from 5/7
+function getUserDetails(user_id, callback){
+	con.query("SELECT FIRST_NAME as first_name, LAST_NAME as last_name FROM USERS WHERE ID=" + mysql.escape(user_id)+" LIMIT 1", function(err, res){
+		if(err){
+			callback(err, null)
+		}
+		else{
+			callback(null, res[0])
+		}
+	});
+}
+app.get('/user/:id', (req, res)=>{
+	let id = Number(req.params.id);
+	getUserDetails(id, function(err, result){
+		if (err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	});
+})
+//End add
 function deleteUserByEmail(email, callback){
 
 	con.query("DELETE FROM USERS WHERE EMAIL=" + mysql.escape(email), function(err, res){
@@ -1626,7 +1683,7 @@ app.post('/lessons/remove-assignment',function(req,res){
 app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if (req.body.lessons && req.body.lessons.length > 0){
 		BookService.saveLessons(req.body.lessons, req.body.group_id).then(function(results){
-			// console.log('results',results);
+			console.log('results',results);
 			res.json({
 				results: results,
 				message : 'All Good'
@@ -2333,6 +2390,30 @@ function makepass() {
 }
 
 app.post('/inviteAdmin', function(req, res){
+	addAdmin(req.body.email, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			var mailOptions = {
+				from: 'libertyelevatorreader@gmail.com',
+				to: [req.body.email],
+				subject: 'You have been added to Liberty Elevator Reader app!',
+				text: 'Please login using your email address and this temporary password: ' + req.body.pass
+			}
+			transporter.sendMail(mailOptions, function(error, info){
+				if(error){
+					res.json(error);
+				}
+				else{
+					res.json(info);
+				}
+			});
+		}
+	});
+});
+
+app.post('/inviteUser', function(req, res){
 	addAdmin(req.body.email, function(err, result){
 		if(err){
 			res.json(err);
