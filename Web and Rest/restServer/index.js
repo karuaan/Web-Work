@@ -259,7 +259,8 @@ function sendEmailReport(rows){
 			let overdueList = element.overdue_assignments;
 
 			htmlBody+='<h2>'+groupName+'</h2>';
-			htmlBody+='<table>';
+			//todo add borders
+			htmlBody+='<table >';
 			htmlBody+='<tr><th>Assignment</th><th>Employee</th><th>Email</th><th>Phone</th></tr>';
 
 			overdueList.forEach(function(element, index, array){
@@ -317,7 +318,15 @@ function sendEmailReport(rows){
 }
 
 app.get('/sendEmailReport', function(req, res){
-	 
+	 emailReporting.overdue(function(err, result){
+	 	if (err){
+	 		res.json(err);
+	 	}else{
+	 		res.json(result);
+		 	sendEmailReport(result);
+
+	 	}
+	 });
 });
 
 //run every day to add status records for newly available assignments
