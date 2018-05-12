@@ -1,25 +1,24 @@
-
-<div class=""container *ngIf="isLoggedIn==false && !newUser">
+<div class="" container *ngIf="isLoggedIn==false && !newUser">
 	<img class="logo" src="assets/pngs/Liberty Logo.png" />
 	<form class="login-form" name="userform" method="post" #formCtrl="ngForm">
 
-	  <label for="exampleInputEmail1">Email address</label>
-	  <input type="email" class="form-control" id="userEmail" [(ngModel)]="userEmail" required [ngModelOptions]="{standalone: true}">
+		<label for="exampleInputEmail1">Email address</label>
+		<input type="email" class="form-control" id="userEmail" [(ngModel)]="userEmail" required [ngModelOptions]="{standalone: true}">
 
-	  <label for="exampleInputPassword1">Password</label>
-	  <input type="password" class="form-control" id="userPassword" [(ngModel)]="userPassword" required [ngModelOptions]="{standalone: true}">
+		<label for="exampleInputPassword1">Password</label>
+		<input type="password" class="form-control" id="userPassword" [(ngModel)]="userPassword" required [ngModelOptions]="{standalone: true}">
 
-	<div class="form-group">
-	   <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
-	   Login with Email
-	   </button>
-	</div>
+		<div class="form-group">
+			<button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
+				Login with Email
+			</button>
+		</div>
 	</form>
 	<div *ngIf="isLoginError==true" class="alert alert-danger">
-	  <p>{{loginErrorMessage}}</p>
+		<p>{{loginErrorMessage}}</p>
 	</div>
 	<div>
-	<!--<button (click)="testGetEmployee()">Test Get Employee by Email</button>-->
+		<!--<button (click)="testGetEmployee()">Test Get Employee by Email</button>-->
 	</div>
 </div>
 <div class="container" *ngIf="newUser">
@@ -35,13 +34,13 @@
 		<label>Confirm Password</label>
 		<input type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
 		<div class="form-group">
-		   <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
-		   Update User Info
-		   </button>
+			<button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
+				Update User Info
+			</button>
 		</div>
 	</form>
 	<div *ngIf="isLoginError==true" class="alert alert-danger">
-	  <p>{{loginErrorMessage}}</p>
+		<p>{{loginErrorMessage}}</p>
 	</div>
 </div>
 <div class="container" *ngIf="isLoggedIn && admin_id >= 0 && !newUser">
@@ -51,21 +50,23 @@
 	</div>
 	-->
 	<div class="name-container" style="width: 100%; height: 2em; margin-top:1em">
-	<img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu()" src="assets/pngs/cog.png" />
+		<img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu()" src="assets/pngs/cog.png"
+		/>
 		<p style="margin: 0; float: right; font-size: 1.2em;">{{firstName}} {{lastName}}</p>
 		<div id="adminMenu">
 			<div (click)="inviteAdminAction()" data-toggle="modal" data-target="#inviteAdminModal">Add Admin</div>
-			<div (click)="logout()" >Log Out</div>
-			<div><a class="support" href="mailto:libertyelevatorreader@gmail.com">Contact Support</a></div>
+			<div (click)="logout()">Log Out</div>
+			<div>
+				<a class="support" href="mailto:libertyelevatorreader@gmail.com">Contact Support</a>
+			</div>
 		</div>
 	</div>
 	<div class="row" id="groupTabs">
 		<div class="btn-group btn-group-toggle" data-toggle="buttons">
 			<label class="btn btn-primary" *ngFor="let group of groups" (click)="groupSelect(group)">
-				<input type="radio" name="groups" id={{group.ID}} autocomplete="off"  value={{group.ID}}>{{group.NAME}}
+				<input type="radio" name="groups" id={{group.ID}} autocomplete="off" value={{group.ID}}>{{group.NAME}}
 			</label>
 			<button type="button" class="btn btn-info" (click)="addGroup()" data-toggle="modal" data-target="#addGroupModal">Add Group</button>
-			<button type="button" class="btn btn-info" data-toggle="modal" data-target="#inviteAdminModal">Invite Admin</button>
 		</div>
 	</div>
 
@@ -75,9 +76,8 @@
 				<h5 *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false">{{selectedGroup.NAME}}</h5>
 				<h5 *ngIf="selectedGroup !== undefined && employees.length == 1 ? selectedGroup !== null : false">{{employees.length}} Employee</h5>
 				<h5 *ngIf="selectedGroup !== undefined && employees.length > 1 ? selectedGroup !== null : false">{{employees.length}} Employees</h5>
-				<button *ngIf="selectedGroup && selectedGroup !== undefined"
-                        type="button"
-                        class="btn btn-info summary-button" data-toggle="modal" data-target="#addEmployeeModal">+ Add Employee</button>
+				<button *ngIf="selectedGroup && selectedGroup !== undefined" type="button" class="btn btn-info summary-button" data-toggle="modal"
+				 data-target="#addEmployeeModal">+ Add Employee</button>
 				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('assignments')" id="assignmentButton">Assignments</div>
 				<div *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false" (click)="viewSwitch('lessons')" id="lessonButton">Lesson Plan</div>
 			</div>
@@ -107,13 +107,16 @@
 							</button>
 							-->
 							<div class="due-holder">
-								<p class="due-title">Due: </p><p class="due-value">{{assignment.DUE_DATE | date:'MM/dd/yyyy'}}</p>
+								<p class="due-title">Due: </p>
+								<p class="due-value">{{assignment.DUE_DATE | date:'MM/dd/yyyy'}}</p>
 							</div>
 							<div class="due-holder">
-								<p class="due-title">Available: </p><p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
+								<p class="due-title">Available: </p>
+								<p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
 							</div>
 							<div class="due-holder">
-								<p class="due-title">Percent Complete: </p><p class="due-value">{{assignment.percent_complete | percent}}</p>
+								<p class="due-title">Percent Complete: </p>
+								<p class="due-value">{{assignment.percent_complete | percent}}</p>
 							</div>
 
 						</div>
@@ -126,71 +129,60 @@
 						<h4>Book</h4>
 					</div>
 					<div>
-                        <select name="book" id="bookDropdown" [(ngModel)]="selectedBook"
-                                (change)="onChangeBook($event)"
-                                class="form-control input-sm">
-                            <option *ngFor="let book of dataObj.books;" [value]="book.ID">{{book.NAME}}</option>
-                        </select>
-                        <button type="button" (click)="resetForm()"  data-toggle="modal" data-target="#newBookModal"
-                                class="btn btn-info">+Add Book</button>
+						<select name="book" id="bookDropdown" [(ngModel)]="selectedBook" (change)="onChangeBook($event)" class="form-control input-sm">
+							<option *ngFor="let book of dataObj.books;" [value]="book.ID">{{book.NAME}}</option>
+						</select>
+						<button type="button" (click)="resetForm()" data-toggle="modal" data-target="#newBookModal" class="btn btn-info">+Add Book</button>
 					</div>
 
-                    <div class="col-md-12" *ngIf="dataObj.selectedBook">
-                       <h3>{{dataObj.selectedBook.NAME}}</h3>
-                       <span>Total Pages : <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong></span>
-                    </div>
+					<div class="col-md-12" *ngIf="dataObj.selectedBook">
+						<h3>{{dataObj.selectedBook.NAME}}</h3>
+						<span>Total Pages :
+							<strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong>
+						</span>
+					</div>
 
 
 					<div class="lesson-header">
 						<h4>Lessons</h4>
 					</div>
-                    <div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
-                        <table  class="table table-hover lessons">
-                                               <thead>
-                                                   <tr>
-                                                       <th></th>
-                                                       <th>Name</th>
-                                                       <th>Start Page</th>
-                                                       <th>End Page</th>
-                                                       <th></th>
-                                                   </tr>
-                                               </thead>
-                                               <tbody>
-                                                   <tr *ngFor="let lesson of dataObj.selectedBook.LESSONS;"
-                                                       [ngClass]="{invalid:!lesson.validationCheck(dataObj.selectedBook.TOTAL_PAGES)}">
-                                                       <td>
-                                                           <input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
-                                                       </td>
-                                                       <td>
-                                                           <input type="text" class="form-control input-sm col-sm-8"
-                                                                  (change)="lesson.changed()"
-                                                                  name="lession[][name]" [(ngModel)]="lesson.NAME">
-                                                       </td>
-                                                       <td>
-                                                           <input type="number" class="form-control input-sm"
-                                                                  (change)="lesson.changed();"
-                                                                  (click)="changePdfPageNo(lesson.START_PAGE)"
-                                                                  (keyup)="changePdfPageNo(lesson.START_PAGE)"
-                                                                  [max]="dataObj.selectedBook.TOTAL_PAGES"
-                                                                  name="lession[][start_page]" [(ngModel)]="lesson.START_PAGE" min="0">
-                                                       </td>
-                                                       <td>
-                                                           <input class="form-control input-sm " type="number"
-                                                                  (change)="lesson.changed();"
-                                                                  (click)="changePdfPageNo(lesson.END_PAGE)"
-                                                                  (keyup)="changePdfPageNo(lesson.END_PAGE)"
-                                                                  [max]="dataObj.selectedBook.TOTAL_PAGES"
-                                                                  name="lession[][end_page]" [(ngModel)]="lesson.END_PAGE" min="0">
-                                                       </td>
-                                                       <td>
-                                                           <button style="width: 10em" class="btn btn-sm btn-success"
-                                                                   *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)">
+					<div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
+						<table class="table table-hover lessons">
+							<thead>
+								<tr>
+									<th></th>
+									<th>Name</th>
+									<th>Start Page</th>
+									<th>End Page</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let lesson of dataObj.selectedBook.LESSONS;" [ngClass]="{invalid:!lesson.validationCheck(dataObj.selectedBook.TOTAL_PAGES)}">
+									<td>
+										<input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
+									</td>
+									<td>
+										<input type="text" class="form-control input-sm col-sm-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
+									</td>
+									<td>
+										<input type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
+										 (keyup)="changePdfPageNo(lesson.START_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][start_page]"
+										 [(ngModel)]="lesson.START_PAGE" min="0">
+									</td>
+									<td>
+										<input class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
+										 (keyup)="changePdfPageNo(lesson.END_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][end_page]"
+										 [(ngModel)]="lesson.END_PAGE" min="0">
+									</td>
+									<td>
+										<button style="width: 10em" class="btn btn-sm btn-success" *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)">
 
-                                                               <i class="fa fa-check"></i> Assigned
+											<i class="fa fa-check"></i> Assigned
 
-                                                           </button>
+										</button>
 
-																													<!--
+										<!--
                                                            <button class="btn btn-sm btn-success"
                                                                    *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)"
                                                            (click)="removeAssignment(lesson)">
@@ -200,22 +192,20 @@
                                                            </button>
 																												 -->
 
-                                                           <button style="width: 10em" class="btn btn-sm btn-info" data-toggle="modal"
-                                                                   (click)="selectLesson(lesson)"
-                                                                   data-target="#newAssignment"
-                                                                   *ngIf="!lesson.isAssignedByGroupId(selectedGroup.ID) && lesson.ID">
-                                                               Add Assignment
-                                                           </button>
-                                                       </td>
-                                                   </tr>
+										<button style="width: 10em" class="btn btn-sm btn-info" data-toggle="modal" (click)="selectLesson(lesson)" data-target="#newAssignment"
+										 *ngIf="!lesson.isAssignedByGroupId(selectedGroup.ID) && lesson.ID">
+											Add Assignment
+										</button>
+									</td>
+								</tr>
 
-                                               </tbody>
-                                           </table>
-                    </div>
+							</tbody>
+						</table>
+					</div>
 
-                    <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
-                    <button (click)="saveLessons()" class="btn btn-primary ">Save</button>
-										<button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
+					<button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
+					<button (click)="saveLessons()" class="btn btn-primary ">Save</button>
+					<button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
 					<!--<button type="button" class="btn btn-info" id="addLessonButton" data-toggle="modal" data-target="#newLessonModal">+ Add</button>-->
 				</div>
 			</div>
@@ -228,42 +218,54 @@
 					<div id="groupActions">
 						<div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
 							<div data-toggle="modal" data-target="#editAssignmentModal" (click)="editAssignment(selectedAssignment)">
-								<img style="height: 1.5em;" src="assets/pngs/ic_edit_48px.png" style="margin: 0em 1em 1em 0em; height: 1.5em"/>
+								<img style="height: 1.5em;" src="assets/pngs/ic_edit_48px.png" style="margin: 0em 1em 1em 0em; height: 1.5em" />
 							</div>
-							<div (click)="removeAssignment(selectedAssignment)" >
-								<img style="height: 1.5em;" src="assets/pngs/trash.png" style="margin: 0em 0em 1em 1em; height: 1.5em"/>
+							<div (click)="removeAssignment(selectedAssignment)">
+								<img style="height: 1.5em;" src="assets/pngs/trash.png" style="margin: 0em 0em 1em 1em; height: 1.5em" />
 							</div>
 						</div>
 						<div class="row" style="margin-bottom: 1em">
 							<div class="icon-text">
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/hourglass.png" /></div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
+									<img src="assets/pngs/hourglass.png" />
+								</div>
 								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{countdown | date: "m 'minutes' ss 'seconds'"}}</div>
 							</div>
-							<div class="icon-action" data-toggle="modal" data-target="#pdfPreviewModal" >
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/ic_picture_as_pdf_48px.png" /></div>
+							<div class="icon-action" data-toggle="modal" data-target="#pdfPreviewModal">
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
+									<img src="assets/pngs/ic_picture_as_pdf_48px.png" />
+								</div>
 								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">PDF</div>
 							</div>
 							<div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
-								<div class="icon"><img src="assets/pngs/mail.png" /></div>
+								<div class="icon">
+									<img src="assets/pngs/mail.png" />
+								</div>
 								<div class="text">Email all employees</div>
 							</div>
 						</div>
 						<div class="row">
 							<div class="icon-text">
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/calendar.png" /></div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
+									<img src="assets/pngs/calendar.png" />
+								</div>
 								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.DUE_DATE| date : "MM/dd/yyyy"}}</div>
 							</div>
 							<div class="icon-text">
-								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false"><img src="assets/pngs/cs-cc-party.png" /></div>
+								<div class="icon" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
+									<img src="assets/pngs/cs-cc-party.png" />
+								</div>
 								<div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignmentCompletion}} of employees finished</div>
 							</div>
 							<div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
-								<div class="icon"><img src="assets/pngs/mail.png" /></div>
+								<div class="icon">
+									<img src="assets/pngs/mail.png" />
+								</div>
 								<div class="text">Email all incomplete</div>
 							</div>
 						</div>
 						<div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' && selectedAssignment.NOTES !== undefined: false">
-							<p id="notesDisplay" >{{selectedAssignment.NOTES}}</p>
+							<p id="notesDisplay">{{selectedAssignment.NOTES}}</p>
 						</div>
 						<!--
 						<div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
@@ -287,10 +289,14 @@
 							<th scope="col">Completed</th>
 						</thead>
 						<tr class="employee-row" *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
-							<td class="employee-delete"><p>X</p></td>
+							<td class="employee-delete">
+								<p>X</p>
+							</td>
 							<td>{{employee.FIRST_NAME | pending}}</td>
 							<td>{{employee.LAST_NAME | pending}}</td>
-							<td><a href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a></td>
+							<td>
+								<a href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a>
+							</td>
 							<td *ngIf="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
 								<input type="checkbox" disabled checked/>
 							</td>
@@ -304,36 +310,25 @@
 
 			<div *ngIf="viewLessons && testPdf && dataObj.selectedBook">
 				<div class="pdf-controller">
-					<button class="btn btn-primary"
-                            [disabled]="'1' == pdfCurrentPage"
-                            (click)="decrementPage()">Prev</button>
+					<button class="btn btn-primary" [disabled]="'1' == pdfCurrentPage" (click)="decrementPage()">Prev</button>
 					<input type="number" [(ngModel)]="pdfCurrentPage">
-					<button class="btn btn-primary" [disabled]="dataObj.selectedBook.TOTAL_PAGES == pdfCurrentPage"
-                            (click)="incrementPage()">Next
-                    </button>
+					<button class="btn btn-primary" [disabled]="dataObj.selectedBook.TOTAL_PAGES == pdfCurrentPage" (click)="incrementPage()">Next
+					</button>
 				</div>
-				<pdf-viewer style="min-height: 47em;"[src]="testPdf" [render-text]="false"
-                            [(page)]="pdfCurrentPage"
-                            (error)="onPdfLoadError($event)"
-                            (after-load-complete)="generateLessonPlan($event)"
-                            [show-all]="false"
-                            [original-size]="false"
-                            style="display: block;"></pdf-viewer>
+				<pdf-viewer style="min-height: 47em;" [src]="testPdf" [render-text]="false" [(page)]="pdfCurrentPage" (error)="onPdfLoadError($event)"
+				 (after-load-complete)="generateLessonPlan($event)" [show-all]="false" [original-size]="false" style="display: block;"></pdf-viewer>
 			</div>
 		</div>
 
 		<div style="min-height: 47em" class="col-xl-0" id="fourthColumn" style="display: none">
 			<div class="pdf-controller">
-				<button class="btn btn-primary"
-													[disabled]="'1' == pdfCurrentPagePreview"
-													(click)="decrementPagePreview()">Prev</button>
+				<button class="btn btn-primary" [disabled]="'1' == pdfCurrentPagePreview" (click)="decrementPagePreview()">Prev</button>
 				<input type="number" [(ngModel)]="pdfCurrentPagePreview">
-				<button class="btn btn-primary" [disabled]="pdfCurrentPagePreviewMax == pdfCurrentPage"
-													(click)="incrementPagePreview()">Next
-									</button>
+				<button class="btn btn-primary" [disabled]="pdfCurrentPagePreviewMax == pdfCurrentPage" (click)="incrementPagePreview()">Next
+				</button>
 			</div>
 
-			<pdf-viewer style="min-height: 47em;" [src]="previewPdf" [(page)]="pdfCurrentPagePreview" [show-all]="false"[render-text]="false"></pdf-viewer>
+			<pdf-viewer style="min-height: 47em;" [src]="previewPdf" [(page)]="pdfCurrentPagePreview" [show-all]="false" [render-text]="false"></pdf-viewer>
 		</div>
 	</div>
 
@@ -381,78 +376,75 @@
 		</div>
 	</div>
 
-		<div class="modal fade" id="pdfPreviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">PDF Preview</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
+	<div class="modal fade" id="pdfPreviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">PDF Preview</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body" style="height: 50em; padding: 0;">
+					<div class="pdf-controller">
+						<button class="btn btn-primary" [disabled]="'1' == pdfCurrentPagePreview" (click)="decrementPagePreview()">Prev</button>
+						<input type="number" [(ngModel)]="pdfCurrentPagePreview">
+						<button class="btn btn-primary" [disabled]="pdfCurrentPagePreviewMax == pdfCurrentPage" (click)="incrementPagePreview()">Next
 						</button>
 					</div>
 
-					<div class="modal-body" style="height: 50em; padding: 0;">
-						<div class="pdf-controller">
-							<button class="btn btn-primary"
-																[disabled]="'1' == pdfCurrentPagePreview"
-																(click)="decrementPagePreview()">Prev</button>
-							<input type="number" [(ngModel)]="pdfCurrentPagePreview">
-							<button class="btn btn-primary" [disabled]="pdfCurrentPagePreviewMax == pdfCurrentPage"
-																(click)="incrementPagePreview()">Next
-												</button>
-						</div>
-
-						<pdf-viewer style="min-height: 47em;" [src]="previewPdf" [(page)]="pdfCurrentPagePreview" [show-all]="false"[render-text]="false"></pdf-viewer>
-					</div>
-
+					<pdf-viewer style="min-height: 47em;" [src]="previewPdf" [(page)]="pdfCurrentPagePreview" [show-all]="false" [render-text]="false"></pdf-viewer>
 				</div>
+
 			</div>
 		</div>
+	</div>
 
-		<div class="modal fade" id="editAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Edit Assignment</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
-						<!--
+	<div class="modal fade" id="editAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Edit Assignment</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<!--
 						<p *ngIf="dataObj.selectedLesson && dataObj.selectedLesson !== undefined">{{dataObj.selectedLesson.NAME}}</p>
 					-->
-						<form>
-							<fieldset>
-								<div class="date-labels">
-									<p>Available From: </p>
-									<p>Due: </p>
-								</div>
-								<div class="date-inputs">
-									<input type="date" id="startDateEdit">
-									<input type="date" id="dueDateEdit">
-								</div>
-								<br>
-								<p>Minimum reading time: </p>
-								<div class="reading-time-input">
-									<input type="number" id="minutesEdit" />
-									<p>minutes</p>
-									<input type="seconds" id="secondsEdit"/>
-									<p>seconds</p>
-								</div>
-								<br>
-								<p>Notes</p>
-								<textarea style="width: 100%" id="notesInputEdit" rows="5"></textarea>
-							</fieldset>
-						</form>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" (click)="updateAssignment()" data-dismiss="modal">Update Assignment</button>
-					</div>
+					<form>
+						<fieldset>
+							<div class="date-labels">
+								<p>Available From: </p>
+								<p>Due: </p>
+							</div>
+							<div class="date-inputs">
+								<input type="date" id="startDateEdit">
+								<input type="date" id="dueDateEdit">
+							</div>
+							<br>
+							<p>Minimum reading time: </p>
+							<div class="reading-time-input">
+								<input type="number" id="minutesEdit" />
+								<p>minutes</p>
+								<input type="seconds" id="secondsEdit" />
+								<p>seconds</p>
+							</div>
+							<br>
+							<p>Notes</p>
+							<textarea style="width: 100%" id="notesInputEdit" rows="5"></textarea>
+						</fieldset>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" (click)="updateAssignment()" data-dismiss="modal">Update Assignment</button>
 				</div>
 			</div>
 		</div>
+	</div>
 
 	<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
@@ -496,13 +488,15 @@
 							</div>
 							<div class="form-group">
 								<label for="lessonStart">Lesson Page Start</label>
-								<input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title" [(ngModel)]="pdfStartPage" [ngModelOptions]="{standalone: true}">
+								<input type="number" class="form-control" id="lessonStart" aria-describedby="lessonStartHelp" placeholder="Enter title" [(ngModel)]="pdfStartPage"
+								 [ngModelOptions]="{standalone: true}">
 								<!--<label class="btn btn-primary" id="startPageButton" (click)="setStartPage()">Use Current Page</label>-->
 								<small id="lessonStartHelp" class="form-text text-muted"></small>
 							</div>
 							<div class="form-group">
 								<label for="lessonEnd">Lesson Page End</label>
-								<input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title" [(ngModel)]="pdfEndPage" [ngModelOptions]="{standalone: true}">
+								<input type="number" class="form-control" id="lessonEnd" aria-describedby="lessonEndHelp" placeholder="Enter title" [(ngModel)]="pdfEndPage"
+								 [ngModelOptions]="{standalone: true}">
 								<!--<label class="btn btn-primary" id="endPageButton" (click)="setEndPage()">Use Current Page</label>-->
 								<small id="lessonEndHelp" class="form-text text-muted"></small>
 							</div>
@@ -533,68 +527,56 @@
 					</button>
 				</div>
 				<div class="modal-body">
-                    <form [formGroup]="groupForm" (submit)="saveGroup()">
-                        <div class="form-group">
-                            <label for="groupNameInput">Group Name</label>
-                            <input type="text"
-                                   formControlName="group_name"
-                                   class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Name">
-                        </div>
+					<form [formGroup]="groupForm" (submit)="saveGroup()">
+						<div class="form-group">
+							<label for="groupNameInput">Group Name</label>
+							<input type="text" formControlName="group_name" class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp"
+							 placeholder="Enter Name">
+						</div>
 
-                        <div class="form-group">
-                            <label for="groupEmailInput">Emails</label>
-                            <tag-input type="text"
-                                       [separatorKeyCodes]='[9, 188]'
-                                       [placeholder]="'Add email'"
-                                       [secondaryPlaceholder]="'Add email'"
-                                       [errorMessages]="errorMessages"
-                                       [validators]="validators"
-                                       id="groupEmailInput"
-                                       formControlName="emails"
-                                       (onAdd)="onItemAdded($event)"
-                                       [editable]='true'></tag-input>
-                            <!--<input type="text"-->
-                                   <!--formControlName="emails"-->
-                                   <!--class="form-control" id="groupEmailInput" aria-describedby="groupEmailInputHelp"-->
-                                   <!--placeholder="Enter email addresses">-->
-                        </div>
-                    </form>
+						<div class="form-group">
+							<label for="groupEmailInput">Emails</label>
+							<tag-input type="text" [separatorKeyCodes]='[9, 188]' [placeholder]="'Add email'" [secondaryPlaceholder]="'Add email'" [errorMessages]="errorMessages"
+							 [validators]="validators" id="groupEmailInput" formControlName="emails" (onAdd)="onItemAdded($event)" [editable]='true'></tag-input>
+							<!--<input type="text"-->
+							<!--formControlName="emails"-->
+							<!--class="form-control" id="groupEmailInput" aria-describedby="groupEmailInputHelp"-->
+							<!--placeholder="Enter email addresses">-->
+						</div>
+					</form>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" (click)="saveGroup()" [disabled]="groupForm.invalid"
-                            class="btn btn-primary">Add Group</button>
+					<button type="button" (click)="saveGroup()" [disabled]="groupForm.invalid" class="btn btn-primary">Add Group</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
 	<div class="modal fade" id="inviteAdminModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-lg" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Invite admin</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
-	                    <form [formGroup]="inviteAdminForm" (submit)="inviteAdmin()">
-	                        <div class="form-group">
-	                            <label for="groupNameInput">Admin Email Address</label>
-	                            <input type="email"
-	                                   formControlName="email"
-	                                   class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Email">
-	                        </div>
-	                    </form>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" (click)="inviteAdmin()" [disabled]="inviteAdminForm.invalid" class="btn btn-primary">Invite</button>
-					</div>
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Invite admin</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form [formGroup]="inviteAdminForm" (submit)="inviteAdmin()">
+						<div class="form-group">
+							<label for="groupNameInput">Admin Email Address</label>
+							<input type="email" formControlName="email" class="form-control" id="groupNameInput" aria-describedby="groupTitleHelp" placeholder="Enter Email">
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" (click)="inviteAdmin()" [disabled]="inviteAdminForm.invalid" class="btn btn-primary">Invite</button>
 				</div>
 			</div>
 		</div>
+	</div>
 
 	<div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg" role="document">
@@ -606,174 +588,150 @@
 					</button>
 				</div>
 				<div class="modal-body" *ngIf="selectedGroup">
-                    <form name="employeeform" novalidate [formGroup]="employeeForm" (submit)="saveEmployee()">
-                        <!--<div class="form-group">-->
-                            <!--<label for="employeeFirstNameInput">First Name</label>-->
-                            <!--<input type="text" style=""-->
-                                   <!--formControlName="first_name"-->
-                                   <!--class="form-control"-->
-                                   <!--id="employeeFirstNameInput"-->
-                                   <!--aria-describedby="employeeFirstNameHelp"-->
-                                   <!--placeholder="Enter First Name">-->
-                        <!--</div>-->
-                        <!--<div class="form-group">-->
-                            <!--<label for="employeeLastNameInput">Last Name</label>-->
-                            <!--<input type="text" class="form-control"-->
-                                   <!--formControlName="last_name"-->
-                                   <!--id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">-->
-                        <!--</div>-->
-                        <div class="form-group">
-                            <label for="employeeEmailInput">Email</label>
-                            <input type="text"
-                                   formControlName="email"
-                                   class="form-control" id="employeeEmailInput" aria-describedby="employeeEmailHelp" placeholder="Enter Email">
-                        </div>
-                    </form>
+					<form name="employeeform" novalidate [formGroup]="employeeForm" (submit)="saveEmployee()">
+						<!--<div class="form-group">-->
+						<!--<label for="employeeFirstNameInput">First Name</label>-->
+						<!--<input type="text" style=""-->
+						<!--formControlName="first_name"-->
+						<!--class="form-control"-->
+						<!--id="employeeFirstNameInput"-->
+						<!--aria-describedby="employeeFirstNameHelp"-->
+						<!--placeholder="Enter First Name">-->
+						<!--</div>-->
+						<!--<div class="form-group">-->
+						<!--<label for="employeeLastNameInput">Last Name</label>-->
+						<!--<input type="text" class="form-control"-->
+						<!--formControlName="last_name"-->
+						<!--id="employeeLastNameInput" aria-describedby="employeeLastNameHelp" placeholder="Enter Last Name">-->
+						<!--</div>-->
+						<div class="form-group">
+							<label for="employeeEmailInput">Email</label>
+							<input type="text" formControlName="email" class="form-control" id="employeeEmailInput" aria-describedby="employeeEmailHelp"
+							 placeholder="Enter Email">
+						</div>
+					</form>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" (click)="saveEmployee()" [disabled]="employeeForm.invalid" class="btn btn-primary">Add
-                        Employee</button>
+					<button type="button" (click)="saveEmployee()" [disabled]="employeeForm.invalid" class="btn btn-primary">Add Employee
+					</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
 
-    <div class="modal fade" id="newBookModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content" *ngIf="bookForm">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add Book</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form name="booksave" novalidate [formGroup]="bookGroupForm">
-                            <fieldset>
-                                <div class="form-group"  [ngClass]="displayFieldCss(bookGroupForm,'NAME')">
-                                    <label for="bookName">Book Name</label>
-                                    <input type="text" [(ngModel)]="bookForm.NAME"
-                                           class="form-control" id="bookName"
-                                           aria-describedby="lessonTitleHelp"
-                                           formControlName="NAME"
-                                           required
-                                           placeholder="Enter book name">
-                                </div>
+	<div class="modal fade" id="newBookModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content" *ngIf="bookForm">
+				<div class="modal-header">
+					<h5 class="modal-title">Add Book</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form name="booksave" novalidate [formGroup]="bookGroupForm">
+						<fieldset>
+							<div class="form-group" [ngClass]="displayFieldCss(bookGroupForm,'NAME')">
+								<label for="bookName">Book Name</label>
+								<input type="text" [(ngModel)]="bookForm.NAME" class="form-control" id="bookName" aria-describedby="lessonTitleHelp" formControlName="NAME"
+								 required placeholder="Enter book name">
+							</div>
 
-                                <div class="form-group" [ngClass]="displayFieldCss(bookGroupForm,'book_file')">
-                                    <label for="bookFile">File</label>
-                                    <input type="file" class="form-control" id="bookFile"
-                                           (change)="onFileChange($event)"
-                                           placeholder="Upload book (.pdf)" accept=".pdf">
-                                    <small id="bookFileHelp" class="form-text text-muted">Only upload pdf</small>
-                                    <input type="hidden" name="book_file" formControlName="book_file"/>
-                                </div>
-                            </fieldset>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" [disabled]="bookGroupForm.invalid" (click)="saveBook()" class="btn btn-primary">Submit
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+							<div class="form-group" [ngClass]="displayFieldCss(bookGroupForm,'book_file')">
+								<label for="bookFile">File</label>
+								<input type="file" class="form-control" id="bookFile" (change)="onFileChange($event)" placeholder="Upload book (.pdf)" accept=".pdf">
+								<small id="bookFileHelp" class="form-text text-muted">Only upload pdf</small>
+								<input type="hidden" name="book_file" formControlName="book_file" />
+							</div>
+						</fieldset>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="submit" [disabled]="bookGroupForm.invalid" (click)="saveBook()" class="btn btn-primary">Submit
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <div class="modal fade" id="newAssignment" tabindex="-1" role="dialog" aria-labelledby="newAssignmentLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content" *ngIf="selectedGroup && dataObj.selectedLesson">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Assignment</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form novalidate [formGroup]="assignmentGroupForm" name="assignmentForm">
-                        <fieldset>
-                            <div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'start_date')">
-                                <label for="bookName">Available from :</label>
-                                <input type="date" class="form-control" id="startDateHelp"
-                                       formControlName="start_date"
-                                        [(ngModel)]="assignmentForm.start_date"
-                                       name="start_date"
-                                       placeholder="Enter available from date" />
-                            </div>
+	<div class="modal fade" id="newAssignment" tabindex="-1" role="dialog" aria-labelledby="newAssignmentLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content" *ngIf="selectedGroup && dataObj.selectedLesson">
+				<div class="modal-header">
+					<h5 class="modal-title">Add Assignment</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form novalidate [formGroup]="assignmentGroupForm" name="assignmentForm">
+						<fieldset>
+							<div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'start_date')">
+								<label for="bookName">Available from :</label>
+								<input type="date" class="form-control" id="startDateHelp" formControlName="start_date" [(ngModel)]="assignmentForm.start_date"
+								 name="start_date" placeholder="Enter available from date" />
+							</div>
 
-                            <div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'due_date')">
-                                <label for="dueDateHelp">Due :</label>
-                                <input type="date" class="form-control" id="dueDateHelp"
-                                       formControlName="due_date"
-                                       [(ngModel)]="assignmentForm.due_date"
-                                       name="due_date"
-                                       placeholder="Enter due date" />
-                            </div>
+							<div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'due_date')">
+								<label for="dueDateHelp">Due :</label>
+								<input type="date" class="form-control" id="dueDateHelp" formControlName="due_date" [(ngModel)]="assignmentForm.due_date"
+								 name="due_date" placeholder="Enter due date" />
+							</div>
 
-                            <div class="form-group"  [ngClass]="displayFieldCss(assignmentGroupForm,'minute')">
+							<div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'minute')">
 
-                                <label >Minimum reading time</label>
-                                <div class="col-md-12 form-inline">
-                                    <input type="number" class="form-control col-sm-2" id="minuteHelp"
-                                           formControlName="minute"
-                                           [(ngModel)]="assignmentForm.minute"
-                                           name="minute" /> Minute
-                                    <input type="number" class="form-control col-sm-2" id="secondHelp"
-                                           formControlName="second"
-                                           [(ngModel)]="assignmentForm.second"
-                                           name="second" />Seconds
-                                </div>
-                            </div>
+								<label>Minimum reading time</label>
+								<div class="col-md-12 form-inline">
+									<input type="number" class="form-control col-sm-2" id="minuteHelp" formControlName="minute" [(ngModel)]="assignmentForm.minute"
+									 name="minute" /> Minute
+									<input type="number" class="form-control col-sm-2" id="secondHelp" formControlName="second" [(ngModel)]="assignmentForm.second"
+									 name="second" />Seconds
+								</div>
+							</div>
 
-                            <div class="form-group">
-                                   <label for="comment">Notes :</label>
-                                    <textarea name="comment"
-                                              formControlName="comment"
-                                              [(ngModel)]="assignmentForm.notes"
-                                              id="comment" cols="30" class="form-control" rows="4"></textarea>
-                               </div>
-                        </fieldset>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" [disabled]="!assignmentGroupForm.valid" (click)="saveAssignment()"
-                            class="btn btn-primary">Start Assignment
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+							<div class="form-group">
+								<label for="comment">Notes :</label>
+								<textarea name="comment" formControlName="comment" [(ngModel)]="assignmentForm.notes" id="comment" cols="30" class="form-control"
+								 rows="4"></textarea>
+							</div>
+						</fieldset>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="submit" [disabled]="!assignmentGroupForm.valid" (click)="saveAssignment()" class="btn btn-primary">Start Assignment
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <div class="modal fade" id="beforeChangePageOrBook" tabindex="-1" role="dialog" aria-labelledby="beforeChangePageOrBook"
-         aria-hidden="true">
-           <div class="modal-dialog modal-lg" role="document">
-               <div class="modal-content">
-                   <div class="modal-header">
-                       <h5 class="modal-title">
-                           <i class="fa fa-info"></i>Info</h5>
-                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                           <span aria-hidden="true">&times;</span>
-                       </button>
-                   </div>
-                   <div class="modal-body">
-                      <p>
-                          Are you sure to discard current changes ?
-                      </p>
-                   </div>
-                   <div class="modal-footer">
-                       <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                               (click)="discardAction(false)">No</button>
-                       <button type="button" class="btn btn-primary"
-                               (click)="discardAction(true)"
-                               data-dismiss="modal">Yes </button>
-                   </div>
-               </div>
-           </div>
-       </div>
+	<div class="modal fade" id="beforeChangePageOrBook" tabindex="-1" role="dialog" aria-labelledby="beforeChangePageOrBook"
+	 aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">
+						<i class="fa fa-info"></i>Info</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>
+						Are you sure to discard current changes ?
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="discardAction(false)">No</button>
+					<button type="button" class="btn btn-primary" (click)="discardAction(true)" data-dismiss="modal">Yes </button>
+				</div>
+			</div>
+		</div>
+	</div>
 
 </div>
 

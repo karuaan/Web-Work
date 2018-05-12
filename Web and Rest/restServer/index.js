@@ -1496,7 +1496,7 @@ app.get('/getstatuses',function(req,res){
 	});
 });
 
-var location = __dirname + "/public"
+var location = __dirname + "/public/android"
 var upload = multer({dest: location});
 
 app.post('/apk', upload.single("file"), function(req, res, next) {
