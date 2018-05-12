@@ -652,7 +652,7 @@ function addUser(first_name, last_name, email, callback){
 						});
 					}
 					else{
-						firebaseAdmin.auth().({
+						firebaseAdmin.auth().createUser({
 							  'email': email,
 							  emailVerified: false,
 							  password: "secretPassword",
