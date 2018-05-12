@@ -1632,7 +1632,7 @@ app.post('/lessons/remove-assignment',function(req,res){
 app.post('/batch-save/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
     if (req.body.lessons && req.body.lessons.length > 0){
 		BookService.saveLessons(req.body.lessons, req.body.group_id).then(function(results){
-			// console.log('results',results);
+			console.log('results',results);
 			res.json({
 				results: results,
 				message : 'All Good'
