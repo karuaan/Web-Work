@@ -652,13 +652,8 @@ function addUser(first_name, last_name, email, callback){
 			if(rows[0] === undefined){
 				console.log("ROWS ARE EMPTY")
 				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ('+ mysql.escape(first_name) + ',' + mysql.escape(last_name) + ','+ mysql.escape(email) +', 0)', function(err2, result){
-					if(!err2){
-						con.commit(function(err3){
-							if(err3){con.rollback(function(){callback(err3, null)})}
-							else{
-								callback(null, result)
-							}
-						});
+					if(err2){
+						con.rollback(function(){callback(err2, null)})
 					}
 					else{
 						firebaseAdmin.auth().createUser({
@@ -2406,14 +2401,20 @@ app.post('/inviteAdmin', function(req, res){
 });
 
 app.post('/inviteUser', function(req, res){
-	addUser('', '', req.body.email, function(err, result){
-		if(err){
-			res.json(err, null)
-		}
-		else{
-			res.json(null, result)
-		}
-	});
+	console.log(req.body.email);
+	if(req.body.email!=null){
+		addUser('', '', req.body.email, function(err, result){
+			if(err){
+				res.json(err)
+			}
+			else{
+				res.json(result)
+			}
+		});
+	}
+	else{
+		res.json({'err': 'requires email'}, null);
+	}
 });
 
 function getUserByEmail(email, callback){
