@@ -166,7 +166,7 @@ export class EmployeesComponent implements OnInit {
             this.selectedGroup = groups[0] || null;
 
             this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
-
+				console.log(this.selectedGroup);
                 if (assignments && assignments.hasOwnProperty('err')){
                     this.assignments = [{
                                         "assignment_id": -1,
@@ -179,7 +179,7 @@ export class EmployeesComponent implements OnInit {
                                         "TIME_TO_COMPLETE": 0
                                     }];
                     this.selectedAssignment = assignments[0];
-                    this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
+                    this.countdown = new Date(1970, 0, 1).setSeconds(0);
                     if (this.selectedGroup && this.selectedAssignment) {
                       this.employeesService.getEmployees(
                         this.selectedGroup.ID,
