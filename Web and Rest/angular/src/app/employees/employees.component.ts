@@ -839,11 +839,24 @@ export class EmployeesComponent implements OnInit {
                         }
                     }
                 }
-                for (let i = 0; i < lessons.length; i++) {
-                    self.dataObj.selectedBook.LESSONS.push(new Lesson(null, lessons[i].title, self.dataObj.selectedBook.ID, lessons[i].startPage, lessons[i].endPage, ''));
+              }
+            }
+          }
+
+          lessons.reverse();
+          var last = lessons[0].endPage;
+          for(let i = 0; i < lessons.length; i++) {
+            if(lessons[i].title != undefined && lessons[i].title != "Section 2010 Safety Handbook") {
+                console.log(lessons[i].title.split(""))
+                if(!lessons[i].title.split("").includes(".")) {
+                    console.log("here");
+                    self.dataObj.selectedBook.LESSONS.push(new Lesson(null, lessons[i].title, self.dataObj.selectedBook.ID, lessons[i].startPage, last, ''));
+                    last = lessons[i].startPage - 1;
                 }
-            });
-        }
+            }
+          }
+        });
+      }
     }
     getLessonPlan() {
         return this
