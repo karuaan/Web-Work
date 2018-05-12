@@ -199,7 +199,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
     
       var insertLesson = (lesson, group_id)=>{
         return new Promise( (resolve, reject) => {
-            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE, GROUP_ID) VALUES (?,?,?,?,?)";
+            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME, PDF_FILE, GROUP_ID) VALUES (?,?,?,?,?,?)";
             console.log('insertQuery',lesson);
                 con.query(insertQuery,[
                   lesson.BOOK_ID,
