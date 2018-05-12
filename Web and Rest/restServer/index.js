@@ -9,8 +9,6 @@ const path = require('path')
 const https = require('https');
 const admin_functions = require('./functions/admin_functions');
 const hummus = require('hummus');
-const firebaseAdmin = require("firebase-admin");
-const serviceAccount = require("./firebase_key.json");
 const emailReporting = require("./emailOverdueQuery");
 
 var validator = require('express-validator');
