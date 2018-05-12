@@ -2409,7 +2409,7 @@ app.post('/inviteUser', function(req, res){
 		});
 	}
 	else{
-		res.json({'err', 'requires email'}, null);
+		res.json({'err': 'requires email'}, null);
 	}
 });
 
