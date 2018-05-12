@@ -17,7 +17,7 @@ var multer = require('multer');
 global.__basedir = __dirname;
 
 var firebaseAdmin = require('firebase-admin');
-var serviceAccount = require('firebase_key.json');
+var serviceAccount = require('./firebase_key.json');
 
 firebaseAdmin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
