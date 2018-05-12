@@ -160,7 +160,7 @@ export class EmployeesComponent implements OnInit {
        this.employeesService.getUserData(admin_id).subscribe(userData =>{
           this.firstName = userData['first_name'];
           this.lastName = userData['last_name'];
-        });
+        
 		this.employeesService.getGroups(admin_id).subscribe(groups => {
             this.groups = groups;
             this.selectedGroup = groups[0] || null;
@@ -221,6 +221,7 @@ export class EmployeesComponent implements OnInit {
                     this.loadAssignmentPreview();
                     }
                 });
+            });
             });
 	       }
 

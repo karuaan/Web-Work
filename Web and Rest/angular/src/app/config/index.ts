@@ -2,6 +2,10 @@ export const DEBUG_MODE = false;
 
 export const API_CONFIG = {
     production : {
+    	endpoint: ``
+    },
+
+    amazon : {
         endpoint : `http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000`
     },
     development : {

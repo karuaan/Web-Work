@@ -26,10 +26,10 @@ var con;
 if(!debug){
     console.log('production')
 	con = mysql.createConnection(
-		{host: "mysql.cgkepgzez06k.us-east-2.rds.amazonaws.com",
-		user: "admin", password: "Stevens2018#MVPHWB",
+		{host: "127.0.0.1",
+		user: "root", password: "Stevens2018#MVPHWB",
 		port: "3306",
-		database: "FEB_2"}
+		database: "TRAINING_DB"}
 	)
 }
 else{
@@ -146,6 +146,7 @@ function create_all_tables(){
 "(ID int unsigned not null auto_increment,                                 "+
 "NAME text,                                                                "+
 "PDF_FILE text,                                                            "+
+"TOTAL_PAGES int unsigned,												   "+													
 "PRIMARY KEY (ID));                                                        "
 		, function(err, rows, fields){
 		console.log("Create Books")
@@ -159,7 +160,8 @@ function create_all_tables(){
 "LAST_NAME varchar(50),                                                    "+
 "EMAIL varchar(255),                                                       "+
 "IS_ADMIN bit(1),                                                          "+
-"OKTA_ID varchar(50),                                                      "+
+"FIREBASE_ID text,                                                         "+
+"PHONE_NUMBER varchar(10),												   "+
 "PRIMARY KEY (ID));                                                        "
 		, function(err, rows, fields){
 		console.log("Create Users");
@@ -168,10 +170,11 @@ function create_all_tables(){
 		console.log(fields);
 		con.query(
 "CREATE TABLE GROUPS                                                       "+
-"(ID int unsigned not null,                                                "+
+"(ID int unsigned not null,                                    				"+
 "ADMIN_ID int unsigned,                                                    "+
 "USER_ID int unsigned,                                                     "+
 "NAME text,                                                                "+
+"PRIMARY KEY(ID),						 								   "+
 "FOREIGN KEY (ADMIN_ID) REFERENCES USERS(ID) ON DELETE CASCADE,            "+
 "FOREIGN KEY (USER_ID) REFERENCES USERS(ID) ON DELETE CASCADE);            "
 		, function(err, rows, fields){
@@ -187,6 +190,7 @@ function create_all_tables(){
 "END_PAGE int unsigned,                                                    "+
 "NAME text,                                                                "+
 "PDF_FILE text,                                                            "+
+"GROUP_ID int unsigned,													   "+
 "PRIMARY KEY (ID),                                                         "+
 "FOREIGN KEY (BOOK_ID) REFERENCES BOOKS(ID) ON DELETE CASCADE);            "
 		, function(err, rows, fields){
@@ -204,6 +208,7 @@ function create_all_tables(){
 "START_DATE DATE,                                                      	   "+
 "END_DATE DATETIME,                                                        "+
 "TIME_TO_COMPLETE int unsigned,                                            "+
+"NOTES text,															   "+
 "AVAILABLE bit(1),														   "+
 "PRIMARY KEY (ID),                                                         "+
 "FOREIGN KEY (LESSON_ID) REFERENCES LESSONS(ID) ON DELETE CASCADE);        "
@@ -214,11 +219,11 @@ function create_all_tables(){
 		console.log(fields);
 		con.query(
 "CREATE TABLE STATUS                                                       "+
-"GROUP_ID int unsigned,                                                    "+
+"(GROUP_ID int unsigned,                                                    "+
 "EMPLOYEE_ID int unsigned,                                                 "+
 "ASSIGNMENT_ID int unsigned,                                               "+
 "IS_COMPLETE bit(1),                                                       "+
-"PRIMARY KEY (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID),                                                         "+
+"PRIMARY KEY (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID),					   "+
 "FOREIGN KEY (EMPLOYEE_ID) REFERENCES USERS(ID) ON DELETE CASCADE,         "+
 "FOREIGN KEY (ASSIGNMENT_ID) REFERENCES ASSIGNMENTS(ID) ON DELETE CASCADE);"
 		, function(err, rows, fields){
@@ -226,6 +231,18 @@ function create_all_tables(){
 		console.log(err);
 		console.log(rows);
 		console.log(fields);
+		con.query(
+"CREATE TABLE ANDROID_VERSION												"+
+"(version_number int(11) unsigned,											"+
+"version_url varchar(255));													"
+		, function(err, rows, fields){
+			console.log("Create Android Version");
+			console.log(err);
+			console.log(rows);
+			console.log(fields);
+		}
+
+			);
 
 	});
 	});
@@ -2409,4 +2426,4 @@ app.put('/registerUser', function(req, res)
 	})
 });
 
-app.listen(3000, '0.0.0.0', () => console.log('server running on 3000'));
+app.listen(3000, () => console.log('server running on 3000'));
