@@ -2397,25 +2397,12 @@ app.post('/inviteAdmin', function(req, res){
 });
 
 app.post('/inviteUser', function(req, res){
-	addAdmin(req.body.email, function(err, result){
+	addUser('', '', req.body.email, function(err, result){
 		if(err){
-			res.json(err);
+			res.json(err, null)
 		}
 		else{
-			var mailOptions = {
-				from: 'libertyelevatorreader@gmail.com',
-				to: [req.body.email],
-				subject: 'You have been added to Liberty Elevator Reader app!',
-				text: 'Please login using your email address and this temporary password: ' + req.body.pass
-			}
-			transporter.sendMail(mailOptions, function(error, info){
-				if(error){
-					res.json(error);
-				}
-				else{
-					res.json(info);
-				}
-			});
+			res.json(null, result)
 		}
 	});
 });
