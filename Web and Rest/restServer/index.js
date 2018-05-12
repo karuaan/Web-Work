@@ -2397,14 +2397,20 @@ app.post('/inviteAdmin', function(req, res){
 });
 
 app.post('/inviteUser', function(req, res){
-	addUser('', '', req.body.email, function(err, result){
-		if(err){
-			res.json(err, null)
-		}
-		else{
-			res.json(null, result)
-		}
-	});
+	console.log(req.body.email);
+	if(req.body.email!=null){
+		addUser('', '', req.body.email, function(err, result){
+			if(err){
+				res.json(err, null)
+			}
+			else{
+				res.json(null, result)
+			}
+		});
+	}
+	else{
+		res.json({'err', 'requires email'}, null);
+	}
 });
 
 function getUserByEmail(email, callback){
