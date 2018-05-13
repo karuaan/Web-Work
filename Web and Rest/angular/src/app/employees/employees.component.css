@@ -28,6 +28,12 @@
   font-size: 1.25em;
 }
 
+.scrollbar
+{
+  overflow-y: auto;
+  height: 47em;
+}
+
 .user-logout {
   cursor: pointer;
   transition: 0.2s ease-out all;

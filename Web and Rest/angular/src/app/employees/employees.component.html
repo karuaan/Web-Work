@@ -52,7 +52,7 @@
 	<div class="name-container" style="width: 100%; height: 2em; margin-top:1em">
 		<img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu()" src="assets/pngs/cog.png"
 		/>
-		<p style="margin: 0; float: right; font-size: 1.2em;">{{firstName}} {{lastName}}</p>
+		<p (click)="toggleMenu()" style="margin: 0; float: right; font-size: 1.2em;">{{employees.firstName}} {{employees.lastName}}</p>
 		<div id="adminMenu">
 			<div (click)="inviteAdminAction()" data-toggle="modal" data-target="#inviteAdminModal">Add Admin</div>
 			<div (click)="logout()">Log Out</div>
@@ -147,16 +147,17 @@
 						<h4>Lessons</h4>
 					</div>
 					<div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
-						<table class="table table-hover lessons">
-							<thead>
-								<tr>
-									<th></th>
-									<th>Name</th>
-									<th>Start Page</th>
-									<th>End Page</th>
-									<th></th>
-								</tr>
-							</thead>
+						<div class=scrollbar>
+						<table class="table table-hover lessons" style="table-layout: fixed;">
+							  <thead>
+								  <tr>
+									  <th></th>
+									  <th>Name</th>
+									  <th>Start Page</th>
+									  <th>End Page</th>
+									  <th></th>
+								  </tr>
+							  </thead>
 							<tbody>
 								<tr *ngFor="let lesson of dataObj.selectedBook.LESSONS;" [ngClass]="{invalid:!lesson.validationCheck(dataObj.selectedBook.TOTAL_PAGES)}">
 									<td>
@@ -200,8 +201,10 @@
 								</tr>
 
 							</tbody>
-						</table>
-					</div>
+							
+			</table>
+			</div>
+				</div>
 
 					<button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
 					<button (click)="saveLessons()" class="btn btn-primary ">Save</button>
@@ -213,7 +216,8 @@
 
 		<div class="col-xl-10" id="thirdColumn">
 			<div *ngIf="viewAssignments || !viewLessons">
-				<div id="groupSummary">
+				<div id="groupSummary"></div>
+				<h4 *ngIf="selectedAssignment === undefined ? selectedAssignment.NAME !== 'No assignments' : false">No Assignment Selected</h4>
 					<h4 *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
 					<div id="groupActions">
 						<div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
@@ -279,6 +283,7 @@
 					-->
 					</div>
 				</div>
+				
 				<div class="table-container">
 					<table class="table table-hover">
 						<thead>
@@ -731,9 +736,8 @@
 				</div>
 			</div>
 		</div>
+	</div
 	</div>
-
-</div>
 
 <div class="container" *ngIf="isLoggedIn && admin_id < 0">
 	<h1>Welcome to the PDF Distribution App</h1>
