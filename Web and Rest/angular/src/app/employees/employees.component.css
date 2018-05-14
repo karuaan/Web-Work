@@ -28,10 +28,16 @@
   font-size: 1.25em;
 }
 
-.scrollbar
-{
-  overflow-y: auto;
-  height: 47em;
+table tbody {
+display:block; 
+height:30em; 
+overflow-y:auto;
+}
+
+table thead, table tbody tr {
+display:table; 
+width:100%; 
+table-layout:fixed; 
 }
 
 .user-logout {
