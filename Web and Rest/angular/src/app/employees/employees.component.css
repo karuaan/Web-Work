@@ -147,6 +147,7 @@ table-layout:fixed;
 .lesson-header {
   padding: 1em;
   margin-top: 1em;
+  display: inline-block;
 }
 
 @media (min-width: 1200px) {

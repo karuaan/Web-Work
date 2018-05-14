@@ -18,18 +18,26 @@ var scheduler = require('node-schedule');
 var multer = require('multer');
 global.__basedir = __dirname;
 
-//const filesys = require('fs')
+//const filesys = require('fs')/
 ///*
 const debug = false;
 var con;
 
+//local db on Liberty Windows server
+/* {host: "127.0.0.1",
+		user: "root", password: "Stevens2018#MVPHWB",
+		port: "3306",
+		database: "TRAINING_DB"} */
+
+
 if(!debug){
     console.log('production')
 	con = mysql.createConnection(
-		{host: "127.0.0.1",
-		user: "root", password: "Stevens2018#MVPHWB",
+		//Amazon RDS
+		{host: "mysql.cgkepgzez06k.us-east-2.rds.amazonaws.com",
+		user: "admin", password: "Stevens2018#MVPHWB",
 		port: "3306",
-		database: "TRAINING_DB"}
+		database: "FEB_2"}
 	)
 }
 else{
@@ -269,7 +277,9 @@ function sendEmailReport(rows){
 		let adminEmail = element.admin_email;
 		let groups = element.groups;
 
-		let htmlBody = '<h1>Daily Overdue Report</h1>';
+
+		let htmlBody = '<style>td { vertical-align:top;text-align:left;padding:15px;border:1px solid #ddd;} table {border-collapse: collapse;width:100%;}</style>'
+		htmlBody+= '<h1>Daily Overdue Report</h1>';
 
 		groups.forEach(function(element, index, array){
 			let groupName = element.name;
@@ -291,7 +301,7 @@ function sendEmailReport(rows){
 
 				let lateText;
 				if (diffDays==1){
-					lateText='(1 day late)';
+					lateText='(1 day late)'
 				}
 				else{
 					lateText='('+diffDays+' days late'+')';
@@ -299,26 +309,38 @@ function sendEmailReport(rows){
 
 				assignCell = assignmentName+'<br/>'+lateText;
 
+				htmlBody+='<tr><td rowspan='+employees.length+'>'+assignCell+'<br/>';
 
-				htmlBody+='<tr><td style=\"vertical-align:top;text-align:left;padding:0\" rowspan='+employees.length+'>'+assignCell+'</td>';
+				let emailLink = 'mailto:';
+
+				employeeRows ='';
 				employees.forEach(function(element, index, array){
 					let employeeName = element.first_name+" "+element.last_name;
 					let employeeEmail = element.email;
 					let employeePhone = element.phone;
 
 					if (index>0){
-						htmlBody+='<tr>'
+						employeeRows+='<tr>'
+						emailLink+=',';
 					}
 
-					htmlBody+='<td>'+employeeName+'</td> <td>'+employeeEmail+'</td><td>'+employeePhone+'</td></tr>';
+					emailLink+=employeeEmail;
 
+					employeeRows+='<td>'+employeeName+'</td> <td>'+employeeEmail+'</td><td>'+employeePhone+'</td></tr>';
 				});
+				htmlBody+='<br/><a href=\"'+emailLink+'\">Send All</a></td>';
+				htmlBody+=employeeRows;
 			});
 			htmlBody+='</table>';
+
+			htmlBody += '<p>This is an automated email. For more question please send an email to libertyelevatorreader@gmail.com or reply to this email.</p>';
+			htmlBody += '<h3>Thank You,</h3>';
+			htmlBody += '<h3>Liberty Elevator Safety Training</h3>';
+
 			//send one email per admin
 			var mailOptions = {
 				from: 'libertyelevatorreader@gmail.com',
-				to: adminEmail,
+				to: 'mr.sketch99@gmail.com',
 				subject: '[Liberty Elevator Safety Training] Overdue Report',
 				html: htmlBody
 			};
@@ -335,15 +357,15 @@ function sendEmailReport(rows){
 }
 
 app.get('/sendEmailReport', function(req, res){
-	 emailReporting.overdue(function(err, result){
-	 	if (err){
-	 		res.json(err);
-	 	}else{
-	 		res.json(result);
-		 	sendEmailReport(result);
+	emailReporting.overdue(function(err, result){
+		if (err){
+			res.json(err);
+		}else{
+			res.json(result);
+			sendEmailReport(result);
 
-	 	}
-	 });
+		}
+	});
 });
 
 //run every day to add status records for newly available assignments

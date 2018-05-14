@@ -150,7 +150,6 @@ export class EmployeesComponent implements OnInit {
 
         this.resetForm();
         this.reactiveFormGroup();
-        this.transformResponseAndPopulate();
 
         document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
 
@@ -165,6 +164,8 @@ export class EmployeesComponent implements OnInit {
             this.employeesService.getGroups(admin_id).subscribe(groups => {
                 this.groups = groups;
                 this.selectedGroup = groups[0] || null;
+                console.log(this.selectedGroup);
+                this.transformResponseAndPopulate();
 
                 this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
                     console.log(this.selectedGroup);
@@ -221,11 +222,12 @@ export class EmployeesComponent implements OnInit {
                         }
                         this.loadAssignmentPreview();
                     }
+                    this.loadAssignmentPreview();
                 });
             });
-	       });
-        }
-        
+        });
+    }
+
 
     transformLessonModel(tempLession: Lesson) {
         return new Lesson(
@@ -253,6 +255,8 @@ export class EmployeesComponent implements OnInit {
                     return book;
                 });
             };
+            console.log("Group ID");
+            console.log(this.selectedGroup.ID);
             if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
                 this.employeesService.getLessons(this.selectedGroup.ID).subscribe(data => {
                     this.dataObj.books = bookMapping(res.books, data);
@@ -482,7 +486,6 @@ export class EmployeesComponent implements OnInit {
                         console.log('itemitem', item);
                         item.setGroup(this.selectedGroup.ID);
                         item.setIsAssigned(true);
-
                     }
                 });
 

@@ -4,7 +4,7 @@
   "description": "A basic restful server",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "start": "nodemon node index.js"
   },
   "author": "Gregory Goldshteyn",
   "license": "ISC",
