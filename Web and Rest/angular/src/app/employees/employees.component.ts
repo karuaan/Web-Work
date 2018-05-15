@@ -1255,7 +1255,7 @@ export class EmployeesComponent implements OnInit {
     editAssignment() {
         console.log("edit");
         console.log(this.selectedAssignment);
-        var date = new Date(this.selectedAssignment.START_DATE);
+        /* var date = new Date(this.selectedAssignment.START_DATE);
         var month = (date.getMonth() + 1);
         var monthString = "";
         if (month < 10) {
@@ -1297,7 +1297,7 @@ export class EmployeesComponent implements OnInit {
         var notes = this.selectedAssignment.NOTES;
         if (notes !== undefined && notes !== null && notes != "") {
             (<HTMLInputElement>document.getElementById("notesInputEdit")).value = notes;
-        }
+        } */
 		this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
     }
 
