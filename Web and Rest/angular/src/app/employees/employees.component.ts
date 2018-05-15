@@ -96,6 +96,7 @@ export class EmployeesComponent implements OnInit {
     groupForm: any = FormGroup;
     inviteAdminForm: any = FormGroup;
     assignmentForm: any = null;
+    newUserObject: any = null;
 
     sortAscending = true;
     sortDescending = true;
@@ -1441,6 +1442,7 @@ export class EmployeesComponent implements OnInit {
     }
 
     signInWithEmail() {
+        console.log(1);
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
                 this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
@@ -1448,24 +1450,31 @@ export class EmployeesComponent implements OnInit {
                         this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went wrong. Please contact an administrator";
                         this.isLoginError = true;
                         //this.isLoggedIn = true;
+                        console.log(2);
                     }
                     else {
+                        console.log(3);
                         if (res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined) {
                             this.isLoginError = false;
                             this.newUser = true;
+                            console.log(4);
                         }
                         else {
+                            console.log(5);
                             if (res2[0]['IS_ADMIN']['data'][0] == 1) {
                                 this.admin_id = 3; //Hardcode since groups shouldnt care about admin ids
                                 this.onAdminLogin(this.admin_id);//HARDCODE FOR TESTING
                                 //this.onAdminLogin(this.admin_id);
                                 this.isLoggedIn = true;
+                                console.log(6);
                             }
                             else {
                                 //console.log(res2[0]['IS_ADMIN']);
                                 //console.log(this.admin_id);
                                 //Employee Login logic occurs
-                                this.isLoggedIn = true;                              
+                                this.isLoggedIn = true;
+                                this.newUser = false;
+                                console.log(7);                              
                             }
                         }
                     }
@@ -1529,23 +1538,40 @@ export class EmployeesComponent implements OnInit {
             this.loginErrorMessage = "Passwords must match";
             this.isLoginError = true;
         }
-        else if (this.newUserPhoneNumber.length < 10) {
+        else if (this.newUserPhoneNumber.length != 10) {
             this.loginErrorMessage = "Please enter a valid phone number (at least 10 numbers)";
             this.isLoginError = true;
         }
         else {
-            this.newUserError = this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword, this.newUserPhoneNumber)['error'];
-            if (this.newUserError === undefined) {
-                this.loginErrorMessage = "Internal server error. Please contact an administrator";
-                console.log(this.newUserError);
-                this.isLoginError = true;
+            this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword, this.newUserPhoneNumber).then
+            ((ret) => {
+
+                this.newUserObject = ret;
+                console.log({"newUser": this.newUserObject});
+                this.newUserError = this.newUserObject['error'];
+                console.log({"Error": this.newUserError});
+                console.log({"affectedRows": this.newUserObject['affectedRows']});
+
+
+                if (this.newUserObject['affectedRows'] != 1) {
+                    this.loginErrorMessage = "Internal server error. Please contact an administrator";
+                    console.log(this.newUserError);
+                    this.isLoginError = true;
+                }
+                else {
+                    this.loginErrorMessage = "Success!";
+                    console.log(this.loginErrorMessage);
+                    this.isLoginError = true;
+                    this.userPassword = this.newPassword;
+                    this.signInWithEmail();
+                }
+                console.log(this.loginErrorMessage);
+            },
+            (err) => {
+                console.log(err);
             }
-            else {
-                this.loginErrorMessage = "Success!";
-                this.isLoginError = true;
-                this.userPassword = this.newPassword;
-                this.signInWithEmail();
-            };
+    )
+            
         }
 
     }
