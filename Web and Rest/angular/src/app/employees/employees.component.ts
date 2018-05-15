@@ -89,6 +89,7 @@ export class EmployeesComponent implements OnInit {
 
     bookGroupForm: FormGroup;
     assignmentGroupForm: FormGroup;
+	editAssignmentGroupForm: FormGroup;
     employeeForm: FormGroup;
 
     bookForm: any = null;
@@ -326,6 +327,14 @@ export class EmployeesComponent implements OnInit {
 
     reactiveFormGroup(): void {
         this.assignmentGroupForm = this.fb.group({
+            start_date: new FormControl(null, Validators.required),
+            due_date: new FormControl(null, Validators.required),
+            minute: new FormControl(null, Validators.required),
+            second: new FormControl(),
+            comment: new FormControl(),
+        });
+		
+		this.editAssignmentGroupForm = this.fb.group({
             start_date: new FormControl(null, Validators.required),
             due_date: new FormControl(null, Validators.required),
             minute: new FormControl(null, Validators.required),

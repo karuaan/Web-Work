@@ -424,6 +424,42 @@
           <!--
 						<p *ngIf="dataObj.selectedLesson && dataObj.selectedLesson !== undefined">{{dataObj.selectedLesson.NAME}}</p>
 					-->
+					
+		<!-- 
+		<form novalidate [formGroup]="editAssignmentGroupForm" name="editAssignmentForm">
+            <fieldset>
+              <div class="form-group" [ngClass]="displayFieldCss(editAssignmentGroupForm,'start_date')">
+                <label for="bookName">Available from :</label>
+                <input type="date" class="form-control" id="startDateHelp" formControlName="start_date" [(ngModel)]="editAssignmentForm.start_date"
+                  name="start_date" placeholder="Enter available from date" />
+              </div>
+
+              <div class="form-group" [ngClass]="displayFieldCss(editAssignmentGroupForm,'due_date')">
+                <label for="dueDateHelp">Due :</label>
+                <input type="date" class="form-control" id="dueDateHelp" formControlName="due_date" [(ngModel)]="editAssignmentForm.due_date"
+                  name="due_date" placeholder="Enter due date" />
+              </div>
+
+              <div class="form-group" [ngClass]="displayFieldCss(editAssignmentGroupForm,'minute')">
+
+                <label>Minimum reading time</label>
+                <div class="col-md-12 form-inline">
+                  <input type="number" class="form-control col-sm-2" id="minuteHelp" formControlName="minute" [(ngModel)]="editAssignmentForm.minute"
+                    name="minute" /> Minute
+                  <input type="number" class="form-control col-sm-2" id="secondHelp" formControlName="second" [(ngModel)]="editAssignmentForm.second"
+                    name="second" />Seconds
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="comment">Notes :</label>
+                <textarea name="comment" formControlName="comment" [(ngModel)]="editAssignmentForm.notes" id="comment" cols="30" class="form-control"
+                  rows="4"></textarea>
+              </div>
+            </fieldset>
+          </form>
+		-->
+					
           <form *ngIf="editAssignmentValues != undefined">
             <fieldset>
               <div class="date-labels">
