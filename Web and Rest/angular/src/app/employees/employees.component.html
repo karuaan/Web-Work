@@ -216,8 +216,11 @@
     <div class="col-xl-10" id="thirdColumn">
       <div *ngIf="viewAssignments || !viewLessons">
         <div id="groupSummary">
-          <h4 *ngIf="selectedAssignment === undefined ? selectedAssignment.NAME !== 'No assignments' : false">No Assignment Selected</h4>
-          <h4 *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
+		<h4 *ngIf="selectedAssignment === undefined">No Assignment Selected</h4>
+		<div *ngIf="selectedAssignment !== undefined">
+          <h4 *ngIf="selectedAssignment.assignment_id === -1 ? selectedAssignment.NAME !== 'No assignments' : false">No Assignment Selected</h4>
+          <h4 *ngIf="selectedAssignment.assignment_id > -1 ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
+		 </div>
           <div id="groupActions">
             <div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
               <div data-toggle="modal" data-target="#editAssignmentModal" (click)="editAssignment(selectedAssignment)">
