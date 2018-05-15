@@ -1299,7 +1299,8 @@ export class EmployeesComponent implements OnInit {
             (<HTMLInputElement>document.getElementById("notesInputEdit")).value = notes;
         } */
 		this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
-    }
+		console.log(this.editAssignmentValues);
+	}
 
     updateAssignment() {
         let minute = parseInt((<HTMLInputElement>document.getElementById("minutesEdit")).value);

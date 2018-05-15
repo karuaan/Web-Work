@@ -431,8 +431,8 @@
                 <p>Due: </p>
               </div>
               <div class="date-inputs">
-                <input type="date" id="startDateEdit" [(ngModel)]="editAssignmentValues.START_DATE" [ngModelOptions]="{standalone: true}">
-                <input type="date" id="dueDateEdit" [(ngModel)]="editAssignmentValues.DUE_DATE" [ngModelOptions]="{standalone: true}">
+                <input type="date" id="startDateEdit" [(ngModel)]="editAssignmentValues.START_DATE | date:'yyyy-MM-dd'" [ngModelOptions]="{standalone: true}">
+                <input type="date" id="dueDateEdit" [(ngModel)]="editAssignmentValues.DUE_DATE | date:'yyyy-MM-dd'" [ngModelOptions]="{standalone: true}">
               </div>
               <br>
               <p>Minimum reading time: </p>
