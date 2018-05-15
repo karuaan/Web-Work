@@ -914,6 +914,19 @@ function addAssignment(lesson_id, group_id, due_date, time_to_complete, notes){
 
 function editAssignment(lesson_id, group_id, start_date, due_date, time_to_complete, notes, callback){
 
+	console.log(lesson_id);
+	console.log(group_id);
+	console.log(start_date);
+	console.log(due_date);
+	console.log(time_to_complete);
+	console.log(notes);
+	
+	console.log(typeof lesson_id);
+	console.log(typeof group_id);
+	console.log(typeof start_date);
+	console.log(typeof due_date);
+	console.log(typeof time_to_complete);
+	console.log(typeof notes);
 	
 	con.query("UPDATE ASSIGNMENTS SET START_DATE=?, "+
 		"DUE_DATE=?, "+
