@@ -1321,8 +1321,8 @@ export class EmployeesComponent implements OnInit {
             BOOK_ID: this.selectedAssignment.book_id,
             GROUP_ID: this.selectedGroup.ID,
             NOTES: notes,
-            DUE_DATE: due_date,
-            START_DATE: start_date,
+            DUE_DATE: due_date | date,
+            START_DATE: start_date | date,
             TIME_TO_COMPLETE: time_to_complete
         };
 
