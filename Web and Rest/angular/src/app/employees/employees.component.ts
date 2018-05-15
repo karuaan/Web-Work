@@ -1342,6 +1342,9 @@ export class EmployeesComponent implements OnInit {
             assign.NOTES = notes;
         }
 
+		console.log(assign);
+		console.log(dataForm);
+		
         for (let i = 0; i < this.assignments.length; i++) {
             if (this.assignments[i].assignment_id == assign.assignment_id) {
                 this.assignments[i] = assign;
