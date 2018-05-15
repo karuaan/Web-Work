@@ -955,7 +955,13 @@ function editAssignment(lesson_id, group_id, start_date, due_date, time_to_compl
 
 app.put('/editAssignments', function(req, res)
 {
-	editAssignment(req.body.LESSON_ID, req.body.GROUP_ID, req.body.DUE_DATE, req.body.TIME_TO_COMPLETE, req.body.NOTES, function(err, result)
+	editAssignment(req.body.LESSON_ID, 
+					req.body.GROUP_ID,
+					req.body.START_DATE,
+					req.body.DUE_DATE, 
+					req.body.TIME_TO_COMPLETE, 
+					req.body.NOTES, 
+					function(err, result)
 	{
 		if (err)
 		{
