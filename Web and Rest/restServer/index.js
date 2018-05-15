@@ -942,7 +942,7 @@ function addGroup(admin_id, user_ids, name, callback){
 				popped_rows.push(rows1[i].EMAIL);
 			}
 			//console.log(poppedRows);
-			//console.log(usr_mails);
+			//console.log(usr	con.query('SELECT * FROM USERS WHERE USERS.EMAIL=' + mysql.escape(email), function(err, rows){_mails);
 			let new_users = usr_mails.filter(x => !popped_rows.includes(x)).map(x => [x]);
 
 			con.query("INSERT INTO USERS (EMAIL) VALUES ?", [new_users], function(errNew, rowsNew){
@@ -1568,7 +1568,7 @@ app.get("/apk", function(req, res){
 		}
 		else {
 			url = __dirname + "/public/" + rows[0]["version_url"];
-			res.download(url);
+			res.sendFile(url)
 		}
 	})
 });

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { Employee } from './employee';
 import { Assignment } from './assignment';
 import { Group } from './group';
@@ -38,9 +38,17 @@ export class EmployeesService {
 	  return response;
   }
   
-  getBooks(): Observable<any>{
+  getBooks(){
 	  var response = this.http.get<any>(this.restURL + '/books');
 	  return response;
+  }
+
+  getApk() {
+    var response = this.http.get(this.restURL + '/apk', {
+      responseType: 'blob',
+      headers: new HttpHeaders().append('Content-Type', 'application/json')
+    });
+    return response;
   }
   
   getLessons(group_id): Observable<Lesson[]>{

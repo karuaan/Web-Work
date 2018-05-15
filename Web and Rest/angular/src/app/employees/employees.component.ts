@@ -12,6 +12,7 @@ import { FormControl, FormGroup, FormBuilder } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { PDFDocumentProxy, PDFProgressData } from 'ng2-pdf-viewer';
 import { AuthService } from '../auth.service';
+import {saveAs} from 'file-saver';
 
 declare var $: any;
 
@@ -43,6 +44,7 @@ export class EmployeesComponent implements OnInit {
     newUser = false;
     loginErrorMessage = "";
     admin_password = "";
+    url = "";
 
     newPassword = "";
     confirmPassword = "";
@@ -1438,7 +1440,8 @@ export class EmployeesComponent implements OnInit {
                             else {
                                 //console.log(res2[0]['IS_ADMIN']);
                                 //console.log(this.admin_id);
-                                this.isLoggedIn = true;
+                                //Employee Login logic occurs
+                                this.isLoggedIn = true;                              
                             }
                         }
                     }
@@ -1472,6 +1475,13 @@ export class EmployeesComponent implements OnInit {
                 this.loginErrorMessage = err;
                 this.isLoginError = true;
             });
+    }
+
+    getApk() {
+        this.employeesService.getApk().subscribe(
+            data => saveAs(data, "SafetyTraining.apk"),
+            error => console.log(error)
+        );
     }
 
     signInFirstTime() {
