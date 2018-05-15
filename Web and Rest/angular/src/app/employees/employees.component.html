@@ -424,22 +424,22 @@
           <!--
 						<p *ngIf="dataObj.selectedLesson && dataObj.selectedLesson !== undefined">{{dataObj.selectedLesson.NAME}}</p>
 					-->
-          <form>
+          <form *ngIf="editAssignmentValues != undefined">
             <fieldset>
               <div class="date-labels">
                 <p>Available From: </p>
                 <p>Due: </p>
               </div>
               <div class="date-inputs">
-                <input type="date" id="startDateEdit" [(ngModel)]="editAssignmentValues.START_DATE">
-                <input type="date" id="dueDateEdit" [(ngModel)]="editAssignmentValues.DUE_DATE">
+                <input type="date" id="startDateEdit" [(ngModel)]="editAssignmentValues.START_DATE" [ngModelOptions]="{standalone: true}">
+                <input type="date" id="dueDateEdit" [(ngModel)]="editAssignmentValues.DUE_DATE" [ngModelOptions]="{standalone: true}">
               </div>
               <br>
               <p>Minimum reading time: </p>
               <div class="reading-time-input">
-                <input type="number" id="minutesEdit" [(ngModel)]="editAssignmentValues.MINUTES"/>
+                <input type="number" id="minutesEdit" [(ngModel)]="editAssignmentValues.MINUTES" [ngModelOptions]="{standalone: true}"/>
                 <p>minutes</p>
-                <input type="seconds" id="secondsEdit" [(ngModel)]="editAssignmentValues.SECONDS"/>
+                <input type="seconds" id="secondsEdit" [(ngModel)]="editAssignmentValues.SECONDS" [ngModelOptions]="{standalone: true}"/>
                 <p>seconds</p>
               </div>
               <br>
