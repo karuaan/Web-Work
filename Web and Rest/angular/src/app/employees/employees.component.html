@@ -86,6 +86,7 @@
     <div class="col-xl-0" id="secondColumn">
       <div *ngIf="viewAssignments || viewLessons" id="secondaryContainer">
         <div *ngIf="viewAssignments" id="assignmentsContainer">
+	<div id="assignmentHeader">
           <div class="date-header" style="height: 7em">
             <h4 style="float: left; margin-top: 1em;">Due Date</h4>
             <div class="due-sort" style="float: right" (click)="toggleSort()">
@@ -98,6 +99,8 @@
             </div>
           </div>
           <div *ngIf="assignments[0].NAME == 'No assignments'" class="empty-assignments">No Assignments</div>
+	</div>
+	<div id="assignmentList" style="overflow-y: auto; height: 60em;">
           <div *ngIf="assignments[0].NAME !== 'No assignments'" class="assignment-list--container">
             <div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
               <h5>{{assignment.NAME}}</h5>
@@ -121,6 +124,7 @@
 
             </div>
           </div>
+	</div>
         </div>
 
 
@@ -216,8 +220,11 @@
     <div class="col-xl-10" id="thirdColumn">
       <div *ngIf="viewAssignments || !viewLessons">
         <div id="groupSummary">
-          <h4 *ngIf="selectedAssignment === undefined ? selectedAssignment.NAME !== 'No assignments' : false">No Assignment Selected</h4>
-          <h4 *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
+		<h4 *ngIf="selectedAssignment === undefined">No Assignment Selected</h4>
+		<div *ngIf="selectedAssignment !== undefined">
+          <h4 *ngIf="selectedAssignment.assignment_id === -1 ? selectedAssignment.NAME !== 'No assignments' : false">No Assignment Selected</h4>
+          <h4 *ngIf="selectedAssignment.assignment_id > -1 ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
+		 </div>
           <div id="groupActions">
             <div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
               <div data-toggle="modal" data-target="#editAssignmentModal" (click)="editAssignment(selectedAssignment)">

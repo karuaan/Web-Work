@@ -601,12 +601,16 @@ export class EmployeesComponent implements OnInit {
                     EMAIL: item.value
                 };
             }),
+			ADMIN_ID: this.admin_id
         };
 
         this.bookService.saveGroup(groupData).subscribe((res: any) => {
-            if (res && !res.status && res.message) {
+            console.log("AAAAA");
+			if (res && !res.status && res.message) {
                 this.toastrService.warning('Group', res.message);
+				console.log("BBBBB");
             } else {
+				console.log("CCCCC");
                 if (res.data && res.data.length > 0) {
                     const newGroup = {
                         ID: res.data[0].ID,
@@ -614,10 +618,14 @@ export class EmployeesComponent implements OnInit {
                     };
                     this.groups.push(newGroup);
                     this.groupSelect(newGroup);
+					console.log("DDDDD")
                 }
+				console.log("EEEEE")
                 this.toastrService.success('Group', 'Saved');
                 this.groupForm.reset();
                 $('#addGroupModal').modal('hide');
+				console.log("Success add groups")
+				//this.onAdminLogin(this.admin_id);
             }
         }, (err) => {
             this.toastrService.warning('Group', 'Internal server error');
@@ -1053,9 +1061,11 @@ export class EmployeesComponent implements OnInit {
     groupSelect(group) {
         this.sortAscending = true;
         this.sortDescending = true;
-        if (group.ID == this.selectedGroup.ID) {
-            return;
-        }
+		if(this.selectedGroup !== undefined && this.selectedGroup !== null){
+			if (group.ID == this.selectedGroup.ID) {
+				return;
+			}
+		}
         this.selectedGroup = group;
         this.employeesService.getAssignments(group.ID).subscribe(data2 => {
             if (!data2['err']) {
@@ -1420,7 +1430,7 @@ export class EmployeesComponent implements OnInit {
                         }
                         else {
                             if (res2[0]['IS_ADMIN']['data'][0] == 1) {
-                                this.admin_id = res2[0]['ID'];
+                                this.admin_id = 3; //Hardcode since groups shouldnt care about admin ids
                                 this.onAdminLogin(this.admin_id);//HARDCODE FOR TESTING
                                 //this.onAdminLogin(this.admin_id);
                                 this.isLoggedIn = true;
