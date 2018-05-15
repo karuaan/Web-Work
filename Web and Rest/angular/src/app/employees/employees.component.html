@@ -431,20 +431,20 @@
                 <p>Due: </p>
               </div>
               <div class="date-inputs">
-                <input type="date" id="startDateEdit" [(ngModel)]="editAssignmentValues.START_DATE | date:'yyyy-MM-dd'" [ngModelOptions]="{standalone: true}">
-                <input type="date" id="dueDateEdit" [(ngModel)]="editAssignmentValues.DUE_DATE | date:'yyyy-MM-dd'" [ngModelOptions]="{standalone: true}">
+                <input type="date" id="startDateEdit" [ngModel]="editAssignmentValues.START_DATE | date:'yyyy-MM-dd'">
+                <input type="date" id="dueDateEdit" [ngModel]="editAssignmentValues.DUE_DATE | date:'yyyy-MM-dd'">
               </div>
               <br>
               <p>Minimum reading time: </p>
               <div class="reading-time-input">
-                <input type="number" id="minutesEdit" [(ngModel)]="editAssignmentValues.MINUTES" [ngModelOptions]="{standalone: true}"/>
+                <input type="number" id="minutesEdit" [ngModel]="editAssignmentValues.MINUTES"/>
                 <p>minutes</p>
-                <input type="seconds" id="secondsEdit" [(ngModel)]="editAssignmentValues.SECONDS" [ngModelOptions]="{standalone: true}"/>
+                <input type="seconds" id="secondsEdit" [ngModel]="editAssignmentValues.SECONDS"/>
                 <p>seconds</p>
               </div>
               <br>
               <p>Notes</p>
-              <textarea style="width: 100%" id="notesInputEdit" rows="5" [(ngModel)]="editAssignmentValues.NOTES"></textarea>
+              <textarea style="width: 100%" id="notesInputEdit" rows="5" [ngModel]="editAssignmentValues.NOTES"></textarea>
             </fieldset>
           </form>
         </div>
