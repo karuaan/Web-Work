@@ -719,7 +719,7 @@ function addUser(first_name, last_name, email, callback){
 										
 									}
 									else{
-										callback(null, info)
+										callback(null, result)
 									}
 								});
 							},
@@ -729,7 +729,6 @@ function addUser(first_name, last_name, email, callback){
 										*/
 								callback(firebase_err, null);
 							})
-						callback(err2, null);
 					}
 				})
 			}
@@ -1560,6 +1559,18 @@ app.post('/apk', upload.single("file"), function(req, res, next) {
         res.end("Missing file")
     }
 
+});
+
+app.get("/apk", function(req, res){
+	con.query("SELECT version_url FROM ANDROID_VERSION WHERE version_number = (SELECT MAX(version_number)FROM ANDROID_VERSION);", function(err, rows) {
+		if(err) {
+			res.end(err);
+		}
+		else {
+			url = __dirname + "/public/" + rows[0]["version_url"];
+			res.download(url);
+		}
+	})
 });
 
 
