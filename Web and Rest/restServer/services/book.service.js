@@ -435,7 +435,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                                 ID : NEW_GROUP_ID,
                                 NAME : group.NAME,
                                 USER_ID : empdata.data.ID,
-                                ADMIN_ID : 3               
+                                ADMIN_ID : group.ADMIN_ID               
                             });
                         
 

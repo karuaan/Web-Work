@@ -601,6 +601,7 @@ export class EmployeesComponent implements OnInit {
                     EMAIL: item.value
                 };
             }),
+			ADMIN_ID: this.admin_id
         };
 
         this.bookService.saveGroup(groupData).subscribe((res: any) => {
