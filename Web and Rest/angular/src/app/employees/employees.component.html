@@ -114,7 +114,7 @@
                 <p class="due-title">Available: </p>
                 <p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
               </div>
-              <div class="due-holder">
+              <div class="due-holder" *ngIf="assignment.START_DATE < Date.now()">
                 <p class="due-title">Percent Complete: </p>
                 <p class="due-value">{{assignment.percent_complete | percent}}</p>
               </div>
