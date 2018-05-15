@@ -1424,7 +1424,7 @@ export class EmployeesComponent implements OnInit {
                         }
                         else {
                             if (res2[0]['IS_ADMIN']['data'][0] == 1) {
-                                this.admin_id = res2[0]['ID'];
+                                this.admin_id = 3;
                                 this.onAdminLogin(this.admin_id);//HARDCODE FOR TESTING
                                 //this.onAdminLogin(this.admin_id);
                                 this.isLoggedIn = true;
