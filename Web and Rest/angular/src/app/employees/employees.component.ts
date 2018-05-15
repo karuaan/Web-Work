@@ -605,10 +605,12 @@ export class EmployeesComponent implements OnInit {
         };
 
         this.bookService.saveGroup(groupData).subscribe((res: any) => {
-            this.onAdminLogin(this.admin_id);
+            console.log("AAAAA");
 			if (res && !res.status && res.message) {
                 this.toastrService.warning('Group', res.message);
+				console.log("BBBBB");
             } else {
+				console.log("CCCCC");
                 if (res.data && res.data.length > 0) {
                     const newGroup = {
                         ID: res.data[0].ID,
@@ -616,7 +618,9 @@ export class EmployeesComponent implements OnInit {
                     };
                     this.groups.push(newGroup);
                     this.groupSelect(newGroup);
+					console.log("DDDDD")
                 }
+				console.log("EEEEE")
                 this.toastrService.success('Group', 'Saved');
                 this.groupForm.reset();
                 $('#addGroupModal').modal('hide');
@@ -1424,7 +1428,7 @@ export class EmployeesComponent implements OnInit {
                         }
                         else {
                             if (res2[0]['IS_ADMIN']['data'][0] == 1) {
-                                this.admin_id = 3;
+                                this.admin_id = 3; //Hardcode since groups shouldnt care about admin ids
                                 this.onAdminLogin(this.admin_id);//HARDCODE FOR TESTING
                                 //this.onAdminLogin(this.admin_id);
                                 this.isLoggedIn = true;
