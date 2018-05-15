@@ -84,6 +84,8 @@ export class EmployeesComponent implements OnInit {
     viewLessons: boolean;
     percentCompletes: Number[];
     currentPercentComplete: Number;
+	
+	editAssignmentValues: {};
 
     bookGroupForm: FormGroup;
     assignmentGroupForm: FormGroup;
@@ -183,6 +185,7 @@ export class EmployeesComponent implements OnInit {
                             "TIME_TO_COMPLETE": 0
                         }];
                         this.selectedAssignment = assignments[0];
+						this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
                         this.countdown = new Date(1970, 0, 1).setSeconds(0);
                         if (this.selectedGroup && this.selectedAssignment) {
                             this.employeesService.getEmployees(
@@ -195,6 +198,7 @@ export class EmployeesComponent implements OnInit {
                     } else {
                         this.assignments = assignments;
                         this.selectedAssignment = assignments[0];
+						this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
                         this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                         if (this.selectedGroup && this.selectedAssignment) {
@@ -479,7 +483,7 @@ export class EmployeesComponent implements OnInit {
 
                 this.assignments.push(assign);
                 this.selectedAssignment = assign;
-
+				this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
                 this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
 
@@ -754,6 +758,7 @@ export class EmployeesComponent implements OnInit {
                             "TIME_TO_COMPLETE": 0
                         }];
                         this.selectedAssignment = this.assignments[0];
+						this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
                         this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     }
@@ -1079,6 +1084,7 @@ export class EmployeesComponent implements OnInit {
                 } else {
                     this.assignments = data2;
                     this.selectedAssignment = data2[0];
+					this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
                     this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     this.employeesService.getEmployees(this.selectedGroup.ID, this.selectedAssignment.assignment_id).subscribe(data3 => {
@@ -1115,6 +1121,7 @@ export class EmployeesComponent implements OnInit {
                     "TIME_TO_COMPLETE": 0
                 }];
                 this.selectedAssignment = this.assignments[0];
+				this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
                 this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                 this.employeesService.getEmployees(group.ID, -1).subscribe(data3 => {
@@ -1219,6 +1226,7 @@ export class EmployeesComponent implements OnInit {
             }
         }
         this.selectedAssignment = assignment;
+		this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
         this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
         this.employeesService.getEmployees(this.selectedGroup.ID, assignment.assignment_id).subscribe(data3 => {
@@ -1339,6 +1347,7 @@ export class EmployeesComponent implements OnInit {
         }
 
         this.selectedAssignment = assign;
+		this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
         this.bookService.editAssignment(this.selectedAssignment.assignment_id, dataForm).subscribe((res: any) => {
             console.log('complete');
