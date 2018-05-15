@@ -13,5 +13,5 @@ export const environment = {
     storageBucket: "safety-book-reader.appspot.com",
     messagingSenderId: "219029116689"
   },
-  restURL: "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com"
+  restURL: "http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000"
 };
