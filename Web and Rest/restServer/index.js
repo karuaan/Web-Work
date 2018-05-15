@@ -915,12 +915,12 @@ function addAssignment(lesson_id, group_id, due_date, time_to_complete, notes){
 function editAssignment(lesson_id, group_id, start_date, due_date, time_to_complete, notes, callback){
 
 	
-	con.query("UPDATE ASSIGNMENTS SET ASSIGNMENT.START_DATE=?, "+
-		"ASSIGNMENTS.DUE_DATE=?, "+
-		"ASSIGNMENTS.TIME_TO_COMPLETE=?, "+
-		"ASSIGNMENTS.NOTES=? "+
-		"WHERE ASSIGNMENTS.LESSON_ID=? "+
-		"AND ASSIGNMENTS.GROUP_ID=?", 
+	con.query("UPDATE ASSIGNMENTS SET START_DATE=?, "+
+		"DUE_DATE=?, "+
+		"TIME_TO_COMPLETE=?, "+
+		"NOTES=? "+
+		"WHERE LESSON_ID=? "+
+		"AND GROUP_ID=?", 
 		
 		[start_date,
 		due_date,
