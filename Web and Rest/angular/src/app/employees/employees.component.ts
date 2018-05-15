@@ -619,6 +619,7 @@ export class EmployeesComponent implements OnInit {
                 this.toastrService.success('Group', 'Saved');
                 this.groupForm.reset();
                 $('#addGroupModal').modal('hide');
+				this.onAdminLogin(this.admin_id);
             }
         }, (err) => {
             this.toastrService.warning('Group', 'Internal server error');
