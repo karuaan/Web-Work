@@ -1051,7 +1051,7 @@ export class EmployeesComponent implements OnInit {
     }
 
     emailGroupIncomplete(text) {
-        this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE == 1 ? employee.EMAIL : employee.IS_COMPLETE).reduce(function (total, next) {
+        this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE == 1 ? employee.EMAIL : employee.IS_COMPLETE.data[0]).reduce(function (total, next) {
             console.log(total);
 			console.log(next);
 			return total + ", " + next
