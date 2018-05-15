@@ -605,7 +605,8 @@ export class EmployeesComponent implements OnInit {
         };
 
         this.bookService.saveGroup(groupData).subscribe((res: any) => {
-            if (res && !res.status && res.message) {
+            this.onAdminLogin(this.admin_id);
+			if (res && !res.status && res.message) {
                 this.toastrService.warning('Group', res.message);
             } else {
                 if (res.data && res.data.length > 0) {
@@ -619,7 +620,8 @@ export class EmployeesComponent implements OnInit {
                 this.toastrService.success('Group', 'Saved');
                 this.groupForm.reset();
                 $('#addGroupModal').modal('hide');
-				this.onAdminLogin(this.admin_id);
+				console.log("Success add groups")
+				//this.onAdminLogin(this.admin_id);
             }
         }, (err) => {
             this.toastrService.warning('Group', 'Internal server error');
