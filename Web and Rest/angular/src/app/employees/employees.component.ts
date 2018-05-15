@@ -1061,9 +1061,11 @@ export class EmployeesComponent implements OnInit {
     groupSelect(group) {
         this.sortAscending = true;
         this.sortDescending = true;
-        if (group.ID == this.selectedGroup.ID) {
-            return;
-        }
+		if(this.selectedGroup !== undefined && this.selectedGroup !== null){
+			if (group.ID == this.selectedGroup.ID) {
+				return;
+			}
+		}
         this.selectedGroup = group;
         this.employeesService.getAssignments(group.ID).subscribe(data2 => {
             if (!data2['err']) {
