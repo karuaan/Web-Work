@@ -558,10 +558,10 @@ a {
 }
 
 .status-warning {
-  background: rgb(255, 152, 59);
+  background: #f4c480;
 }
 
 .status-incomplete {
-  background: #DA291C;
-  color: #FFFFFF;
+  background: #FFCCCB;
+  background: #f4c480;
 }
