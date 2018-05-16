@@ -1340,9 +1340,9 @@ export class EmployeesComponent implements OnInit {
             TIME_TO_COMPLETE: time_to_complete
         };
 		
-		console.log((<HTMLInputElement>document.getElementById('startDateEdit')).value)
+		console.log(new Date((<HTMLInputElement>document.getElementById('startDateEdit')).value.replace(/-/g, '\/')));
 		console.log((<HTMLInputElement>document.getElementById('dueDateEdit')).value)
-		console.log(this.selectedAssignment.START_DATE.parse());
+		console.log(this.selectedAssignment.START_DATE);
 		console.log(this.selectedAssignment.DUE_DATE);
 
         let startDate = new Date(start_date);
