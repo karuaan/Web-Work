@@ -1326,8 +1326,16 @@ export class EmployeesComponent implements OnInit {
         let time_to_complete = (minute * 60) + secondsInt;
 
         let notes = (<HTMLInputElement>document.getElementById("notesInputEdit")).value;
-        let start_date = (<HTMLInputElement>document.getElementById('startDateEdit')).value;
-        let due_date = (<HTMLInputElement>document.getElementById('dueDateEdit')).value;
+        let start_date = new Date((<HTMLInputElement>document.getElementById('startDateEdit')).value);
+        let due_date = new Date((<HTMLInputElement>document.getElementById('dueDateEdit')).value);
+		
+		console.log(start_date);
+		
+		start_date.setDate(start_date.getDate() + 1)
+		due_date.setDate(due_date.getDate() + 1)
+		
+		console.log(start_date);
+		
         const dataForm = {
             assignment_id: this.selectedAssignment.assignment_id,
             NAME: this.selectedAssignment.NAME,
@@ -1339,11 +1347,6 @@ export class EmployeesComponent implements OnInit {
             START_DATE: start_date.toString(),
             TIME_TO_COMPLETE: time_to_complete
         };
-		
-		console.log((<HTMLInputElement>document.getElementById('startDateEdit')).value + 1);
-		console.log((<HTMLInputElement>document.getElementById('dueDateEdit')).value)
-		console.log(this.selectedAssignment.START_DATE);
-		console.log(this.selectedAssignment.DUE_DATE);
 
         let startDate = new Date(start_date);
         let dueDate = new Date(due_date);
