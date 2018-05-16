@@ -1334,7 +1334,7 @@ export class EmployeesComponent implements OnInit {
 		start_date.setDate(start_date.getDate() + 1)
 		due_date.setDate(due_date.getDate() + 1)
 		
-		console.log(start_date);
+		console.log(start_date.toString());
 		
         const dataForm = {
             assignment_id: this.selectedAssignment.assignment_id,
