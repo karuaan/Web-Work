@@ -1583,6 +1583,22 @@ export class EmployeesComponent implements OnInit {
         }
 
     }
+	
+	resetPassword(){
+		var result = this.authService.resetPassword(this.userEmail);
+		if(result.success !== undefined){
+			this.loginErrorMessage = result.success;
+			this.isLoginError = true;
+		}
+		else{
+			this.loginErrorMessage = result.error;
+			this.isLoginError = true;
+		}
+	}
+	
+	changePassword(){
+		
+	}
 
     logout() {
         this.authService.logout();
