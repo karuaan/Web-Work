@@ -13,7 +13,6 @@
         Login with Email
       </button>
 
-
     </div>
   </form>
   <div *ngIf="isLoginError==true" class="alert alert-danger">
@@ -45,6 +44,8 @@
     <p>{{loginErrorMessage}}</p>
   </div>
 </div>
+
+
 <div class="container" *ngIf="isLoggedIn && admin_id >= 0 && !newUser">
   <!--
 	<div class="row">
@@ -52,7 +53,7 @@
 	</div>
 	-->
   <div class="name-container" style="width: 100%; height: 2em; margin-top:1em">
-		<img style="height: 4em; margin-top: -1em;" src="assets/pngs/Liberty Logo.png" />
+		<img style="height: 4em; margin-top: -1em; padding: 10px;" src="assets/pngs/Liberty Logo.png" />
     <img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu()" src="assets/pngs/cog.png"
     />
     <p style="margin: 0; float: right; font-size: 1.2em;">{{firstName}} {{lastName}}</p>
@@ -323,7 +324,7 @@
               <td>{{employee.FIRST_NAME | pending}}</td>
               <td>{{employee.LAST_NAME | pending}}</td>
               <td>
-                <a href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a>
+                <a style="color: black; text-decoration: underline;" href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a>
               </td>
               <td *ngIf="selectedAssignment !== null && employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 1 : false">
                 <input type="checkbox" disabled checked/>
