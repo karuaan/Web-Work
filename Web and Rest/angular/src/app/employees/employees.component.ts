@@ -1605,7 +1605,9 @@ export class EmployeesComponent implements OnInit {
 	}
 
     logout() {
-        this.authService.logout();
+        this.userEmail = "";
+		this.userPassword = "";
+		this.authService.logout();
         this.loginErrorMessage = "";
         this.isLoginError = false;
         this.isLoggedIn = false;
