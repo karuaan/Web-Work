@@ -57,10 +57,10 @@ export class AuthService {
 		return this.firebaseAuth.auth.currentUser;
 	}
 	
-	resetPassword(userEmail):Object{
+	resetPassword(userEmail){
 		//https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key=AIzaSyDj3uGXUayslSgPJnwmpqHjwQ_c0ZCqBv4
 		var response = this.http.post<Object>('https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key=AIzaSyDj3uGXUayslSgPJnwmpqHjwQ_c0ZCqBv4', {"requestType":"PASSWORD_RESET","email":userEmail});
-		response.subscribe((res) => {
+		return response.subscribe((res) => {
 			return {'success': 'Password has been reset'}
 		}, (err) => {
 			return {'error': 'Could not send password reset email'}
