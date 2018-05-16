@@ -1585,15 +1585,14 @@ export class EmployeesComponent implements OnInit {
     }
 	
 	resetPassword(){
-		let result = this.authService.resetPassword(this.userEmail);
-		if(result.success !== undefined){
-			this.loginErrorMessage = result.success;
-			this.isLoginError = true;
-		}
-		else{
-			this.loginErrorMessage = result.error;
-			this.isLoginError = true;
-		}
+		this.authService.resetPassword(this.userEmail)
+			.subscribe((res) => {
+				this.loginErrorMessage = 'Password has been reset';
+				this.isLoginError = true;
+			}, (err) => {
+				this.loginErrorMessage = 'Could not send password reset email';
+				this.isLoginError = true;
+			});
 	}
 	
 	changePassword(){
