@@ -1585,7 +1585,7 @@ export class EmployeesComponent implements OnInit {
     }
 	
 	resetPassword(){
-		var result = this.authService.resetPassword(this.userEmail);
+		let result = this.authService.resetPassword(this.userEmail);
 		if(result.success !== undefined){
 			this.loginErrorMessage = result.success;
 			this.isLoginError = true;
