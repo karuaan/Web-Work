@@ -307,10 +307,10 @@
               <td>
                 <a href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a>
               </td>
-              <td *ngIf="selectedAssignment !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
+              <td *ngIf="selectedAssignment !== null && employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 1 : false">
                 <input type="checkbox" disabled checked/>
               </td>
-              <td *ngIf="selectedAssignment !== null ? employee.IS_COMPLETE.data[0] === 0 : false">
+              <td *ngIf="employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 0 : true">
                 <input type="checkbox" disabled/>
               </td>
             </tr>
