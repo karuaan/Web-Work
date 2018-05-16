@@ -691,8 +691,8 @@ export class EmployeesComponent implements OnInit {
             if (res && !res.status && res.message) {
                 this.toastrService.warning('Invite', res.message);
             } else {
-				console.log(inviteData.email);
-				console.log(inviteData.pass);
+				//console.log(inviteData.email);
+				//console.log(inviteData.pass);
                 this.authService.signUpRegular(inviteData.email, inviteData.pass).then(data => {
                     this.toastrService.success('Invite', 'Success');
                     this.inviteAdminForm.reset();
