@@ -191,7 +191,7 @@ table-layout:fixed;
 }
 
 .assignment-summary {
-  padding: 1em;
+  padding: 1em 1em 0em 1em;
   border-bottom: solid black 0.1em;
   cursor: pointer;
   overflow: hidden;
@@ -563,4 +563,12 @@ a {
 
 .status-incomplete {
   background: #FFCCCB;
+}
+
+.status {
+  margin-left: -1em;
+  margin-right: -1em;
+  width: calc(100% + 2em);
+  padding-left: 1em;
+  padding-right: 1em;
 }
