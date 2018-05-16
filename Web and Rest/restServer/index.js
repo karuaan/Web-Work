@@ -705,7 +705,7 @@ function addUser(first_name, last_name, email, callback){
 									from: 'libertyelevatorreader@gmail.com',
 									to: [email],
 									subject: 'You have been invited to the liberty elevator app!',
-									text: 'Follow this link. Use this email and the provided password to login, then follow the steps. secretPassword'
+									text: 'Follow this link. https://safetytraining.libertyelevator.com/ Use this email and the provided password to login, then follow the steps. secretPassword'
 								}
 								transporter.sendMail(mailOptions, function(error, info){
 									if(error){
