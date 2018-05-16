@@ -1380,24 +1380,17 @@ export class EmployeesComponent implements OnInit {
             console.log('complete');
 			this.employeesService.getEmployees(this.selectedGroup.ID, this.selectedAssignment.assignment_id).subscribe(data3 => {
 				this.employees = data3;
-
 				let complete = 0;
 				let total = data3.length;
 				for (let i = 0; i < data3.length; i++) {
-					console.log(data3[i]);
+					//console.log(data3[i]);
 					if (data3[i].IS_COMPLETE !== null) {
 						if (data3[i].IS_COMPLETE.data[0] === 1) {
 							complete = complete + 1;
 						}
 					}
 				}
-
-				if (complete === 0) {
-					this.selectedAssignmentCompletion = 0 + "%";
-				} else {
-					this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
-				}
-
+				this.selectedAssignment.percent_complete = complete / total;
 			});
         });
 		
