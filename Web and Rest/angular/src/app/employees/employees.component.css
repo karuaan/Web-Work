@@ -29,15 +29,15 @@
 }
 
 table tbody {
-display:block; 
-height:47em; 
+display:block;
+height:47em;
 overflow-y:auto;
 }
 
 table thead, table tbody tr {
-display:table; 
-width:100%; 
-table-layout:fixed; 
+display:table;
+width:100%;
+table-layout:fixed;
 }
 
 .user-logout {
@@ -551,4 +551,17 @@ a {
 .support {
   color: #000000;
   text-decoration: none;
+}
+
+.status-complete {
+  background: #e1efcd;
+}
+
+.status-warning {
+  background: rgb(255, 152, 59);
+}
+
+.status-incomplete {
+  background: #DA291C;
+  color: #FFFFFF;
 }

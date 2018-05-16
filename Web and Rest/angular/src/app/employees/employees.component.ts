@@ -104,6 +104,8 @@ export class EmployeesComponent implements OnInit {
     countdown: Number;
     previewPdf: Object;
     pdfCurrentPagePreviewMax: string;
+    currentDate: Date;
+    warningDate: Date;
 
     private bookService: BookService;
 
@@ -120,7 +122,10 @@ export class EmployeesComponent implements OnInit {
         toastrService: ToastrService,
         authService: AuthService,
         bookService: BookService, fb: FormBuilder) {
-
+        this.currentDate = new Date();
+        let testDate = new Date();
+        testDate = new Date(testDate.setDate(new Date().getDate() - 3));
+        this.warningDate = testDate;
         this.fb = fb;
         this.employeesService = employeesService;
         this.bookService = bookService;

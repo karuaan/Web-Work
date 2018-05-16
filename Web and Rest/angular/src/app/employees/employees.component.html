@@ -12,6 +12,8 @@
       <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
         Login with Email
       </button>
+
+
     </div>
   </form>
   <div *ngIf="isLoginError==true" class="alert alert-danger">
@@ -118,7 +120,22 @@
                 <p class="due-title">Available: </p>
                 <p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
               </div>
-              <div class="due-holder">
+
+
+              <div *ngIf="assignment.percent_complete == 1 && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')" class="due-holder status-complete">
+                <p class="due-title">Percent Complete: </p>
+                <p class="due-value">{{assignment.percent_complete | percent}}</p>
+              </div>
+							<div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (warningDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') > (currentDate | date:'MM/dd/yyyy') && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')" class="due-holder status-warning">
+								<p class="due-title">Percent Complete: </p>
+                <p class="due-value">{{assignment.percent_complete | percent}}</p>
+              </div>
+							<div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') < (currentDate | date:'MM/dd/yyyy')" class="due-holder status-incomplete">
+								<p class="due-title">Percent Complete: </p>
+                <p class="due-value">{{assignment.percent_complete | percent}}</p>
+              </div>
+
+							<div *ngIf="assignment.percent_complete !== 1 && ((assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (currentDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') < (warningDate | date:'MM/dd/yyyy'))" class="due-holder">
                 <p class="due-title">Percent Complete: </p>
                 <p class="due-value">{{assignment.percent_complete | percent}}</p>
               </div>
