@@ -1040,6 +1040,65 @@ export class EmployeesComponent implements OnInit {
         }
     }
 
+    saveDeleteLesosns(): void {
+      const new_lessons: any[] = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
+          let validation = item.NAME != '' && item.START_PAGE > 0 && item.END_PAGE > 0;
+          if ((item.changed_state && item.validationCheck(this.dataObj.selectedBook.TOTAL_PAGES) && validation) || (item.ID == null && validation)) {
+              return true;
+          } else {
+              return false;
+          }
+      }).map((item) => {
+          return {
+              ID: item.ID,
+              NAME: item.NAME,
+              action: item.ID ? 'existing' : 'new',
+              BOOK_ID: item.BOOK_ID,
+              BOOK_FILE_PDF: this.dataObj.selectedBook.PDF_FILE,
+              END_PAGE: item.END_PAGE == null ? 0 : item.END_PAGE,
+              PDF_FILE: item.PDF_FILE,
+              START_PAGE: item.START_PAGE == null ? 0 : item.START_PAGE
+          };
+      });
+
+      const data = {
+          lessons: new_lessons,
+          group_id: this.selectedGroup.ID,
+          book_id: this.dataObj.selectedBook.ID,
+      };
+
+          this.bookService.batchSaveLesson(data).subscribe((lessonsRes: any) => {
+
+              let newLessons = lessonsRes.results.filter(item => item.action == 'new').map((item: Lesson) => {
+                  return this.transformLessonModel(item);
+              });
+
+              let updatedLessons = lessonsRes.results.filter(item => item.action == 'exsting').map((item: Lesson) => {
+                  return this.transformLessonModel(item);
+              });
+
+
+              this.dataObj.selectedBook.LESSONS = [
+                  ...this.dataObj.selectedBook.LESSONS.filter((lesson) => lesson.ID != null),
+                  ...newLessons
+              ];
+
+              this.dataObj.selectedBook.LESSONS.forEach((item, key) => {
+                  updatedLessons.forEach((editLesson, eKey) => {
+                      if (item.ID == editLesson.ID) {
+                          this.dataObj.selectedBook.LESSONS[key] = editLesson;
+                      }
+                  });
+              });
+
+              this.toastrService.success('Lesson', 'Saved');
+
+
+              // this.refreshBookLessons(this.selectedBook);
+          });
+
+    }
+
     deleteSelected(): void {
         if (this.dataObj.selectedBook.LESSONS) {
             const lessionIds = this.dataObj.selectedBook.LESSONS.filter((item) => item.is_checked == true && item.ID != null).map(item => item.ID);
@@ -1480,7 +1539,7 @@ export class EmployeesComponent implements OnInit {
         }
 
         this.dataObj.selectedBook.LESSONS = saved;
-
+        this.saveDeleteLesosns();
     }
 
     signInWithEmail() {
