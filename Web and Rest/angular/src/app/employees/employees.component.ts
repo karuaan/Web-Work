@@ -1378,6 +1378,7 @@ export class EmployeesComponent implements OnInit {
 
         this.bookService.editAssignment(this.selectedAssignment.assignment_id, dataForm).subscribe((res: any) => {
             console.log('complete');
+			this.groupSelect(this.selectedGroup)
         });
     }
 
