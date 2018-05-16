@@ -1342,8 +1342,8 @@ export class EmployeesComponent implements OnInit {
 		
 		console.log((<HTMLInputElement>document.getElementById('startDateEdit')).value + 1);
 		console.log((<HTMLInputElement>document.getElementById('dueDateEdit')).value)
-		console.log(this.selectedAssignment.START_DATE + 1);
-		console.log(this.selectedAssignment.DUE_DATE + 1);
+		console.log(this.selectedAssignment.START_DATE);
+		console.log(this.selectedAssignment.DUE_DATE);
 
         let startDate = new Date(start_date);
         let dueDate = new Date(due_date);
