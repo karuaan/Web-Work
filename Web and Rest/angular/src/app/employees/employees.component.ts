@@ -761,7 +761,16 @@ export class EmployeesComponent implements OnInit {
                     this.assignments = this.assignments.filter((a: Assignment) => {
                         return !(assignmentIds.indexOf(a.assignment_id) > -1);
                     });
-
+					this.selectedAssignment = {
+                            "assignment_id": -1,
+                            "NAME": "No assignments",
+                            "START_DATE": null,
+                            "DUE_DATE": null,
+                            "NOTES": "",
+                            "book_id": -1,
+                            "lesson_id": -1,
+                            "TIME_TO_COMPLETE": 0
+                        };
                     if (this.assignments.length == 0) {
                         this.assignments = [{
                             "assignment_id": -1,
@@ -773,11 +782,14 @@ export class EmployeesComponent implements OnInit {
                             "lesson_id": -1,
                             "TIME_TO_COMPLETE": 0
                         }];
-                        this.selectedAssignment = this.assignments[0];
+                        //this.selectedAssignment = this.assignments[0];
 						this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
                         this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     }
+					
+					
+					
                     for (let j = 0; j < this.dataObj.selectedBook.LESSONS.length; j++) {
                         if (this.dataObj.selectedBook.LESSONS[j].ID === assignment.lesson_id) {
                             this.dataObj.selectedBook.LESSONS[j].removeAssingGroup(this.selectedGroup.ID);
