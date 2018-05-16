@@ -19,10 +19,11 @@
     <p>{{loginErrorMessage}}</p>
   </div>
   <div>
-	<button class="btn btn-primary" (click)="resetPassword()">Reset Password</button>
     <!--<button (click)="testGetEmployee()">Test Get Employee by Email</button>-->
+	<button id="resetButton" style="margin: 20px; padding: 5px; width: 400px; height: 50px; text-align: center; font-size: 24px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" class="btn btn-primary" (click)="resetPassword()" data-toggle="modal" data-target="#resetPasswordModal">Reset Password</button>
   </div>
 </div>
+
 <div class="container" *ngIf="newUser">
   <form class="login-form" name="newUserForm" method="post">
     <label>First Name</label>
@@ -53,8 +54,8 @@
 	<button (click)="testGetEmployee()">Test Get Employee by Email</button>
 	</div>
 	-->
-  <div class="name-container" style="width: 100%; height: 2em; margin-top:1em">
-		<img style="height: 4em; margin-top: -1em; padding: 10px;" src="assets/pngs/Liberty Logo.png" />
+  <div class="name-container" style="width: 100%; height: 6em; margin-top:1em">
+		<img style="height: 6em; margin-top: -1em; padding: 2px;" src="assets/pngs/Liberty Logo.png" />
     <img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu()" src="assets/pngs/cog.png"
     />
     <p style="margin: 0; float: right; font-size: 1.2em;">{{firstName}} {{lastName}}</p>
@@ -188,15 +189,15 @@
                       <input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
                     </td>
                     <td>
-                      <input type="text" class="form-control input-sm col-sm-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
+                      <input size="30" type="text" class="form-control input-sm col-sm-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
                     </td>
                     <td>
-                      <input type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
+                      <input size="4" type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
                         (keyup)="changePdfPageNo(lesson.START_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][start_page]"
                         [(ngModel)]="lesson.START_PAGE" min="0">
                     </td>
                     <td>
-                      <input class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
+                      <input size="4" class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
                         (keyup)="changePdfPageNo(lesson.END_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][end_page]"
                         [(ngModel)]="lesson.END_PAGE" min="0">
                     </td>
@@ -310,27 +311,27 @@
           </div>
         </div>
         <div class="table-container">
-          <table class="table table-hover">
+          <table class="table table-hover" style="width: 100%;">
             <thead>
-              <th></th>
-              <th scope="col">First Name</th>
-              <th scope="col">Last Name</th>
-              <th scope="col">Email</th>
-              <th scope="col">Completed</th>
+              <th style="width: 10%;"></th>
+              <th scope="col" style= "width: 25%;">First Name</th>
+              <th scope="col" style="width: 25%;">Last Name</th>
+              <th scope="col" style="width: 27%;">Email</th>
+              <th scope="col" style="width: 13%;">Completed</th>
             </thead>
-            <tr class="employee-row" *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
-              <td class="employee-delete">
+            <tr style="width: 100%;" class="employee-row" *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
+              <td style="width: 10%;" class="employee-delete">
                 <p>X</p>
               </td>
-              <td>{{employee.FIRST_NAME | pending}}</td>
-              <td>{{employee.LAST_NAME | pending}}</td>
-              <td>
+              <td style= "width: 25%;">{{employee.FIRST_NAME | pending}}</td>
+              <td style= "width: 25%;">{{employee.LAST_NAME | pending}}</td>
+              <td style= "width: 30%;">
                 <a style="color: black; text-decoration: underline;" href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a>
               </td>
-              <td *ngIf="selectedAssignment !== null && employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 1 : false">
+              <td style= "width: 10%;" *ngIf="selectedAssignment !== null && employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 1 : false">
                 <input type="checkbox" disabled checked/>
               </td>
-              <td *ngIf="employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 0 : true">
+              <td style= "width: 10%;" *ngIf="employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 0 : true">
                 <input type="checkbox" disabled/>
               </td>
             </tr>
@@ -723,54 +724,6 @@
     </div>
   </div>
 
-    <div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Reset Password</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-			<label>Email address</label>
-			<input type="text" [(ngModel)]="userEmail" [ngModelOptions]="{standalone: true}">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" (click)="resetPassword()" class="btn btn-primary">Submit
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Change Password</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-			<label>Old Password</label>
-			<input type="password" [(ngModel)]="userEmail" [ngModelOptions]="{standalone: true}">
-			<label>New Password</label>
-			<input type="password" [(ngModel)]="userEmail" [ngModelOptions]="{standalone: true}">
-			<label>Confirm New Password</label>
-			<input type="password" [(ngModel)]="userEmail" [ngModelOptions]="{standalone: true}">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" (click)="changePassword()" class="btn btn-primary">Submit
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
   <div class="modal fade" id="newAssignment" tabindex="-1" role="dialog" aria-labelledby="newAssignmentLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content" *ngIf="selectedGroup && dataObj.selectedLesson">
