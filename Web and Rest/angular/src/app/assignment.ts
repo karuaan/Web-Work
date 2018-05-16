@@ -7,5 +7,6 @@ export class Assignment {
 	book_id: number;
 	lesson_id: number;
 	employees?: any[] = [];
+	percent_complete?: Number = 0;
 	TIME_TO_COMPLETE: number;
 }
