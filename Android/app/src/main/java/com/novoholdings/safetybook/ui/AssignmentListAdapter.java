@@ -32,9 +32,7 @@ public class AssignmentListAdapter extends RecyclerView.Adapter<AssignmentViewHo
         View itemView = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.pdf_list_item, viewGroup, false);
 
-        AssignmentBean assignmentBean = assignmentList.get(position);
-
-        return new AssignmentViewHolder(mContext, itemView, assignmentBean);
+        return new AssignmentViewHolder(mContext, itemView);
     }
 
 
@@ -58,7 +56,8 @@ public class AssignmentListAdapter extends RecyclerView.Adapter<AssignmentViewHo
         else {
             viewHolder.itemView.setBackgroundColor(Color.WHITE);
         }
-      /*  viewHolder.view.setOnClickListener(new View.OnClickListener() {
+
+        viewHolder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 selectedPos = position;
@@ -66,7 +65,6 @@ public class AssignmentListAdapter extends RecyclerView.Adapter<AssignmentViewHo
                 notifyDataSetChanged();
             }
         });
-*/
 
     }
 

@@ -99,16 +99,14 @@ public class GridAdapter extends BaseAdapter {
                 bookName =
                 (TextView) convertView.findViewById(R.id.bookName),
                 dueDate =
-                (TextView)convertView.findViewById(R.id.dueDate),
-                completion =
-                (TextView)convertView.findViewById(R.id.completion);
+                (TextView)convertView.findViewById(R.id.dueDate);
 
         final LinearLayout adminEmail = (LinearLayout) convertView.findViewById(R.id.adminEmail);
         final TextView adminName = (TextView)adminEmail.findViewById(R.id.adminName);
 
         final GroupBean group = getItem(position);
 
-        ArrayList<AssignmentBean> list = assignmentsDao.getData(AssignmentsDao.QUERY_GET_ALL+" WHERE "+AssignmentsDao.COLUMN_IS_COMPLETE+"="+AppProperties.NO+" ORDER BY date("+AssignmentsDao.COLUMN_DUE_DATE+") DESC Limit 1");
+        ArrayList<AssignmentBean> list = assignmentsDao.getAssignmentsByGroup(group.getId());
 
         if (list.size()>0){
 
@@ -127,7 +125,7 @@ public class GridAdapter extends BaseAdapter {
                 calendar.setTime(simpleDateFormat.parse(assignment.getDueDate()));
 */
                 String date = assignment.getDueDate();
-                dueDate.setText(date);
+                dueDate.setText(currentChapter);
 
             }
             else {

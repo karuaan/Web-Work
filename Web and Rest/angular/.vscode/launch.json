@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Chrome with ng serve",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:443",
+            "webRoot": "${workspaceRoot}",
+            "sourceMapPathOverrides": {
+                "webRoot": "${workspaceRoot}",
+                "webpack:/*": "${workspaceRoot}/*"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}\\lite",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": [
+                "${workspaceFolder}/dist/out-tsc/**/*.js"
+            ]
+        }
+    ]
+}

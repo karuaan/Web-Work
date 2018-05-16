@@ -154,7 +154,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         //get assignments from local storage
         assignmentsDao = new AssignmentsDao(AssignmentsActivity.this);
         //assignmentsDao.insertData("Chapter Name", 1, groupId, YES, 900, "11-30-17T00:00.000Z", YES, "filename.pdf", 1, 10);
-        assignmentsList = assignmentsDao.getAssignments(groupId);
+        assignmentsList = assignmentsDao.getAssignmentsByGroup(groupId);
         assignmentsDueSoon = assignmentsList.size() > 0;
 
         if (assignmentsDueSoon){
@@ -293,38 +293,28 @@ public class AssignmentsActivity extends AppCompatActivity{
         pageCountTV.setText(String.valueOf(pageCount));
         relativeDueDateTV.setText(days);
 
-        if (AppProperties.isDemoMode())
+        File file = new File(Environment.getExternalStorageDirectory()+localFilePath);
+
+        if (file.exists()){
             //set start button on click
             startButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startReading("section1.pdf", assignmentBean.getReadingTime());
+                    startReading(file, assignmentBean);
                 }
             });
-        else{
-
-            File file = new File(Environment.getExternalStorageDirectory()+localFilePath);
-
-            if (file.exists()){
-                //set start button on click
-                startButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startReading(file, assignmentBean);
-                    }
-                });
-            }
-            else {
-                //set download button on click
-                startButton.setText(R.string.download);
-                startButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startDownload();
-                    }
-                });
-            }
         }
+        else {
+            //set download button on click
+            startButton.setText(R.string.download);
+            startButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startDownload();
+                }
+            });
+        }
+
 
     }
 
@@ -383,7 +373,7 @@ public class AssignmentsActivity extends AppCompatActivity{
             //is the assignment currently showing in the preview pane?
             //checkDownloadStatus(referenceId);
             if (referenceId == bookDownload){
-                File file = new File(localFilePath);
+                File file = new File(Environment.getExternalStorageDirectory()+localFilePath);
                 //change start button appearance and behavior
                 checkBookFile();
                 if (file.exists()){
@@ -468,10 +458,13 @@ public class AssignmentsActivity extends AppCompatActivity{
     }
 
     private void completeAssignment(){
-        assignmentsDao.completeReading(currentAssignmentId);
-        Toast.makeText(AssignmentsActivity.this, "Reading complete!", Toast.LENGTH_LONG).show();
-        syncCompletionStatus();
-        populateRecyclerView();
+        if (!currentAssignment.isComplete()){
+
+            assignmentsDao.completeReading(currentAssignmentId);
+            Toast.makeText(AssignmentsActivity.this, "Reading complete!", Toast.LENGTH_LONG).show();
+            syncCompletionStatus();
+            populateRecyclerView();
+        }
         stopReading();
     }
 
@@ -480,7 +473,8 @@ public class AssignmentsActivity extends AppCompatActivity{
         showSystemUI();
         showAssignmentMenu();
         readingStarted = false;
-        countDownTimer.cancel();
+        if (countDownTimer!=null)
+            countDownTimer.cancel();
 
     }
 
@@ -526,6 +520,10 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     public void startReading(File file, AssignmentBean assignment){
 
+        readingStarted = true;
+        readingFinished = false;
+        timeToRead = assignment.getReadingTime();
+
         assignment.setLastReadPosition(0);
 
         pdfView.fromFile(file)
@@ -549,7 +547,10 @@ public class AssignmentsActivity extends AppCompatActivity{
 
                         hideSystemUI();
 
-                        startTimer(timeToRead);
+                        if (timeToRead>0)
+                            startTimer(timeToRead);
+                        else
+                            floatingActionButtonReadingCompleted();
                     }
                 }) // called after document is loaded and starts to be rendered
                 .onPageChange(new OnPageChangeListener() {
@@ -645,139 +646,6 @@ public class AssignmentsActivity extends AppCompatActivity{
                 // spacing between pages in dp. To define spacing color, set view background
                 .spacing(2)
                 .pages(assignment.getStartPage()-1, assignment.getEndPage()-1)
-                //.pageFitPolicy(WIDTH)
-                .load();
-
-        /*.setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                listParent.setVisibility(View.GONE);
-            }
-        });*/
-    }
-    public void startReading(String fileName, int timeToRead){
-        findViewById(R.id.parentPanel).setVisibility(View.INVISIBLE);
-        readingFinished = false;
-
-        final AssignmentBean assignmentBean = new AssignmentBean();
-        assignmentBean.setLastReadPosition(0);
-
-        isFabShowing =true;
-        hideFab();
-
-        pdfView.fromAsset(fileName)
-                .enableSwipe(true) // allows to block changing pages using swipe
-                .swipeHorizontal(false)
-                .defaultPage(0)
-                // allows to draw something on the current page, usually visible in the middle of the screen
-                .onDraw(new OnDrawListener() {
-                    @Override
-                    public void onLayerDrawn(Canvas canvas, float pageWidth, float pageHeight, int displayedPage) {
-                       /* if (!startMessageShown){
-                            //draw overlay showing page count, reading time, start button
-                        }*/
-
-                    }
-                })
-                .onLoad(new OnLoadCompleteListener() {
-                    @Override
-                    public void loadComplete(int nbPages) {
-
-                        hideAssignmentMenu(false);
-
-                        hideSystemUI();
-
-                        startTimer(timeToRead);
-                    }
-                }) // called after document is loaded and starts to be rendered
-                .onPageChange(new OnPageChangeListener() {
-                    @Override
-                    public void onPageChanged(int page, int pageCount) {
-
-                        if (page==pageCount-1){
-                            lastPageReached=true;
-                            showFab();
-                        }
-                    }
-                })
-                .onPageScroll(new OnPageScrollListener() {
-                    @Override
-                    public void onPageScrolled(int page, float positionOffset) {
-
-                        if (immersiveMode)
-                            hideSystemUI();
-
-                        if (positionOffset==1){
-                            lastPageReached=true;
-                            showFab();
-                        }
-
-                        if (lastPageReached){
-                            if (positionOffset > assignmentBean.getLastReadPosition()){
-                                hideFab();
-                                assignmentBean.setLastReadPosition(positionOffset);
-                            }
-                            else if (positionOffset < assignmentBean.getLastReadPosition()){
-                                showFab();
-                                assignmentBean.setLastReadPosition(positionOffset);
-                            }
-                        }
-                    }
-                })
-                .onError(new OnErrorListener() {
-                    @Override
-                    public void onError(Throwable t) {
-                        AlertDialog.Builder dialog = new AlertDialog.Builder(AssignmentsActivity.this);
-                        dialog.setTitle("Error loading assignment")
-                                .setMessage("The assignment could not be loaded due to the following error:\n\n"+t.getMessage()+"\n\nPlease try downloading again or contact your administrator.")
-                                .setNeutralButton("Contact", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        emailAdmin();
-                                    }
-                                })
-                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-
-                                    }
-                                }).show();
-                    }
-                })
-                .onPageError(new OnPageErrorListener() {
-                    @Override
-                    public void onPageError(int page, Throwable t) {
-                        t.printStackTrace();
-                    }
-                })
-                .onRender(new OnRenderListener() {
-                    @Override
-                    public void onInitiallyRendered(int nbPages, float pageWidth, float pageHeight) {
-
-                    }
-                }) // called after document is rendered for the first time
-                // called on single tap, return true if handled, false to toggle scroll handle visibility
-                .onTap(new OnTapListener() {
-                    @Override
-                    public boolean onTap(MotionEvent e) {
-
-                        if (immersiveMode)
-                            hideSystemUI();
-
-                        if (isFabShowing)
-                            hideFab();
-                        else if (lastPageReached)
-                            showFab();
-                        return false;
-                    }
-                })
-                .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
-                .password(null)
-                .scrollHandle(new DefaultScrollHandle(AssignmentsActivity.this))
-                .enableAntialiasing(true) // improve rendering a little bit on low-res screens
-                // spacing between pages in dp. To define spacing color, set view background
-                .spacing(2)
                 //.pageFitPolicy(WIDTH)
                 .load();
 
@@ -933,9 +801,6 @@ public class AssignmentsActivity extends AppCompatActivity{
     }
 
     private void startTimer(int readingTime){
-
-        readingStarted = true;
-
         int readingTimeMilliseconds = readingTime*1000;
 
         countDownTimer = new CountDownTimer(readingTimeMilliseconds, 1000) {
@@ -957,22 +822,24 @@ public class AssignmentsActivity extends AppCompatActivity{
             }
 
             public void onFinish() {
-                readingFinished = true;
-                timerLabelTV.setVisibility(View.GONE);
-                FloatingActionButton floatingActionButton = (FloatingActionButton)fab.findViewById(R.id.completionButton);
-                floatingActionButton.setImageResource(R.drawable.fab_complete);
-                fab.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        completeAssignment();
-                    }
-                });
-
+                floatingActionButtonReadingCompleted();
             }
 
         }.start();
     }
 
+    private void floatingActionButtonReadingCompleted(){
+        readingFinished = true;
+        timerLabelTV.setVisibility(View.GONE);
+        FloatingActionButton floatingActionButton = (FloatingActionButton)fab.findViewById(R.id.completionButton);
+        floatingActionButton.setImageResource(R.drawable.fab_complete);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                completeAssignment();
+            }
+        });
+    }
     private void showSystemUI() {
         /*immersiveMode = true;
         getWindow().getDecorView().setSystemUiVisibility(
@@ -999,12 +866,15 @@ public class AssignmentsActivity extends AppCompatActivity{
     private void showFab() {
         if (!isFabShowing) {
             isFabShowing = true;
-            timerLabelTV.animate().setDuration(200).alpha(1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    timerLabelTV.setVisibility(View.VISIBLE);
-                }
-            });
+            if (timeToRead>0){
+                timerLabelTV.animate().setDuration(200).alpha(1).setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        timerLabelTV.setVisibility(View.VISIBLE);
+                    }
+                });
+
+            }
             fab.show();
             //timerLabelTV.setAlpha(0);
         }

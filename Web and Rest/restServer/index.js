@@ -1562,7 +1562,7 @@ app.get('/code', (req, res) => res.sendFile('index.js', {root: __dirname}));
 //Echo
 app.post('/', (req, res) => res.json(req.body));
 
-const BookService = require('./services/book.service')(app,con,fs,hummus,Busboy,uuid);
+const BookService = require('./services/book.service')(app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter);
 
 app.get('/books', /*user_oidc.ensureAuthenticated(),*/ function(req, res) {
 	getBooksQuery(function(err, result){
@@ -2175,9 +2175,14 @@ function getLatestVersion(callback)
 			{
 				callback(err, null);
 			}
-			else if (rows.length>=1)
+			else
 			{
-				callback(null, rows[0]);
+				if (rows[0]){
+					callback(null, rows);
+				}
+				else{
+					callback(null, [{version_url: "NONE", version_number:0}]);
+				}			
 			}
 		}
 
@@ -2230,7 +2235,7 @@ app.get('/androidVersionTable', function(req, res)
 
 		else
 		{
-			res.json(rows);
+			res.json(rows[0]);
 		}
 	});
 });

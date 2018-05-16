@@ -1091,6 +1091,7 @@ export class EmployeesComponent implements OnInit {
 			}
 		}
         this.selectedGroup = group;
+        this.transformResponseAndPopulate();
         this.employeesService.getAssignments(group.ID).subscribe(data2 => {
             if (!data2['err']) {
                 if (typeof (data2[0]) === undefined) {

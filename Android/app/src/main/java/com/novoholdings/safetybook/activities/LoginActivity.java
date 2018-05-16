@@ -43,6 +43,8 @@ import com.novoholdings.safetybook.database.AssignmentsDao;
 import com.novoholdings.safetybook.database.GroupsDao;
 import com.novoholdings.safetybook.http.UpdateResponse;
 import com.novoholdings.safetybook.receivers.DownloadReceiver;
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -88,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         requestQueue = RequestQueue.getInstance(this);
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -110,14 +113,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
             if (mAuth.getCurrentUser() == null) {
-                startActivityForResult(// Get an instance of AuthUI based on the default app
-                        AuthUI
-                                .getInstance()
-                                .createSignInIntentBuilder()
-                                .setAvailableProviders(providers)
-                                .setIsSmartLockEnabled(true /* credentials */, true /* hints */)
-                                .build(),
-                        RC_SIGN_IN);
+                getDetailsFromServer();
             }
             setContentView(R.layout.activity_main);
             Stetho.initializeWithDefaults(this);
@@ -133,6 +129,7 @@ public class LoginActivity extends AppCompatActivity {
 //            }
         }
     }
+
 
     private void updateChecker()
     {
@@ -166,25 +163,15 @@ public class LoginActivity extends AppCompatActivity {
                                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        if (mAuth.getCurrentUser()!=null){
-                                            getDetailsFromServer();
-                                        }
-                                        else{
-                                            startActivityForResult(// Get an instance of AuthUI based on the default app
-                                                    AuthUI
-                                                            .getInstance()
-                                                            .createSignInIntentBuilder()
-                                                            .setAvailableProviders(providers)
-                                                            .setIsSmartLockEnabled(true /* credentials */, true /* hints */)
-                                                            .build(),
-                                                    RC_SIGN_IN);
-                                        }
+                                        unregisterReceiver(downloadReceiver);
+                                        finish();
 
                                     }
                                 })
                                 .show();
                     } else {
-
+                        unregisterReceiver(downloadReceiver);
+                        getDetailsFromServer();
                     }
 
                 } catch (JSONException e) {
@@ -196,7 +183,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 AlertDialog.Builder alert = new AlertDialog.Builder(LoginActivity.this);
                 alert.setTitle("Could not check for updates.")
-                        .setMessage(error.getMessage() + "\n\nPlease check your network connection and try again.")
+                        .setMessage("Please check your network connection and try again.")
                         .setPositiveButton("Try Again.", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

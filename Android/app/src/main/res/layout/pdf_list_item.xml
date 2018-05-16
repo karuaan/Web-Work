@@ -5,8 +5,11 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-                                             android:background="@drawable/list_item_background"
-    android:weightSum="2">
+                                             android:clickable="true"
+                                             android:focusable="true"
+                                             android:background="?attr/selectableItemBackground"
+
+                                             android:weightSum="2">
 
     <ImageView
         android:id="@+id/bookIcon"

@@ -31,6 +31,8 @@ public class AssignmentsDao {
 
     public static final String QUERY_GET_MODIFIED="SELECT * from "+TABLE_NAME+ " WHERE is_synced='"+AppProperties.NO+"'";
 
+    public static final String QUERY_GET_COMPLETE=QUERY_GET_ALL+" AND "+AssignmentsDao.COLUMN_IS_COMPLETE+"="+AppProperties.NO+" ORDER BY date("+AssignmentsDao.COLUMN_DUE_DATE+") DESC Limit 1";
+
     public static String COLUMN_ID="server_id";
     public static String COLUMN_NAME="name";
     public static String COLUMN_MODIFIED_ON="modified_on";
@@ -298,6 +300,33 @@ public class AssignmentsDao {
     public ArrayList<AssignmentBean> getData(String query){
         ArrayList<AssignmentBean> arList = null;
         Cursor c;
+        c = AppDatabase.get(query,mContext);
+
+        try
+        {
+            arList = cursorToBean(c);
+        }
+        catch (Exception e)
+        {
+            Log.i("Error in getting data ", e.toString());
+        }
+
+        if (c!=null)
+            c.close();
+
+        if(arList==null)
+        {
+            arList=new ArrayList<AssignmentBean>();
+        }
+
+        return arList;
+    }
+
+    public ArrayList<AssignmentBean> getAssignmentsByGroup(long id){
+        ArrayList<AssignmentBean> arList = null;
+        Cursor c;
+        String query = QUERY_GET_ALL+" AND "+COLUMN_GROUP_ID+"="+id;
+
         c = AppDatabase.get(query,mContext);
 
         try

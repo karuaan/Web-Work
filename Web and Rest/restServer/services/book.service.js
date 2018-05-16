@@ -1,4 +1,4 @@
-module.exports = (app,con,fs,hummus,Busboy,uuid) => {
+module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => {
 
     const module_methods = {};
 
@@ -505,14 +505,57 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
                     employee.EMAIL
                ],function(err,rows) {
                    if (!err){
-                       var data = {
-                         data : Object.assign(employee,{
-                             ID : rows.insertId
-                         }),
-                         is_new : true,
-                         status : true
-                       };
-                       resolve(data);
+            
+                    let pass = makepass();
+                    firebaseAdmin.auth().createUser({
+                        'email': employee.EMAIL,
+                        emailVerified: false,
+                        password: pass,
+                        disabled: false
+                      }).then((record) => {
+                          var mailOptions = {
+                              from: 'libertyelevatorreader@gmail.com',
+                              to: [employee.EMAIL],
+                              subject: 'You have been invited to Liberty Elevator Safety Training',
+                              text: 'Go to https://safetytraining.libertyelevator.com. Use your email and the provided password to sign in, then follow the instruction to install the Safety Training app on your Android tablet.\n\nPassword: '+pass,
+                          }
+                          transporter.sendMail(mailOptions, function(error, info){
+                              if(error){
+                                  
+                                  /*TODO - ADD ROLLBACK
+                                      - delete user from firebase
+                                      - delete user from database
+                                  */
+                                  console.log(error);
+                                  resolve({
+                                    is_new : true,
+                                    status : false,
+                                    data : null
+                                });
+                                  
+                              }
+                              else{
+                                var data = {
+                                    data : Object.assign(employee,{
+                                        ID : rows.insertId
+                                    }),
+                                    is_new : true,
+                                    status : true
+                                  };
+                                  resolve(data);
+                              }
+                          });
+                      },
+                      (firebase_err) => {
+                          /*TODO - ADD ROLLBACK
+                                      - delete user from database
+                                  */
+                                 resolve({
+                                    is_new : true,
+                                    status : false,
+                                    data : null
+                                });
+                      })
                    }else{
                        resolve({
                            is_new : true,
@@ -524,6 +567,17 @@ module.exports = (app,con,fs,hummus,Busboy,uuid) => {
 
           });
        };
+
+      const makepass = function() {
+        var text = "";
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      
+        for (var i = 0; i < 20; i++){
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+        return text;
+      }
+      
 
        const saveEmployee = (employee) => {
             return new Promise(async (resolve,reject) => {

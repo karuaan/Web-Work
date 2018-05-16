@@ -189,15 +189,15 @@
                       <input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
                     </td>
                     <td>
-                      <input size="30" type="text" class="form-control input-sm col-sm-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
+                      <input type="text" class="form-control input-lg col-lg-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
                     </td>
                     <td>
-                      <input size="4" type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
+                      <input type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
                         (keyup)="changePdfPageNo(lesson.START_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][start_page]"
                         [(ngModel)]="lesson.START_PAGE" min="0">
                     </td>
                     <td>
-                      <input size="4" class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
+                      <input class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
                         (keyup)="changePdfPageNo(lesson.END_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][end_page]"
                         [(ngModel)]="lesson.END_PAGE" min="0">
                     </td>
@@ -803,8 +803,8 @@
 </div>
 
 <div class="container" *ngIf="isLoggedIn && admin_id < 0">
-  <h1>Welcome to the PDF Distribution App</h1>
-  <p>This page has instructions for downloading and installing the pdf reader app on your android device.</p>
+  <h1>Welcome to Liberty Elevator Safety Training</h1>
+  <p>This page has instructions for downloading and installing the app on your android device.</p>
   <p>Follow these instructions to begin receiving learning materials.</p>
   <ol>
     <li>Adjust settings to allow downloads from unknown sources </li>
