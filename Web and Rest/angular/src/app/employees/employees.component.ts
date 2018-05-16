@@ -787,9 +787,9 @@ export class EmployeesComponent implements OnInit {
 
                         this.countdown = new Date(1970, 0, 1).setSeconds(this.selectedAssignment.TIME_TO_COMPLETE);
                     }
-					
-					
-					
+
+
+
                     for (let j = 0; j < this.dataObj.selectedBook.LESSONS.length; j++) {
                         if (this.dataObj.selectedBook.LESSONS[j].ID === assignment.lesson_id) {
                             this.dataObj.selectedBook.LESSONS[j].removeAssingGroup(this.selectedGroup.ID);
@@ -1343,14 +1343,14 @@ export class EmployeesComponent implements OnInit {
         let notes = (<HTMLInputElement>document.getElementById("notesInputEdit")).value;
         let start_date = new Date((<HTMLInputElement>document.getElementById('startDateEdit')).value);
         let due_date = new Date((<HTMLInputElement>document.getElementById('dueDateEdit')).value);
-		
+
 		console.log(start_date);
-		
+
 		start_date.setDate(start_date.getDate() + 1)
 		due_date.setDate(due_date.getDate() + 1)
-		
+
 		console.log(start_date.toString());
-		
+
         const dataForm = {
             assignment_id: this.selectedAssignment.assignment_id,
             NAME: this.selectedAssignment.NAME,
@@ -1408,7 +1408,7 @@ export class EmployeesComponent implements OnInit {
 				this.selectedAssignment.percent_complete = complete / total;
 			});
         });
-		
+
     }
 
     lessonSelect(lesson) {
@@ -1621,7 +1621,7 @@ export class EmployeesComponent implements OnInit {
         }
 
     }
-	
+
 	resetPassword(){
 		this.authService.resetPassword(this.userEmail)
 			.subscribe((res) => {
@@ -1632,9 +1632,9 @@ export class EmployeesComponent implements OnInit {
 				this.isLoginError = true;
 			});
 	}
-	
+
 	changePassword(){
-		
+
 	}
 
     logout() {

@@ -176,32 +176,32 @@
               <table class="table table-hover lessons">
                 <thead>
                   <tr>
-                    <th></th>
+                    <th style="width: 3em"></th>
                     <th>Name</th>
-                    <th>Start Page</th>
-                    <th>End Page</th>
-                    <th></th>
+                    <th style="width: 7em">Start Page</th>
+                    <th style="width: 7em">End Page</th>
+                    <th style="width: 10em"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let lesson of dataObj.selectedBook.LESSONS;" [ngClass]="{invalid:!lesson.validationCheck(dataObj.selectedBook.TOTAL_PAGES)}">
-                    <td>
+                    <td style="width: 3em">
                       <input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
                     </td>
                     <td>
-                      <input type="text" class="form-control input-lg col-lg-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
+                      <input type="text" class="lesson-name-input form-control input-lg col-lg-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
                     </td>
-                    <td>
+                    <td style="width: 7em">
                       <input type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
                         (keyup)="changePdfPageNo(lesson.START_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][start_page]"
                         [(ngModel)]="lesson.START_PAGE" min="0">
                     </td>
-                    <td>
+                    <td style="width: 7em">
                       <input class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
                         (keyup)="changePdfPageNo(lesson.END_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][end_page]"
                         [(ngModel)]="lesson.END_PAGE" min="0">
                     </td>
-                    <td>
+                    <td style="width: 10em">
                       <button style="width: 10em" class="btn btn-sm btn-success" *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)">
 
                         <i class="fa fa-check"></i> Assigned
