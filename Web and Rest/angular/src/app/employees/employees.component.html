@@ -50,6 +50,7 @@
 	</div>
 	-->
   <div class="name-container" style="width: 100%; height: 2em; margin-top:1em">
+		<img style="height: 4em; margin-top: -1em;" src="assets/pngs/Liberty Logo.png" />
     <img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu()" src="assets/pngs/cog.png"
     />
     <p style="margin: 0; float: right; font-size: 1.2em;">{{firstName}} {{lastName}}</p>
@@ -424,8 +425,8 @@
           <!--
 						<p *ngIf="dataObj.selectedLesson && dataObj.selectedLesson !== undefined">{{dataObj.selectedLesson.NAME}}</p>
 					-->
-					
-		<!-- 
+
+		<!--
 		<form novalidate [formGroup]="editAssignmentGroupForm" name="editAssignmentForm">
             <fieldset>
               <div class="form-group" [ngClass]="displayFieldCss(editAssignmentGroupForm,'start_date')">
@@ -459,7 +460,7 @@
             </fieldset>
           </form>
 		-->
-					
+
           <form *ngIf="editAssignmentValues != undefined">
             <fieldset>
               <div class="date-labels">

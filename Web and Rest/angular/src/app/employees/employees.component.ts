@@ -84,7 +84,7 @@ export class EmployeesComponent implements OnInit {
     viewLessons: boolean;
     percentCompletes: Number[];
     currentPercentComplete: Number;
-	
+
 	editAssignmentValues: {};
 
     bookGroupForm: FormGroup;
@@ -164,8 +164,7 @@ export class EmployeesComponent implements OnInit {
 
     onAdminLogin(admin_id) {
         this.employeesService.getUserData(admin_id).subscribe(userData => {
-            this.firstName = userData['first_name'];
-            this.lastName = userData['last_name'];
+
 
             this.employeesService.getGroups(admin_id).subscribe(groups => {
                 this.groups = groups;
@@ -334,7 +333,7 @@ export class EmployeesComponent implements OnInit {
             second: new FormControl(),
             comment: new FormControl(),
         });
-		
+
 		this.editAssignmentGroupForm = this.fb.group({
             start_date: new FormControl(null, Validators.required),
             due_date: new FormControl(null, Validators.required),
@@ -1354,7 +1353,7 @@ export class EmployeesComponent implements OnInit {
 
 		console.log(assign);
 		console.log(dataForm);
-		
+
         for (let i = 0; i < this.assignments.length; i++) {
             if (this.assignments[i].assignment_id == assign.assignment_id) {
                 this.assignments[i] = assign;
@@ -1454,6 +1453,10 @@ export class EmployeesComponent implements OnInit {
                     }
                     else {
                         console.log(3);
+                        this.firstName = res2[0]['FIRST_NAME'];
+                        this.lastName = res2[0]['LAST_NAME'];
+
+
                         if (res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined) {
                             this.isLoginError = false;
                             this.newUser = true;
@@ -1474,7 +1477,7 @@ export class EmployeesComponent implements OnInit {
                                 //Employee Login logic occurs
                                 this.isLoggedIn = true;
                                 this.newUser = false;
-                                console.log(7);                              
+                                console.log(7);
                             }
                         }
                     }
@@ -1571,7 +1574,7 @@ export class EmployeesComponent implements OnInit {
                 console.log(err);
             }
     )
-            
+
         }
 
     }
