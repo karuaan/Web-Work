@@ -1339,6 +1339,11 @@ export class EmployeesComponent implements OnInit {
             START_DATE: start_date.toString(),
             TIME_TO_COMPLETE: time_to_complete
         };
+		
+		console.log((<HTMLInputElement>document.getElementById('startDateEdit')).value)
+		console.log((<HTMLInputElement>document.getElementById('dueDateEdit')).value)
+		console.log(selectedAssignment.START_DATE);
+		console.log(selectedAssignment.DUE_DATE);
 
         let startDate = new Date(start_date);
         let dueDate = new Date(due_date);
@@ -1587,10 +1592,10 @@ export class EmployeesComponent implements OnInit {
 	resetPassword(){
 		this.authService.resetPassword(this.userEmail)
 			.subscribe((res) => {
-				this.loginErrorMessage = 'Password has been reset';
+				this.loginErrorMessage = 'Password has been reset. Check your email!';
 				this.isLoginError = true;
 			}, (err) => {
-				this.loginErrorMessage = 'Could not send password reset email';
+				this.loginErrorMessage = 'Could not send password reset. Ensure email address is correct.';
 				this.isLoginError = true;
 			});
 	}
