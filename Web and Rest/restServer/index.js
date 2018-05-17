@@ -181,7 +181,7 @@ function create_all_tables(){
 "(ID int unsigned not null,                                    				"+
 "ADMIN_ID int unsigned,                                                    "+
 "USER_ID int unsigned,                                                     "+
-"NAME text,                                                                "+						 								   "+
+"NAME text,                                                                "+
 "FOREIGN KEY (ADMIN_ID) REFERENCES USERS(ID) ON DELETE CASCADE,            "+
 "FOREIGN KEY (USER_ID) REFERENCES USERS(ID) ON DELETE CASCADE);            "
 		, function(err, rows, fields){
