@@ -2040,7 +2040,7 @@ app.post('/getAssignmentsUser', function(req, res){
 app.post('/getgroups',function(req,res){
 
 	console.log(req.body.admin_id)
-	con.query("SELECT DISTINCT ID, NAME FROM GROUPS WHERE ADMIN_ID = "+mysql.escape(req.body.admin_id),function(err,data,fields){
+	con.query("SELECT DISTINCT ID, NAME FROM GROUPS WHERE ADMIN_ID=?",[req.body.admin_id],function(err,data,fields){
 		if(!err){
 			res.json(data);
 		}
