@@ -53,8 +53,7 @@ public class AppProperties {
 
     public static final String APP_DISPLAY_NAME="Safety Book Reader";
 
-    public static final String DIR_SERVER_ROOT="http://192.168.0.110:3000/";
-    public static final String DIR_SERVER="http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/";
+    public static final String DIR_SERVER_ROOT="https://safetytraining.libertyelevator.com:3000/";
 
     public static final String DIR_PDF="http://ec2-54-191-3-208.us-west-2.compute.amazonaws.com:3000/pdfs";
 

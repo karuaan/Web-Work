@@ -220,7 +220,7 @@ public class AssignmentsActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         try{
-            serverFilePath = AppProperties.DIR_SERVER + extras.getString("serverPath");
+            serverFilePath = AppProperties.DIR_SERVER_ROOT + extras.getString("serverPath");
            // serverFilePath = serverFilePath.replaceAll(" ", "%20");
         }catch (NullPointerException e){
             e.printStackTrace();
