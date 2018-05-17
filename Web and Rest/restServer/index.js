@@ -169,7 +169,7 @@ function create_all_tables(){
 "EMAIL varchar(255),                                                       "+
 "IS_ADMIN bit(1),                                                          "+
 "FIREBASE_ID text,                                                         "+
-"PHONE_NUMBER varchar(10),												   "+
+"PHONE_NUMBER varchar(11),												   "+
 "PRIMARY KEY (ID));                                                        "
 		, function(err, rows, fields){
 		console.log("Create Users");
@@ -181,8 +181,7 @@ function create_all_tables(){
 "(ID int unsigned not null,                                    				"+
 "ADMIN_ID int unsigned,                                                    "+
 "USER_ID int unsigned,                                                     "+
-"NAME text,                                                                "+
-"PRIMARY KEY(ID),						 								   "+
+"NAME text,                                                                "+						 								   "+
 "FOREIGN KEY (ADMIN_ID) REFERENCES USERS(ID) ON DELETE CASCADE,            "+
 "FOREIGN KEY (USER_ID) REFERENCES USERS(ID) ON DELETE CASCADE);            "
 		, function(err, rows, fields){
