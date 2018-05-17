@@ -4,7 +4,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
     const bookExistsByName = (name) => {
         return new Promise((_resolve, _reject) => {
-            const query = 'SELECT count(ID) as books_count FROM BOOKS WHERE BOOKS.NAME=?';
+            const query = 'SELECT count(`ID`) as books_count FROM BOOKS WHERE BOOKS.NAME=?';
             con.query(query,[name], (err, rows) => {
                 if (err){
                     _resolve({
@@ -21,7 +21,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
      const insertBook = (bookReq) => {
         return new Promise((resolve,reject) => {
-            con.query('INSERT INTO BOOKS (NAME, PDF_FILE,TOTAL_PAGES) VALUES (?,?,?)', [
+            con.query('INSERT INTO BOOKS (`NAME`, `PDF_FILE`,`TOTAL_PAGES`) VALUES (?,?,?)', [
                 bookReq.NAME,
                 bookReq.PDF_FILE,
                 bookReq.TOTAL_PAGES,
@@ -198,7 +198,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
     
       var insertLesson = (lesson, group_id)=>{
         return new Promise( (resolve, reject) => {
-            var insertQuery = "INSERT INTO LESSONS (BOOK_ID, START_PAGE, END_PAGE, NAME,  GROUP_ID) VALUES (?,?,?,?,?)";
+            var insertQuery = "INSERT INTO LESSONS (`BOOK_ID`, `START_PAGE`, `END_PAGE`, `NAME`,  `GROUP_ID`) VALUES (?,?,?,?,?)";
             console.log('insertQuery',lesson);
                 con.query(insertQuery,[
                   lesson.BOOK_ID,
@@ -231,7 +231,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
       const updateLesson = (lesson)=>{
         return new Promise( (resolve, reject) => {
-            var updateQuery = "UPDATE LESSONS SET BOOK_ID = ?, START_PAGE = ?, END_PAGE = ?, NAME = ?, PDF_FILE = ? WHERE LESSONS.ID = ?";
+            var updateQuery = "UPDATE LESSONS SET `BOOK_ID` = ?, `START_PAGE` = ?, `END_PAGE` = ?, `NAME` = ?, `PDF_FILE` = ? WHERE LESSONS.ID = ?";
                 con.query(updateQuery,[
                     lesson.BOOK_ID,
                     lesson.START_PAGE,
@@ -320,7 +320,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
        const checkGroupExist = (name)=> {
         console.log('checkGroupExist : ',name);
         return new Promise((resolve, reject) => {
-              con.query("SELECT GROUPS.ID as GROUP_ID FROM GROUPS WHERE GROUPS.NAME=? group by GROUPS.ID",[name], (err, rows) => {
+              con.query("SELECT GROUPS.ID as `GROUP_ID` FROM GROUPS WHERE GROUPS.NAME=? group by GROUPS.ID",[name], (err, rows) => {
                   console.log('checkgroupexists : ',rows);
                   if (rows != undefined && rows.length > 0 && rows[0]['GROUP_ID']){
                       resolve(rows[0]['GROUP_ID']);
@@ -334,13 +334,8 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
       const insertGroup = (group) => {
         return new Promise(async (resolve, reject) => {
             console.log('insertGroup',group);
-
-
-            
-
-
             var newQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
-            var newQ = "INSERT INTO GROUPS(ID, ADMIN_ID, USER_ID, NAME) SELECT ID, ADMIN_ID, USER_ID, NAME FROM (SELECT ? as ID, ? as ADMIN_ID, ? as USER_ID, ? as NAME ) AS tmp WHERE NOT EXISTS (SELECT * FROM GROUPS WHERE NAME = ? AND USER_ID = ?)";
+            var newQ = "INSERT INTO GROUPS(`ID`, `ADMIN_ID`, `USER_ID`, `NAME`) SELECT `ID`, `ADMIN_ID`, `USER_ID`, `NAME` FROM (SELECT ? as `ID`, ? as `ADMIN_ID`, ? as `USER_ID`, ? as `NAME` ) AS tmp WHERE NOT EXISTS (SELECT * FROM GROUPS WHERE `NAME` = ? AND `USER_ID` = ?)";
             con.query(newQ,[
                 group.ID,
                 group.ADMIN_ID,
@@ -370,7 +365,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
       const getMaxGroupId = () =>{
         return new Promise((resolve,reject) => {
-                con.query('SELECT MAX(ID) as group_id FROM GROUPS',(err,rows) => {
+                con.query('SELECT MAX(`ID`) as group_id FROM GROUPS',(err,rows) => {
                     if(!err && rows.length >0 && rows[0].group_id){
                         resolve({
                             status : true,
@@ -487,7 +482,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
        const getEmployeeByEmail = (email) => {
             return new Promise(async (resolve,reject) => {
-                con.query('SELECT * FROM USERS WHERE EMAIL = ?',[email],(err,rows) =>{
+                con.query('SELECT * FROM USERS WHERE `EMAIL` = ?',[email],(err,rows) =>{
                     resolve({
                         status : true,
                         data : rows.length > 0 ? rows[0] : null
@@ -603,11 +598,11 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
         return new Promise(async (resolve, reject) => {
           var insertQuery;
           if (assignment.NOTES){
-            insertQuery = "INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, START_DATE,TIME_TO_COMPLETE, NOTES)" +
+            insertQuery = "INSERT INTO ASSIGNMENTS (`NAME`, `LESSON_ID`, `GROUP_ID`, `DUE_DATE`, `START_DATE`,`TIME_TO_COMPLETE`, `NOTES`)" +
                 " VALUES (?,?,?,?,?,?,?)";
           }
           else{
-            insertQuery = "INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, START_DATE,TIME_TO_COMPLETE)" +
+            insertQuery = "INSERT INTO ASSIGNMENTS (`NAME`, `LESSON_ID`, `GROUP_ID`, `DUE_DATE`, `START_DATE`,`TIME_TO_COMPLETE`)" +
                 " VALUES (?,?,?,?,?,?)";
           }
           var insertions;
@@ -654,7 +649,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
        const getAssignmentsByLessonAndGroupId = (group_id,lesson_id) =>{
                 return new Promise(async (resolve,reject) => {
-                con.query('SELECT * FROM ASSIGNMENTS WHERE LESSON_ID=? AND GROUP_ID=?',[lesson_id,group_id],
+                con.query('SELECT * FROM ASSIGNMENTS WHERE `LESSON_ID`=? AND `GROUP_ID`=?',[lesson_id,group_id],
                         function(err, rows){
                             if(!err && rows && rows.length > 0){
                                 resolve(rows);
@@ -668,7 +663,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
         const deleteAssignmentById = (assignmentId) =>{
             return new Promise(async (resolve,reject) => {
-                con.query("DELETE FROM ASSIGNMENTS where ID = ? ",assignmentId,function(err2,result){
+                con.query("DELETE FROM ASSIGNMENTS where `ID` = ? ",assignmentId,function(err2,result){
                     if(!err2){
                         resolve({
                             status : true,
@@ -689,7 +684,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
         const getGroupUsers = (group_id) => {
             return new Promise((resolve,reject) => {
-                con.query('SELECT USER_ID as user_id FROM GROUPS WHERE ID=?',[group_id], function(err, users){
+                con.query('SELECT `USER_ID` as `user_id` FROM GROUPS WHERE `ID`=?',[group_id], function(err, users){
                     if(!err && users && users.length > 0){
                         resolve(users);
                     }else{
@@ -738,7 +733,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
                 });
 
 
-                con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?', [users], function(err4, rows4){
+                con.query('INSERT INTO STATUS (`GROUP_ID`, `EMPLOYEE_ID`, `ASSIGNMENT_ID`, `IS_COMPLETE`) VALUES ?', [users], function(err4, rows4){
                         if(!err4){
                             resolve({
                                 status : true,
@@ -760,7 +755,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
     const deleteStatusByGroupAndAssignmentIds = (groupAndAsssignmentIds) =>{
         return new Promise(async (resolve,reject) =>{
-            con.query("DELETE FROM STATUS WHERE GROUP_ID = ? AND ASSIGNMENT_ID = ? ",groupAndAsssignmentIds,function(err2,result){
+            con.query("DELETE FROM STATUS WHERE `GROUP_ID` = ? AND `ASSIGNMENT_ID` = ? ",groupAndAsssignmentIds,function(err2,result){
                     if(!err2){
                         resolve({
                             status : true,
@@ -785,7 +780,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
         var GROUP_ID = data.GROUP_ID;
 
         return new Promise(async (resolve ,reject) => {
-            con.query("SELECT * FROM ASSIGNMENTS WHERE GROUP_ID = ? AND LESSON_ID =? ",[GROUP_ID,LESSON_ID],async (err,rows)=>{
+            con.query("SELECT * FROM ASSIGNMENTS WHERE `GROUP_ID` = ? AND `LESSON_ID` =? ",[GROUP_ID,LESSON_ID],async (err,rows)=>{
                 var deleteStatusArr = [];
                 var deleteAssignment = [];
                 if(!err && rows && rows!= undefined){
@@ -838,7 +833,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
     const getAssignmentByGroupId = (groupId) => {
         return new Promise((resolve,reject) => {
-             con.query('select * from ASSIGNMENTS WHERE GROUP_ID = ? group by ASSIGNMENTS.ID',[groupId],(err,result)=>{
+             con.query('select * from ASSIGNMENTS WHERE `GROUP_ID` = ? group by ASSIGNMENTS.ID',[groupId],(err,result)=>{
                  if(!err && result && result != undefined &&  result.length > 0){
                      resolve(result);
                  }else{
@@ -850,7 +845,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
      const insertStatus = (result) => {
         return new Promise((resolve,reject) => {
-            con.query('INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ?', [result], function(err4, rows4){
+            con.query('INSERT INTO `STATUS` (`GROUP_ID`, `EMPLOYEE_ID`, `ASSIGNMENT_ID`, `IS_COMPLETE`) VALUES ?', [result], function(err4, rows4){
                 if(!err4){
                     resolve({
                         status : true,
