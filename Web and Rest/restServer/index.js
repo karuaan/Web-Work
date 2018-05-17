@@ -9,6 +9,7 @@ const path = require('path')
 const https = require('https');
 const admin_functions = require('./functions/admin_functions');
 const hummus = require('hummus');
+const splitCA = require('split-ca');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
 const emailReporting = require("./emailOverdueQuery");
@@ -33,11 +34,10 @@ var con;
 if(!debug){
     console.log('production')
 	con = mysql.createConnection(
-		//Amazon RDS
-		{host: "mysql.cgkepgzez06k.us-east-2.rds.amazonaws.com",
-		user: "admin", password: "Stevens2018#MVPHWB",
+		{host: "127.0.0.1",
+		user: "root", password: "Stevens2018#MVPHWB",
 		port: "3306",
-		database: "FEB_2"}
+		database: "training_db"}
 	)
 }
 else{
@@ -2040,7 +2040,7 @@ app.post('/getAssignmentsUser', function(req, res){
 app.post('/getgroups',function(req,res){
 
 	console.log(req.body.admin_id)
-	con.query("SELECT DISTINCT ID, NAME FROM `GROUPS` WHERE `ADMIN_ID`=?",[req.body.admin_id],function(err,data,fields){
+	con.query("SELECT DISTINCT ID, NAME FROM GROUPS WHERE ADMIN_ID=?",[req.body.admin_id],function(err,data,fields){
 		if(!err){
 			res.json(data);
 		}
@@ -2594,4 +2594,16 @@ app.put('/registerUser', function(req, res)
 	})
 });
 
-app.listen(3000, () => console.log('server running on 3000'));
+const CAs = fs.readFileSync('../ssl/ca-bundle.crt').toString().split(/(?=-----BEGIN CERTIFICATE-----)/);
+
+const sslOptions = {
+  key: fs.readFileSync('../ssl/key.pem'),
+  cert: fs.readFileSync('../ssl/cert.crt'),
+  ca: splitCA('../ssl/ca-bundle.crt'),
+/*  requestCert: true,*/
+  rejectUnauthorized: false
+};
+
+//http.createServer(app).listen(80);
+
+https.createServer(sslOptions, app).listen(3000);
