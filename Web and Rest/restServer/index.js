@@ -83,7 +83,7 @@ function onAdminLogin(adminId, callback){
 	con.query(
 "SELECT * FROM USERS INNER JOIN"+
 "	(SELECT ID as group_id, USER_ID as user_id, ADMIN_ID as admin_id"+
-"	FROM GROUPS WHERE GROUPS.ADMIN_ID=" + mysql.escape(adminId) +
+"	FROM USER_GROUPS WHERE USER_GROUPS.ADMIN_ID=" + mysql.escape(adminId) +
 "	) as groups_table"+
 "ON USERS.ID = groups_table.user_id",
 	function(err, rows){
@@ -177,7 +177,7 @@ function create_all_tables(){
 		console.log(rows);
 		console.log(fields);
 		con.query(
-"CREATE TABLE GROUPS                                                       "+
+"CREATE TABLE USER_GROUPS                                                       "+
 "(ID int unsigned not null,                                    				"+
 "ADMIN_ID int unsigned,                                                    "+
 "USER_ID int unsigned,                                                     "+
@@ -369,7 +369,7 @@ app.get('/sendEmailReport', function(req, res){
 
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
-	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, GROUPS.ID as group_id, GROUPS.USER_ID as user_id, GROUPS.NAME as group_name from ASSIGNMENTS INNER JOIN GROUPS ON GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, assignments){
+	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, USER_GROUPS.ID as group_id, USER_GROUPS.USER_ID as user_id, USER_GROUPS.NAME as group_name from ASSIGNMENTS INNER JOIN USER_GROUPS ON USER_GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, assignments){
 		if (!err){
 			console.log(assignments);
 			if (assignments.length>0){
@@ -379,7 +379,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 						statusQuery+=", "
 					}
 					statusQuery+="(SELECT "+mysql.escape(element.group_id)+", USER_ID, "+mysql.escape(element.assignment_id)+", 0 "+
-					"FROM GROUPS WHERE ID="+mysql.escape(element.group_id)+" AND IS_ADMIN=0)";
+					"FROM USER_GROUPS WHERE ID="+mysql.escape(element.group_id)+" AND IS_ADMIN=0)";
 				});
 				statusQuery+=";";
 				console.log(statusQuery);
@@ -583,7 +583,7 @@ function isUser(email, callback){
 //Not working
 function getGroups(email, callback){
 
-	con.query('SELECT DISTINCT BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, GROUPS WHERE users1.ID=GROUPS.USER_ID AND users2.ID=GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID', function(err, rows){
+	con.query('SELECT DISTINCT BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT USER_GROUPS.ID as group_id, USER_GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, USER_GROUPS WHERE users1.ID=USER_GROUPS.USER_ID AND users2.ID=USER_GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID', function(err, rows){
 		if(!err){
 			callback(null, rows);
 		}
@@ -626,7 +626,7 @@ function formatGroupAssignments(group, assignments){
 //May need rework in ordering
 function getGroups2(email, callback){
 
-	con.query('SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, LESSONS.PDF_FILE as file, STATUS.IS_COMPLETE as complete, RecordTable.group_name, RecordTable.group_id, RecordTable.book_name, RecordTable.book_file, RecordTable.admin_firstname, RecordTable.admin_lastname, RecordTable.admin_email FROM ASSIGNMENTS, LESSONS, STATUS, (SELECT DISTINCT GroupTable.user_id, BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT users1.ID as user_id, GROUPS.ID as group_id, GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, GROUPS WHERE users1.ID=GROUPS.USER_ID AND users2.ID=GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID GROUP BY GroupTable.group_id) as RecordTable WHERE RecordTable.user_id=STATUS.EMPLOYEE_ID AND RecordTable.group_id=STATUS.GROUP_ID AND STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID GROUP BY RecordTable.group_id', function(err, rows){
+	con.query('SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, LESSONS.PDF_FILE as file, STATUS.IS_COMPLETE as complete, RecordTable.group_name, RecordTable.group_id, RecordTable.book_name, RecordTable.book_file, RecordTable.admin_firstname, RecordTable.admin_lastname, RecordTable.admin_email FROM ASSIGNMENTS, LESSONS, STATUS, (SELECT DISTINCT GroupTable.user_id, BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT users1.ID as user_id, USER_GROUPS.ID as group_id, USER_GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, USER_GROUPS WHERE users1.ID=USER_GROUPS.USER_ID AND users2.ID=USER_GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID GROUP BY GroupTable.group_id) as RecordTable WHERE RecordTable.user_id=STATUS.EMPLOYEE_ID AND RecordTable.group_id=STATUS.GROUP_ID AND STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID GROUP BY RecordTable.group_id', function(err, rows){
 		if(!err){
 			rows.forEach(function(element, index, array){
 				nest(element, index, array)
@@ -644,7 +644,7 @@ function getGroups2(email, callback){
 //May need rework in ordering
 function getGroups3(email, callback){
 
-	con.query('SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, MIN(ASSIGNMENTS.DUE_DATE) as due_date, LESSONS.PDF_FILE as file, STATUS.IS_COMPLETE as complete, RecordTable.group_name, RecordTable.group_id, RecordTable.book_name, RecordTable.book_file, RecordTable.admin_firstname, RecordTable.admin_lastname, RecordTable.admin_email FROM ASSIGNMENTS, LESSONS, STATUS, (SELECT GroupTable.user_id, BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT users1.ID as user_id, GROUPS.ID as group_id, GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, GROUPS WHERE users1.ID=GROUPS.USER_ID AND users2.ID=GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID GROUP BY GroupTable.group_id) as RecordTable WHERE RecordTable.user_id=STATUS.EMPLOYEE_ID AND RecordTable.group_id=STATUS.GROUP_ID AND STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID AND STATUS.IS_COMPLETE=0 GROUP BY RecordTable.group_id', function(err, rows){
+	con.query('SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, MIN(ASSIGNMENTS.DUE_DATE) as due_date, LESSONS.PDF_FILE as file, STATUS.IS_COMPLETE as complete, RecordTable.group_name, RecordTable.group_id, RecordTable.book_name, RecordTable.book_file, RecordTable.admin_firstname, RecordTable.admin_lastname, RecordTable.admin_email FROM ASSIGNMENTS, LESSONS, STATUS, (SELECT GroupTable.user_id, BOOKS.NAME as book_name, BOOKS.PDF_FILE as book_file, GroupTable.group_id, GroupTable.group_name, GroupTable.admin_firstname, GroupTable.admin_lastname, GroupTable.admin_email as admin_email FROM BOOKS, ASSIGNMENTS, LESSONS, (SELECT users1.ID as user_id, USER_GROUPS.ID as group_id, USER_GROUPS.NAME as group_name, users2.FIRST_NAME as admin_firstname, users2.LAST_NAME as admin_lastname, users2.EMAIL as admin_email FROM USERS as users1, USERS as users2, USER_GROUPS WHERE users1.ID=USER_GROUPS.USER_ID AND users2.ID=USER_GROUPS.ADMIN_ID AND users1.ID IN (SELECT ID FROM USERS WHERE EMAIL=' + mysql.escape(email) + ')) AS GroupTable WHERE ASSIGNMENTS.GROUP_ID=GroupTable.group_id AND LESSONS.ID=ASSIGNMENTS.LESSON_ID AND BOOKS.ID=LESSONS.BOOK_ID GROUP BY GroupTable.group_id) as RecordTable WHERE RecordTable.user_id=STATUS.EMPLOYEE_ID AND RecordTable.group_id=STATUS.GROUP_ID AND STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID AND STATUS.IS_COMPLETE=0 GROUP BY RecordTable.group_id', function(err, rows){
 		if(!err){
 			rows.forEach(function(element, index, array){
 				nest(element, index, array)
@@ -660,12 +660,12 @@ function getGroups3(email, callback){
 }
 
 function getGroups4(user_id, callback){
-	let groupQuery = 'SELECT GROUPS.ID as group_id, GROUPS.NAME as group_name, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email '+
-					'FROM GROUPS INNER JOIN USERS ON GROUPS.ADMIN_ID=USERS.ID '+
-					'INNER JOIN LESSONS ON LESSONS.GROUP_ID = GROUPS.ID '+
+	let groupQuery = 'SELECT USER_GROUPS.ID as group_id, USER_GROUPS.NAME as group_name, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email '+
+					'FROM USER_GROUPS INNER JOIN USERS ON USER_GROUPS.ADMIN_ID=USERS.ID '+
+					'INNER JOIN LESSONS ON LESSONS.GROUP_ID = USER_GROUPS.ID '+
 					'INNER JOIN BOOKS ON BOOKS.ID = LESSONS.BOOK_ID '+
-					'WHERE GROUPS.USER_ID = '+mysql.escape(user_id)+
-					' GROUP BY GROUPS.ID;';
+					'WHERE USER_GROUPS.USER_ID = '+mysql.escape(user_id)+
+					' GROUP BY USER_GROUPS.ID;';
 	con.query(groupQuery, function(err, rows){
 		if (!err){
 			callback(null, rows);
@@ -678,7 +678,7 @@ function getGroups4(user_id, callback){
 /*
 function getLatestAssignment(groupID, callback){
 
-	con.query('SELECT LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, LESSONS.PDF_FILE as file, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, STATUS.IS_COMPLETE as complete FROM LESSONS, ASSIGNMENTS, GROUPS, STATUS WHERE GROUPS.ID=' + groupID + ' AND STATUS'
+	con.query('SELECT LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, LESSONS.PDF_FILE as file, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, STATUS.IS_COMPLETE as complete FROM LESSONS, ASSIGNMENTS, USER_GROUPS, STATUS WHERE USER_GROUPS.ID=' + groupID + ' AND STATUS'
 
 }
 */
@@ -745,18 +745,14 @@ function addUser(first_name, last_name, email, callback){
 //Done
 function addAdmin(email, callback){
 
-	con.query('SELECT * FROM USERS WHERE USERS.EMAIL=' + mysql.escape(email), function(err, rows){
+	con.query('SELECT * FROM USERS WHERE USERS.EMAIL=?', [email], function(err, rows){
 		if(!err){
 			if(rows[0] === undefined){
 				console.log("ROWS ARE EMPTY")
-				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES ("", "",'+ mysql.escape(email) +', 1)', function(err2, result){
+				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES (?,?,?, ?)', ["","",email,1], function(err2, result){
 					if(!err2){
-						con.commit(function(err3){
-							if(err3){con.rollback(function(){callback(err3, null)})}
-							else{
-								callback(null, result)
-							}
-						});
+						callback(null, result)
+
 					}
 					else{
 						callback(err2, null);
@@ -766,7 +762,6 @@ function addAdmin(email, callback){
 			else{
 				console.log(rows);
 				callback({'error': 'user already exists'}, null);
-				throw err;
 			}
 		}
 		else{
@@ -1010,14 +1005,14 @@ function addGroup(admin_id, user_ids, name, callback){
 		//console.log(admin_id);
 		//callback(null, null);
 		///*
-		con.query("SELECT MAX(ID) as group_id FROM GROUPS", function(error, result){
+		con.query("SELECT MAX(ID) as group_id FROM USER_GROUPS", function(error, result){
 			if(error){callback(error, null)}
 			else{
 				console.log(result);
 
 				usr_ids.forEach(function(value, index, arr){arr[index] = [Number(result[0].group_id+1), Number(admin_id), Number(value.ID), name]});
 				console.log(usr_ids);
-				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [usr_ids], function(err, rows){
+				con.query("INSERT INTO USER_GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [usr_ids], function(err, rows){
 					if(!err){
 						con.commit(function(err2){
 							if(err2){con.rollback(function(){callback(err2, null)})}
@@ -1037,7 +1032,7 @@ function addGroup(admin_id, user_ids, name, callback){
 }
 //Change so that users not in the system get invited
 function addToGroup(group_id, user_ids, callback){
-	con.query("SELECT ADMIN_ID as admin_id, NAME as group_name FROM GROUPS WHERE ID=" + mysql.escape(group_id), function(err, rows){
+	con.query("SELECT ADMIN_ID as admin_id, NAME as group_name FROM USER_GROUPS WHERE ID=" + mysql.escape(group_id), function(err, rows){
 		console.log(rows)
 ///*
 		if(!err){
@@ -1047,7 +1042,7 @@ function addToGroup(group_id, user_ids, callback){
 			else{
 				user_ids.forEach(function(value, index, arr){arr[index] = [Number(group_id), Number(rows[0].admin_id), Number(value), rows[0].group_name]})
 				console.log(user_ids);
-				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, result){
+				con.query("INSERT INTO USER_GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, result){
 					if(!err2){
 						con.commit(function(err3){
 							if(err3){con.rollback(function(){callback(err3, null)})}
@@ -1120,7 +1115,7 @@ function addToGroupByEmail(group_id, user_emails, callback){
 	console.log(user_emails)
 	var promise1 = undefined;
 	//console.log('^^^');
-	con.query("SELECT ADMIN_ID as admin_id, NAME as group_name FROM GROUPS WHERE ID=" + mysql.escape(group_id), function(err, rows){
+	con.query("SELECT ADMIN_ID as admin_id, NAME as group_name FROM USER_GROUPS WHERE ID=" + mysql.escape(group_id), function(err, rows){
 		console.log(rows)
 ///*
 		if(!err){
@@ -1157,7 +1152,7 @@ function addToGroupByEmail(group_id, user_emails, callback){
 
 								console.log(user_ids);
 
-								con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
+								con.query("INSERT INTO USER_GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
 									if(!err2){
 										console.log('11111');
 										console.log(user_ids);
@@ -1206,7 +1201,7 @@ function addToGroupByEmail(group_id, user_emails, callback){
 
 				console.log(user_ids);
 
-				con.query("INSERT INTO GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
+				con.query("INSERT INTO USER_GROUPS (ID, ADMIN_ID, USER_ID, NAME) VALUES ?", [user_ids], function(err2, rows2){
 					if(!err2){
 						console.log('11111');
 						console.log(user_ids);
@@ -1258,7 +1253,7 @@ app.post('/addToGroupEmail', function(req, res){
 
 //Done
 function getGroup(userid, groupid, callback){
-	con.query('SELECT DISTINCT LESSONS.ID as id, LESSONS.NAME as name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_COMPLETE as time_to_read, STATUS.IS_COMPLETE  as complete, LESSONS.PDF_FILE as filename FROM USERS, GROUPS, ASSIGNMENTS, LESSONS, STATUS WHERE USERS.ID=' + mysql.escape(userid) + ' AND GROUPS.ID=' + mysql.escape(groupid) + ' AND ASSIGNMENTS.GROUP_ID=GROUPS.ID AND STATUS.GROUP_ID=GROUPS.ID AND STATUS.EMPLOYEE_ID=USERS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID', function(err, rows){
+	con.query('SELECT DISTINCT LESSONS.ID as id, LESSONS.NAME as name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_COMPLETE as time_to_read, STATUS.IS_COMPLETE  as complete, LESSONS.PDF_FILE as filename FROM USERS, USER_GROUPS, ASSIGNMENTS, LESSONS, STATUS WHERE USERS.ID=' + mysql.escape(userid) + ' AND USER_GROUPS.ID=' + mysql.escape(groupid) + ' AND ASSIGNMENTS.GROUP_ID=USER_GROUPS.ID AND STATUS.GROUP_ID=USER_GROUPS.ID AND STATUS.EMPLOYEE_ID=USERS.ID AND ASSIGNMENTS.LESSON_ID=LESSONS.ID', function(err, rows){
 	if(!err){
 		callback(null, rows);
 	}
@@ -1293,7 +1288,7 @@ var mailOptions = {
 function emailNewAssignment(group_id, callback){
 
 	var rec_list = []
-	con.query('SELECT EMAIL FROM USERS a, GROUPS b WHERE b.ID=' + mysql.escape(group_id) + ' AND a.ID=b.USER_ID', function(err, rows){
+	con.query('SELECT EMAIL FROM USERS a, USER_GROUPS b WHERE b.ID=' + mysql.escape(group_id) + ' AND a.ID=b.USER_ID', function(err, rows){
 		if(err){
 			console.log(err)
 			callback(err, null)
@@ -1334,7 +1329,7 @@ function addAssignment(name, lesson_id, group_id, due_date, time_to_complete, st
 			con.query('INSERT INTO ASSIGNMENTS (NAME, LESSON_ID, GROUP_ID, DUE_DATE, TIME_TO_COMPLETE, START_DATE) VALUES ('+ mysql.escape(name) + ', ' + mysql.escape(lesson_id) + ', ' + mysql.escape(group_id) + ', '  + mysql.escape(due_date) + ', '  + mysql.escape(time_to_complete) + ', ' + mysql.escape(start_date) + ')', function(err2, rows2){
 			if(!err2){
 				console.log(rows2);
-				con.query('SELECT USER_ID as user_id FROM GROUPS WHERE ID=' + mysql.escape(group_id), function(err3, rows3){
+				con.query('SELECT USER_ID as user_id FROM USER_GROUPS WHERE ID=' + mysql.escape(group_id), function(err3, rows3){
 					if(!err3){
 						console.log(rows3);
 						rows3.forEach(function(value, index, arr){
@@ -1808,7 +1803,7 @@ app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ functi
 
 function getAssignments(group_id, callback){
 	con.query("SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
-	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
+	"(ASSIGNMENTS JOIN USER_GROUPS ON ASSIGNMENTS.GROUP_ID=USER_GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
 	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
 //	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
 	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id),
@@ -1850,7 +1845,7 @@ function getAssignments2(group_id, callback){
 		"FROM STATUS WHERE GROUP_ID=" + mysql.escape(group_id) + " GROUP BY ASSIGNMENT_ID) as PERCENT_TABLE JOIN " + 
 	
 	"(SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME as NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
-	"(ASSIGNMENTS JOIN GROUPS ON ASSIGNMENTS.GROUP_ID=GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
+	"(ASSIGNMENTS JOIN USER_GROUPS ON ASSIGNMENTS.GROUP_ID=USER_GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
 	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
 //	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
 	"WHERE ASSIGNMENTS.GROUP_ID=" + mysql.escape(group_id) + ") as ASSIGNMENTS_TABLE ON PERCENT_TABLE.join_assignment_id=ASSIGNMENTS_TABLE.assignment_id",
@@ -1884,7 +1879,7 @@ app.post('/getassignments2', function(req, res){
 });
 
 function getEmployees(group_id, callback){
-	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL FROM USERS JOIN GROUPS ON USERS.ID=GROUPS.USER_ID WHERE GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
+	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL FROM USERS JOIN USER_GROUPS ON USERS.ID=USER_GROUPS.USER_ID WHERE USER_GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
 		if(err){
 			console.log(err);
 			callback(err, null);
@@ -1914,7 +1909,7 @@ app.post('/getemployees', function(req, res){
 });
 
 function getEmployeesStatus(group_id, assignment_id, callback){
-	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, STATUS.IS_COMPLETE FROM USERS JOIN GROUPS ON USERS.ID=GROUPS.USER_ID LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=USERS.ID AND STATUS.ASSIGNMENT_ID=" + mysql.escape(assignment_id) + " WHERE GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
+	con.query("SELECT USERS.ID, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, STATUS.IS_COMPLETE FROM USERS JOIN USER_GROUPS ON USERS.ID=USER_GROUPS.USER_ID LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=USERS.ID AND STATUS.ASSIGNMENT_ID=" + mysql.escape(assignment_id) + " WHERE USER_GROUPS.ID=" + mysql.escape(group_id), function(err, rows){
 		if(err){
 			console.log(err);
 			callback(err, null);
@@ -2040,7 +2035,7 @@ app.post('/getAssignmentsUser', function(req, res){
 app.post('/getgroups',function(req,res){
 
 	console.log(req.body.admin_id)
-	con.query("SELECT DISTINCT ID, NAME FROM GROUPS WHERE ADMIN_ID=?",[req.body.admin_id],function(err,data,fields){
+	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS WHERE ADMIN_ID=?",[req.body.admin_id],function(err,data,fields){
 		if(!err){
 			res.json(data);
 		}
@@ -2268,14 +2263,14 @@ function getMasterTable(admin_id, callback){
 		  "ASSIGNMENTS.NAME as ASSIGNMENT_NAME " +
 		"FROM " +
 		"(SELECT " +
-		  "GROUPS.ID as GROUP_ID, " +
-		  "GROUPS.NAME as GROUP_NAME, " +
+		  "USER_GROUPS.ID as GROUP_ID, " +
+		  "USER_GROUPS.NAME as GROUP_NAME, " +
 		  "USERS.ID as USER_ID, " +
 		  "USERS.FIRST_NAME as USER_FIRST_NAME, " +
 		  "USERS.LAST_NAME as USER_LAST_NAME, " +
 		  "USERS.EMAIL as USER_EMAIL " +
-		 "FROM GROUPS JOIN USERS ON USERS.ID=GROUPS.USER_ID " +
-		 "WHERE GROUPS.ADMIN_ID=" + mysql.escape(admin_id) + ") as GROUP_USER_TABLE " +
+		 "FROM USER_GROUPS JOIN USERS ON USERS.ID=USER_GROUPS.USER_ID " +
+		 "WHERE USER_GROUPS.ADMIN_ID=" + mysql.escape(admin_id) + ") as GROUP_USER_TABLE " +
 		 "LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=GROUP_USER_TABLE.USER_ID " +
 		 "LEFT JOIN ASSIGNMENTS ON STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID ",
 		function(err, rows){
@@ -2330,7 +2325,7 @@ app.post('/getUserDetails', function(req,res){
 			}
 			else{
 				var userData = rows[0];
-				con.query("SELECT ID FROM GROUPS WHERE USER_ID='"+userData["ID"]+"';", function(err, rows){
+				con.query("SELECT ID FROM USER_GROUPS WHERE USER_ID='"+userData["ID"]+"';", function(err, rows){
 					//  suscribe_to_topics  is an array as user belongs to multiple groups
 
 					var suscribe_to_topics = [];
@@ -2497,9 +2492,11 @@ app.post('/inviteAdmin', function(req, res){
 			}
 			transporter.sendMail(mailOptions, function(error, info){
 				if(error){
+					console.log(error);
 					res.json(error);
 				}
 				else{
+					console.log(info);
 					res.json(info);
 				}
 			});

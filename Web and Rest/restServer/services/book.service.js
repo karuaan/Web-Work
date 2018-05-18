@@ -320,7 +320,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
        const checkGroupExist = (name)=> {
         console.log('checkGroupExist : ',name);
         return new Promise((resolve, reject) => {
-              con.query("SELECT GROUPS.ID as `GROUP_ID` FROM GROUPS WHERE GROUPS.NAME=? group by GROUPS.ID",[name], (err, rows) => {
+              con.query("SELECT USER_GROUPS.ID as `GROUP_ID` FROM USER_GROUPS WHERE USER_GROUPS.NAME=? group by USER_GROUPS.ID",[name], (err, rows) => {
                   console.log('checkgroupexists : ',rows);
                   if (rows != undefined && rows.length > 0 && rows[0]['GROUP_ID']){
                       resolve(rows[0]['GROUP_ID']);
@@ -334,8 +334,8 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
       const insertGroup = (group) => {
         return new Promise(async (resolve, reject) => {
             console.log('insertGroup',group);
-            var newQ = "INSERT INTO GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
-            var newQ = "INSERT INTO GROUPS(`ID`, `ADMIN_ID`, `USER_ID`, `NAME`) SELECT `ID`, `ADMIN_ID`, `USER_ID`, `NAME` FROM (SELECT ? as `ID`, ? as `ADMIN_ID`, ? as `USER_ID`, ? as `NAME` ) AS tmp WHERE NOT EXISTS (SELECT * FROM GROUPS WHERE `NAME` = ? AND `USER_ID` = ?)";
+            //var newQ = "INSERT INTO USER_GROUPS (ID,ADMIN_ID, USER_ID, NAME) SELECT * FROM (SELECT ?,?,?,?) AS tmp WHERE NOT EXISTS (    SELECT ID FROM USER_GROUPS WHERE NAME = ? AND ADMIN_ID = ?  AND USER_ID = ?) LIMIT 1";
+            var newQ = "INSERT INTO USER_GROUPS (`ID`, `ADMIN_ID`, `USER_ID`, `NAME`) SELECT `ID`, `ADMIN_ID`, `USER_ID`, `NAME` FROM (SELECT ? as `ID`, ? as `ADMIN_ID`, ? as `USER_ID`, ? as `NAME` ) AS tmp WHERE NOT EXISTS (SELECT * FROM USER_GROUPS WHERE `NAME` = ? AND `USER_ID` = ?)";
             con.query(newQ,[
                 group.ID,
                 group.ADMIN_ID,
@@ -365,7 +365,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
       const getMaxGroupId = () =>{
         return new Promise((resolve,reject) => {
-                con.query('SELECT MAX(`ID`) as group_id FROM GROUPS',(err,rows) => {
+                con.query('SELECT MAX(`ID`) as group_id FROM USER_GROUPS',(err,rows) => {
                     if(!err && rows.length >0 && rows[0].group_id){
                         resolve({
                             status : true,
@@ -501,36 +501,23 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
                ],function(err,rows) {
                    if (!err){
             
-                    let pass = makepass();
+                    let pass = "elevatorpass";
                     firebaseAdmin.auth().createUser({
                         'email': employee.EMAIL,
                         emailVerified: false,
                         password: pass,
                         disabled: false
                       }).then((record) => {
-                          var mailOptions = {
+                          /*var mailOptions = {
                               from: 'libertyelevatorreader@gmail.com',
                               to: [employee.EMAIL],
                               subject: 'You have been invited to Liberty Elevator Safety Training',
                               text: 'Go to https://safetytraining.libertyelevator.com. Use your email and the provided password to sign in, then follow the instruction to install the Safety Training app on your Android tablet.\n\nPassword: '+pass,
-                          }
-                          transporter.sendMail(mailOptions, function(error, info){
-                              if(error){
-                                  
-                                  /*TODO - ADD ROLLBACK
-                                      - delete user from firebase
-                                      - delete user from database
-                                  */
-                                  console.log(error);
-                                  resolve({
-                                    is_new : true,
-                                    status : false,
-                                    data : null
-                                });
-                                  
-                              }
-                              else{
-                                var data = {
+                          }*/
+                          /*transporter.sendMail(mailOptions, function(error, info){
+                             
+                          });*/
+                           var data = {
                                     data : Object.assign(employee,{
                                         ID : rows.insertId
                                     }),
@@ -538,8 +525,6 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
                                     status : true
                                   };
                                   resolve(data);
-                              }
-                          });
                       },
                       (firebase_err) => {
                           /*TODO - ADD ROLLBACK
@@ -684,7 +669,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
         const getGroupUsers = (group_id) => {
             return new Promise((resolve,reject) => {
-                con.query('SELECT `USER_ID` as `user_id` FROM GROUPS WHERE `ID`=?',[group_id], function(err, users){
+                con.query('SELECT `USER_ID` as `user_id` FROM USER_GROUPS WHERE `ID`=?',[group_id], function(err, users){
                     if(!err && users && users.length > 0){
                         resolve(users);
                     }else{
