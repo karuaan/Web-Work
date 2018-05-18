@@ -1199,13 +1199,13 @@ export class EmployeesComponent implements OnInit {
 
     emailGroup(text) {
         this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function (total, next) {
-            return total + ", " + next
+            return total + "," + next
         });
     }
 
     emailGroupIncomplete(text) {
         this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
-			return next !== '' ? total + ", " + next : total;
+			return next !== '' ? total + "," + next : total;
         });
     }
 

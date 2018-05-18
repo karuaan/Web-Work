@@ -522,13 +522,14 @@
         </div>
         <div class="modal-body">
           <label>Recipients</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="modalEmails">
-          <label>Message</label>
-          <textarea class="form-control" rows="3" [(ngModel)]="emailContents"></textarea>
+		  <a href="mailTo:{{modalEmails}}">Send email</a>
+          <!--
+		  <input type="text" class="form-control form-control-sm" [ngModel]="modalEmails">
+           <label>Message</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="emailContents"></textarea> -->
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" (click)="emailConfirm()" data-dismiss="modal">Send Email</button>
         </div>
       </div>
     </div>
