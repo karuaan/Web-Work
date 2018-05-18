@@ -59,8 +59,7 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
-    private Button loginButton;
-    private Button forgotPass;
+
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
     private static final String PREF_NAME = "prefs";
@@ -96,6 +95,8 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setMessage("Loading please wait ..");
         mAuth = FirebaseAuth.getInstance();
+        setContentView(R.layout.activity_main);
+        Stetho.initializeWithDefaults(this);
 
         int permissionCheck = ContextCompat.checkSelfPermission(
                 this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -105,19 +106,13 @@ public class LoginActivity extends AppCompatActivity {
             showExplanation("Storage permission needed", "", Manifest.permission.READ_PHONE_STATE, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
         } else {
 
-        if (Utils.isOnline(LoginActivity.this)) {
+            if (Utils.isOnline(LoginActivity.this)) {
             updateChecker();
-        } else {
-            loginButton = (Button) findViewById(R.id.loginButton);
-            forgotPass = (Button) findViewById(R.id.forgetPass);
-
-
-            if (mAuth.getCurrentUser() == null) {
+            } else if (mAuth.getCurrentUser() == null) {
+                getLoginScreen();
+            }else{
                 getDetailsFromServer();
             }
-            setContentView(R.layout.activity_main);
-            Stetho.initializeWithDefaults(this);
-        }
 
 
 
@@ -171,7 +166,11 @@ public class LoginActivity extends AppCompatActivity {
                                 .show();
                     } else {
                         unregisterReceiver(downloadReceiver);
-                        getDetailsFromServer();
+                        if (mAuth.getCurrentUser() == null) {
+                            getLoginScreen();
+                        }else{
+                            getDetailsFromServer();
+                        }
                     }
 
                 } catch (JSONException e) {
@@ -182,7 +181,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 AlertDialog.Builder alert = new AlertDialog.Builder(LoginActivity.this);
-                alert.setTitle("Could not check for updates.")
+                alert.setTitle("No connection to the server")
                         .setMessage("Please check your network connection and try again.")
                         .setPositiveButton("Try Again.", new DialogInterface.OnClickListener() {
                             @Override
@@ -194,14 +193,7 @@ public class LoginActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
-                                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                intent.putExtra("EXIT", true);
-                                startActivity(intent);
-
-                                if (getIntent().getExtras() != null && getIntent().getExtras().getBoolean("EXIT", false)) {
-                                    finish();
-                                }
+                                //finish();
                             }
                         })
                         .show();

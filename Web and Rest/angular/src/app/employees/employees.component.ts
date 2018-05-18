@@ -258,34 +258,42 @@ export class EmployeesComponent implements OnInit {
             this.dataObj.employee_status = res;
         });
 
-        this.employeesService.getBooks().subscribe(res => {
-            const bookMapping = (books: BookNew[], lessons: Lesson[]) => {
-                return books.map((book: BookNew) => {
-                    book.LESSONS = lessons.filter((lesson: Lesson) => lesson.BOOK_ID == book.ID).map((tempLession: Lesson) => {
-                        return this.transformLessonModel(tempLession);
-                    });
-                    return book;
+        this.employeesService.getBook(this.selectedGroup.ID).subscribe(book => {
+            const bookMapping = (book: BookNew, lessons: Lesson[]) => {
+                console.log(book);
+                console.log(lessons);
+                book.LESSONS = lessons.filter((lesson: Lesson) => lesson.BOOK_ID == book.ID).map((tempLession: Lesson) => {
+                    //console.log(tempLession);
+                    return this.transformLessonModel(tempLession);
                 });
+                return book;
             };
             console.log("Group ID");
             console.log(this.selectedGroup.ID);
-            if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
-                this.employeesService.getLessons(this.selectedGroup.ID).subscribe(data => {
-                    this.dataObj.books = bookMapping(res.books, data);
-                    this.dataObj.selectedBook = this.dataObj.books[0];
-                    this.selectedBook = this.dataObj.books[0].ID;
+            if (!book){
+                this.dataObj.book = null;
+                this.dataObj.selectedBook = null;
+                this.selectedBook = this.dataObj.book.ID;
+                this.updatePdfBookPreview();
+            }
+            else if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
+                this.employeesService.getLessons(this.selectedGroup.ID).subscribe(lessonPlan => {
+                    this.dataObj.book = bookMapping(book, lessonPlan);
+                    console.log(this.dataObj.book);
+                    this.dataObj.selectedBook = this.dataObj.book;
+                    this.selectedBook = this.dataObj.book.ID;
                     this.updatePdfBookPreview();
                 }, (err) => {
-                    this.dataObj.books = bookMapping(res.books, []);
-                    this.dataObj.selectedBook = this.dataObj.books[0];
-                    this.selectedBook = this.dataObj.books[0].ID;
+                    this.dataObj.book = bookMapping(book, []);
+                    this.dataObj.selectedBook = this.dataObj.book;
+                    this.selectedBook = this.dataObj.book.ID;
                     this.updatePdfBookPreview();
                 });
             }
             else {
-                this.dataObj.books = bookMapping(res.books, []);
-                this.dataObj.selectedBook = this.dataObj.books[0];
-                this.selectedBook = this.dataObj.books[0].ID;
+                this.dataObj.book = bookMapping(book, []);
+                this.dataObj.selectedBook = this.dataObj.book;
+                this.selectedBook = this.dataObj.book.ID;
                 this.updatePdfBookPreview();
             }
         });
@@ -370,7 +378,7 @@ export class EmployeesComponent implements OnInit {
     }
 
     initialLoad(): void {
-        // this.bookService.getBooks().subscribe((data: any) => {
+        // this.bookService.getBook().subscribe((data: any) => {
         //     this.books = data.books;
         //     this.selectedBook = this.books[0].ID;
         //     this.selectedBookData = this.books[0];
@@ -414,11 +422,12 @@ export class EmployeesComponent implements OnInit {
             formData.append('file_size', `${file.size}`);
             formData.append('file_type', file.type);
             formData.append('book_name', this.bookForm.NAME);
+            formData.append('group_id', this.selectedGroup.ID.toString());
 
             this.bookService.saveBooks(formData).subscribe((res: any) => {
                 if (res.data && res.data.ID) {
                     const newBook = res.data as BookNew;
-                    this.dataObj.books.push(newBook);
+                    this.dataObj.book = newBook;
                     this.selectedBook = newBook.ID;
                     this.dataObj.selectedBook = newBook;
                     this.newBookAdded = true;
@@ -889,6 +898,7 @@ export class EmployeesComponent implements OnInit {
                 for (let i = 0; i < lessons.length; i++) {
                     self.dataObj.selectedBook.LESSONS.push(new Lesson(null, lessons[i].title, self.dataObj.selectedBook.ID, lessons[i].startPage, lessons[i].endPage, ''));
                 }
+                ()=>this.saveLessons();
             });
         }
     }
@@ -896,10 +906,10 @@ export class EmployeesComponent implements OnInit {
         return this
     }
     onChangeBook(event) {
-        let book = this.dataObj.books.filter((item) => item.ID == this.selectedBook);
-        if (book.length > 0) {
+        let book = this.selectedBook;
+        if (book) {
             // this.selectedBookData = book[0];
-            this.dataObj.selectedBook = book[0];
+            this.dataObj.selectedBook = book;
             this.testPdf = {
                 url: `${this.bookService._api.endpoint}/read-pdf?path=${this.dataObj.selectedBook.PDF_FILE}`,
                 withCredentials: false
@@ -928,10 +938,10 @@ export class EmployeesComponent implements OnInit {
     }
 
     loadAssignmentPreview() {
-
+        /*
         let lesson;
         let book = [];
-        for (let i = 0; i < this.dataObj.books.length; i++) {
+         for (let i = 0; i < this.dataObj.books.length; i++) {
             if (this.dataObj.books[i].ID === this.selectedAssignment.book_id) {
                 book.push(this.dataObj.books[i]);
 
@@ -941,15 +951,21 @@ export class EmployeesComponent implements OnInit {
                     }
                 }
             }
+        } */
+
+        let lesson;
+        for (let j = 0; j < this.dataObj.book.LESSONS.length; j++) {
+            if (this.dataObj.book.LESSONS[j].ID === this.selectedAssignment.lesson_id) {
+                lesson = this.dataObj.book.LESSONS[j];
+            }
         }
 
-
         this.previewPdf = {
-            url: `${this.bookService._api.endpoint}/read-pdf?path=${book[0].PDF_FILE}`,
+            url: `${this.bookService._api.endpoint}/read-pdf?path=${this.dataObj.book.PDF_FILE}`,
             withCredentials: false
         };
 
-        this.pdfCurrentPagePreviewMax = book[0].TOTAL_PAGES + "";
+        this.pdfCurrentPagePreviewMax = this.dataObj.book.TOTAL_PAGES + "";
         this.pdfCurrentPagePreview = lesson.START_PAGE + "";
     }
 
@@ -977,7 +993,7 @@ export class EmployeesComponent implements OnInit {
             this.pdfCurrentPage = pageNo;
         }
     }
-
+  
     saveLessons(): void {
         const new_lessons: any[] = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
             let validation = item.NAME != '' && item.START_PAGE > 0 && item.END_PAGE > 0;
@@ -999,6 +1015,7 @@ export class EmployeesComponent implements OnInit {
             };
         });
 
+        console.log(new_lessons);
         const data = {
             lessons: new_lessons,
             group_id: this.selectedGroup.ID,
@@ -1008,6 +1025,7 @@ export class EmployeesComponent implements OnInit {
         if (new_lessons.length > 0) {
             this.bookService.batchSaveLesson(data).subscribe((lessonsRes: any) => {
 
+                console.log(lessonsRes);
                 let newLessons = lessonsRes.results.filter(item => item.action == 'new').map((item: Lesson) => {
                     return this.transformLessonModel(item);
                 });
@@ -1016,6 +1034,8 @@ export class EmployeesComponent implements OnInit {
                     return this.transformLessonModel(item);
                 });
 
+                console.log(this.dataObj.selectedBook.LESSONS);
+                console.log(newLessons);
 
                 this.dataObj.selectedBook.LESSONS = [
                     ...this.dataObj.selectedBook.LESSONS.filter((lesson) => lesson.ID != null),
@@ -1040,7 +1060,12 @@ export class EmployeesComponent implements OnInit {
         }
     }
 
-    saveDeleteLesosns(): void {
+
+      saveDeleteLessons (remove) {
+        console.log('save delete Lessons');
+        this.bookService.deleteLessons(remove).subscribe((res: any) => {});
+      }
+    /* saveDeleteLessons(): void {
       const new_lessons: any[] = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
           let validation = item.NAME != '' && item.START_PAGE > 0 && item.END_PAGE > 0;
           if ((item.changed_state && item.validationCheck(this.dataObj.selectedBook.TOTAL_PAGES) && validation) || (item.ID == null && validation)) {
@@ -1098,12 +1123,48 @@ export class EmployeesComponent implements OnInit {
           });
 
     }
+ */
+    deleteLessons(): void {
+       // let remove = [];
+        const remove: any[] = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
+            console.log(item);
+            let validation = item.is_checked;
+            if (validation && item.ID != null ) {
+                console.log(item);
+                return true;
+            } else {
+                return false;
+            }
+        }).map((item) => {
+            return {
+                ID: item.ID,
+            };
+        });
+        console.log(remove);
 
-    deleteSelected(): void {
-        if (this.dataObj.selectedBook.LESSONS) {
-            const lessionIds = this.dataObj.selectedBook.LESSONS.filter((item) => item.is_checked == true && item.ID != null).map(item => item.ID);
-            this.dataObj.selectedBook.LESSONS = this.dataObj.selectedBook.LESSONS.filter((item) => item.is_checked == false);
-        }
+        this.bookService.deleteLessons(remove).subscribe((res: any) => {
+            
+            //this.dataObj.selectedBook.LESSONS = res.results;
+            this.dataObj.selectedBook.LESSONS = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
+                console.log(item);
+                let validation = !item.is_checked;
+                if (validation) {
+                    console.log(item);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+
+            /* let updatedLessons = res.results.filter(item => !item.is_checked).map((item: Lesson) => {
+                return this.transformLessonModel(item);
+            });
+
+            if (this.dataObj.selectedBook.LESSONS) {
+                const lessionIds = this.dataObj.selectedBook.LESSONS.filter((item) => item.is_checked == true && item.ID != null).map(item => item.ID);
+                this.dataObj.selectedBook.LESSONS = this.dataObj.selectedBook.LESSONS.filter((item) => item.is_checked == false);
+            } */
+        });
     }
 
     incrementPage() {
@@ -1528,18 +1589,6 @@ export class EmployeesComponent implements OnInit {
             this.sortAscending = false;
             this.sortDescending = true;
         }
-    }
-
-    deleteLessons() {
-        let saved = [];
-        for (let i = 0; i < this.dataObj.selectedBook.LESSONS.length; i++) {
-            if (!this.dataObj.selectedBook.LESSONS[i].is_checked) {
-                saved.push(this.dataObj.selectedBook.LESSONS[i]);
-            }
-        }
-
-        this.dataObj.selectedBook.LESSONS = saved;
-        this.saveDeleteLesosns();
     }
 
     signInWithEmail() {

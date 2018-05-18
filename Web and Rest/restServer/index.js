@@ -30,14 +30,18 @@ var con;
 		port: "3306",
 		database: "TRAINING_DB"} */
 
+		/* {host: "mysql.cgkepgzez06k.us-east-2.rds.amazonaws.com",
+		user: "admin", password: "Stevens2018#MVPHWB",
+		port: "3306",
+		database: "FEB_2"} */
 
 if(!debug){
     console.log('production')
 	con = mysql.createConnection(
-		{host: "127.0.0.1",
-		user: "root", password: "Stevens2018#MVPHWB",
+		{host: "mysql.cgkepgzez06k.us-east-2.rds.amazonaws.com",
+		user: "admin", password: "Stevens2018#MVPHWB",
 		port: "3306",
-		database: "training_db"}
+		database: "FEB_2"}
 	)
 }
 else{
@@ -154,7 +158,8 @@ function create_all_tables(){
 "(ID int unsigned not null auto_increment,                                 "+
 "NAME text,                                                                "+
 "PDF_FILE text,                                                            "+
-"TOTAL_PAGES int unsigned,												   "+													
+"TOTAL_PAGES int unsigned,												   "+	
+"GROUP_ID int unsigned,														"+												
 "PRIMARY KEY (ID));                                                        "
 		, function(err, rows, fields){
 		console.log("Create Books")
@@ -530,13 +535,13 @@ app.get('/getPercentages', function(req, res) {
 });
 
 //Done
-function getBooksQuery(callback){
+function getBook(group_id, callback){
 
-	var bookQuery = con.query('SELECT * FROM BOOKS', function(err, rows, fields) {
+	var bookQuery = con.query('SELECT * FROM BOOKS WHERE GROUP_ID='+mysql.escape(group_id), function(err, rows, fields) {
 
 		if(!err){
 			if(rows){
-				callback(null, rows);
+				callback(null, rows[0]);
 			}
 		}
 		else{
@@ -1513,15 +1518,19 @@ app.delete('/assignmentById', /*admin_oidc.ensureAuthenticated(),*/ function(req
 	})
 });
 
-app.delete('/lessonById', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	deleteLessonById(req.body.user_id, function(err, result){
-		if(err){
-			res.json(err)
-		}
-		else{
-			if(!res.headersSent){res.json(result)}else{}
-		}
-	})
+app.post('/delete/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+
+	var lessons = req.body;
+	BookService.deleteLessons(lessons).then(function(results){
+		console.log('results',results);
+		res.json({
+			results: results,
+			message : 'All Good'
+		});
+	}).catch(function(error){
+		console.log('error',error);
+	});
+
 });
 
 app.delete('/bookById', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
@@ -1558,12 +1567,13 @@ app.post('/', (req, res) => res.json(req.body));
 
 const BookService = require('./services/book.service')(app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter);
 
-app.get('/books', /*user_oidc.ensureAuthenticated(),*/ function(req, res) {
-	getBooksQuery(function(err, result){
+app.get('/book/:group_id', function(req, res) {
+	let group_id = req.params.group_id;
+	getBook(group_id, function(err, result){
 		if(err){
 			console.log(err);
 		}
-		res.json({books: result});
+		res.json(result);
 	});
 });
 
@@ -1651,6 +1661,7 @@ app.post('/new/book', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 					NAME : req.body.book_name,
 					PDF_FILE : req.files.book_file.file,
 					TOTAL_PAGES : 0,
+					GROUP_ID: req.body.group_id
 				};
 
 				BookService.newBook(book).then(function(result){
@@ -1687,7 +1698,9 @@ app.post('/new/lesson', /*admin_oidc.ensureAuthenticated(),*/ function(req, res)
 			if(!res.headersSent){res.json(result)}else{};
 		}
 	})
-})
+});
+
+
 
 app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ function (req, res) {
 	var admin_id = 3;
@@ -2603,4 +2616,6 @@ const sslOptions = {
 
 //http.createServer(app).listen(80);
 
-https.createServer(sslOptions, app).listen(3000);
+//https.createServer(sslOptions, app).listen(3000);
+
+app.listen(3000, () => console.log('server running on 3000'));

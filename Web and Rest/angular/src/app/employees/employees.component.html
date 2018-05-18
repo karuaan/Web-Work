@@ -151,21 +151,19 @@
 
         <div *ngIf="viewLessons" id="lessonsContainer">
           <div class="book-header">
-            <h4>Book</h4>
+            <h3 *ngIf="dataObj.selectedBook">{{dataObj.selectedBook.NAME}}</h3>
           </div>
           <div>
-            <select name="book" id="bookDropdown" [(ngModel)]="selectedBook" (change)="onChangeBook($event)" class="form-control input-sm">
-              <option *ngFor="let book of dataObj.books;" [value]="book.ID">{{book.NAME}}</option>
-            </select>
-            <button type="button" (click)="resetForm()" data-toggle="modal" data-target="#newBookModal" class="btn btn-info">+Add Book</button>
+            <div class="col-md-12" *ngIf="dataObj.selectedBook">
+              
+              <span>Total Pages :
+                  <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong>
+              </span>
+            </div>
+            <button type="button" (click)="resetForm()" data-toggle="modal" data-target="#newBookModal" class="btn btn-info">Change Book</button>
           </div>
 
-          <div class="col-md-12" *ngIf="dataObj.selectedBook">
-            <h3>{{dataObj.selectedBook.NAME}}</h3>
-            <span>Total Pages :
-              <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong>
-            </span>
-          </div>
+          
 
 
           <div class="lesson-header">

@@ -21,10 +21,11 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
      const insertBook = (bookReq) => {
         return new Promise((resolve,reject) => {
-            con.query('INSERT INTO BOOKS (`NAME`, `PDF_FILE`,`TOTAL_PAGES`) VALUES (?,?,?)', [
+            con.query('INSERT INTO BOOKS (`NAME`, `PDF_FILE`,`TOTAL_PAGES`, `GROUP_ID`) VALUES (?,?,?, ?)', [
                 bookReq.NAME,
                 bookReq.PDF_FILE,
                 bookReq.TOTAL_PAGES,
+                bookReq.GROUP_ID
             ],  (err, insertData) =>{
                 if (!err) {
                     resolve({
@@ -173,6 +174,24 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
         });
     };
 
+    const deleteLessons =(lessons) => {
+        return new Promise(async (resolve, reject) => {
+            console.log('lessons',lessons);
+            // lessons.forEach((item,key) => {
+                for(var i=0;i<lessons.length;i++){
+                    var is_checked = !lessons[i].is_checked;
+                    if (is_checked){
+                        var lessonResData = await deleteLesson(lessons[i].ID);
+                        if (lessonResData.status){
+                            delete lessons[i];
+                        }
+
+                    }
+                }
+    
+            resolve(lessons);
+        });
+    };
     
     
     const checkLessonExist = (lesson)=> {
@@ -255,6 +274,28 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
                });
         });
       };
+
+      const deleteLesson = (lessonId) => {
+        return new Promise(async (resolve,reject) => {
+            con.query("DELETE FROM LESSONS where ID = ? ",lessonId,function(err2,result){
+                if(!err2){
+                    resolve({
+                        status : true,
+                        deleted : lessonId,
+                        data : result
+                    });
+                }else{
+                    resolve({
+                        status : false,
+                        deleted : null,
+                        data : null,
+                        err : err2
+                    });
+                }
+            });
+        });
+      };
+
     
       const writeToFile = function writeToFile(filePath) {
         return new Promise( (resolve, reject) => {
@@ -896,6 +937,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
     
     
        module_methods.saveLessons = saveLessons;
+       module_methods.deleteLessons = deleteLessons;
        module_methods.addLessonIfNotExists = addLessonIfNotExists;
        module_methods.checkLessonExist = checkLessonExist;
        module_methods.insertLesson = insertLesson;

@@ -30,7 +30,6 @@ const sslOptions = {
   key: fs.readFileSync('../ssl/key.pem'),
   cert: fs.readFileSync('../ssl/cert.crt'),
   ca: splitCA('../ssl/ca-bundle.crt'),
-/*  requestCert: true,*/
   rejectUnauthorized: false
 };
 

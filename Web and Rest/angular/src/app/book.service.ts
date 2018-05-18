@@ -18,8 +18,8 @@ export class BookService {
 	this._api = {'endpoint' : environment.restURL};
   }
 
-  getBooks(): Observable<Book[]> {
-      return this.http.get<Book[]>(this._api.endpoint + '/books');
+  getBook(group_id): Observable<Book[]> {
+      return this.http.get<Book[]>(`${this.restURL}/book/${group_id}`);
   }
 
   saveBooks(data): Observable<any> {
@@ -65,6 +65,10 @@ export class BookService {
 
   saveLessons(data): Observable<Book[]> {
     return this.http.post<any>(this.restURL + '/new/lesson', data);
+  }
+
+  deleteLessons(data): Observable<any []> {
+    return this.http.post<any>(this.restURL + '/delete/lessons', data);
   }
 
   getLessons(): Observable<Lesson[]> {

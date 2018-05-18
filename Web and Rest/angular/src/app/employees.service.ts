@@ -38,8 +38,8 @@ export class EmployeesService {
 	  return response;
   }
   
-  getBooks(){
-	  var response = this.http.get<any>(this.restURL + '/books');
+  getBook(group_id){
+	  var response = this.http.get<any>(`${this.restURL}/book/${group_id}`);
 	  return response;
   }
 
