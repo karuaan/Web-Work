@@ -27,17 +27,17 @@
 <div class="container" *ngIf="newUser">
   <img class="logo" src="assets/pngs/Liberty Logo.png" />
   <form class="login-form" name="newUserForm" method="post">
-    <label style="margin-bottom: 20px;">First Name</label>
-    <input style="margin-bottom: 20px;" type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
-    <label style="margin-bottom: 20px;">Last Name</label>
-    <input style="margin-bottom: 20px;" type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
-    <label style="margin-bottom: 20px;">Phone Number</label>
-    <input style="margin-bottom: 20px;" type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
-    <label style="margin-bottom: 20px;">New Password</label>
-    <input style="margin-bottom: 20px;" type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
-    <label style="margin-bottom: 20px;">Confirm Password</label>
-    <input style="margin-bottom: 20px;" type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
-    <div style="margin-bottom: 20px;" class="form-group">
+    <label>First Name</label>
+    <input type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
+    <label>Last Name</label>
+    <input type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
+    <label>Phone Number</label>
+    <input type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <label>New Password</label>
+    <input type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
+    <label>Confirm Password</label>
+    <input type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
+    <div class="form-group">
       <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
         Update User Info
       </button>
