@@ -373,7 +373,13 @@ public class LoginActivity extends AppCompatActivity {
             case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //fetchUserInfo(mAuth.getCurrentUser());
+                    if (Utils.isOnline(LoginActivity.this)) {
+                        updateChecker();
+                    } else if (mAuth.getCurrentUser() == null) {
+                        getLoginScreen();
+                    }else{
+                        getDetailsFromServer();
+                    }
 
                     Toast.makeText(LoginActivity.this, "Permission granted", Toast.LENGTH_SHORT).show();
                 } else {

@@ -397,6 +397,9 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     public void startDownload() {
 
+        if (serverFilePath.substring(47, 54).equals("/public")){
+            serverFilePath = serverFilePath.substring(0,48)+serverFilePath.substring(55);
+        }
         Uri uri = Uri.parse(serverFilePath);
         startButton.setEnabled(false);
         startButton.setText("Downloading...");
