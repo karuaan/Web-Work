@@ -794,26 +794,28 @@
 
 </div>
 
-<div class="container" *ngIf="ngIf="isLoggedIn && admin_id == 0">
-  <img class="logo" src="assets/pngs/Liberty Logo.png" />
-  <form class="login-form" name="newUserForm" method="post">
-    <label style="margins: 20px;">First Name</label>
-    <input style="margins: 20px;" type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
-    <label style="margins: 20px;">Last Name</label>
-    <input style="margins: 20px;" type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
-    <label style="margins: 20px;">Phone Number</label>
-    <input style="margins: 20px;" type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
-    <label style="margins: 20px;">New Password</label>
-    <input style="margins: 20px;" type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
-    <label style="margins: 20px;">Confirm Password</label>
-    <input style="margins: 20px;" type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
-    <div style="margins: 20px;" class="form-group">
-      <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
-        Update User Info
-      </button>
-    </div>
-  </form>
-  <div *ngIf="isLoginError==true" class="alert alert-danger">
-    <p>{{loginErrorMessage}}</p>
-  </div>
+<div class="container" *ngIf="isLoggedIn && admin_id <= 0">
+  <h1 style="margin-bottom: 1.5em; margin-top: 2em; margin-left: 4em;">Welcome to Liberty Elevator Safety Training</h1>
+  <h3 style="margin-left: 4em;">This page has instructions for downloading and installing the app on your Android Device.</h3>
+  <h3 style="margin-left: 10em;">Follow these instructions to begin receiving learning materials:</h4>
+  <ol style="margin-top: 2em; margin-left: 10em; font-size: 18">
+    <li>Adjust settings to allow downloads from unknown sources:
+    	<br/>
+        <br/>
+    	<a style="margin: 7em;" href="">Android 5.0</a>
+        <br/>
+        <a style="margin: 7em;" href="">Android 6.0</a>
+    </li>
+    
+    <br/>
+    <li>Download and install the application:
+    	<br/>
+        <br/>
+        <button type="button" class="btn-primary" (click)="getApk()" style=" height:35px; width:200px; margin-left: 6em;"> Download App</button>
+    </li>
+    <br/>
+    <li>Sign in and begin working</li>
+  </ol>
+ 
+  <h5 class="text text-muted" style="color: blue; font-size: 16; margin-left: 3em;">If you are an admin trying to get to the admin console, you should not be seeing this page. Please contact an administrator.</h5>
 </div>
