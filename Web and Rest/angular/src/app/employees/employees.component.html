@@ -1,4 +1,4 @@
-<div class="container" *ngIf="isLoggedIn==false && !newUser">
+<div class="" container *ngIf="isLoggedIn==false && !newUser">
   <img class="logo" src="assets/pngs/Liberty Logo.png" />
   <form class="login-form" name="userform" method="post" #formCtrl="ngForm">
 
@@ -25,18 +25,19 @@
 </div>
 
 <div class="container" *ngIf="newUser">
+  <img class="logo" src="assets/pngs/Liberty Logo.png" />
   <form class="login-form" name="newUserForm" method="post">
-    <label>First Name</label>
-    <input type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
-    <label>Last Name</label>
-    <input type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
-    <label>Phone Number</label>
-    <input type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
-    <label>New Password</label>
-    <input type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
-    <label>Confirm Password</label>
-    <input type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
-    <div class="form-group">
+    <label style="margin-bottom: 20px;">First Name</label>
+    <input style="margin-bottom: 20px;" type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
+    <label style="margin-bottom: 20px;">Last Name</label>
+    <input style="margin-bottom: 20px;" type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
+    <label style="margin-bottom: 20px;">Phone Number</label>
+    <input style="margin-bottom: 20px;" type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <label style="margin-bottom: 20px;">New Password</label>
+    <input style="margin-bottom: 20px;" type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
+    <label style="margin-bottom: 20px;">Confirm Password</label>
+    <input style="margin-bottom: 20px;" type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
+    <div style="margin-bottom: 20px;" class="form-group">
       <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
         Update User Info
       </button>
@@ -48,7 +49,7 @@
 </div>
 
 
-<div class="container" *ngIf="isLoggedIn && admin_id > 0 && !newUser">
+<div class="container" *ngIf="isLoggedIn && admin_id >= 0 && !newUser">
   <!--
 	<div class="row">
 	<button (click)="testGetEmployee()">Test Get Employee by Email</button>
@@ -170,38 +171,41 @@
 
           <div class="lesson-header">
             <h4>Lessons</h4>
+	    <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
+            <button (click)="saveLessons()" class="btn btn-primary ">Save</button>
+            <button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
           </div>
           <div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
             <div class="scrollbar">
               <table class="table table-hover lessons">
                 <thead>
                   <tr>
-                    <th style="width: 3em"></th>
+                    <th></th>
                     <th>Name</th>
-                    <th style="width: 7em">Start Page</th>
-                    <th style="width: 7em">End Page</th>
-                    <th style="width: 10em"></th>
+                    <th>Start Page</th>
+                    <th>End Page</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let lesson of dataObj.selectedBook.LESSONS;" [ngClass]="{invalid:!lesson.validationCheck(dataObj.selectedBook.TOTAL_PAGES)}">
-                    <td style="width: 3em">
+                    <td>
                       <input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
                     </td>
                     <td>
-                      <input type="text" class="lesson-name-input form-control input-lg col-lg-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
+                      <input size="30" type="text" class="form-control input-sm col-sm-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
                     </td>
-                    <td style="width: 7em">
-                      <input type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
+                    <td>
+                      <input size="4" type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
                         (keyup)="changePdfPageNo(lesson.START_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][start_page]"
                         [(ngModel)]="lesson.START_PAGE" min="0">
                     </td>
-                    <td style="width: 7em">
-                      <input class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
+                    <td>
+                      <input size="4" class="form-control input-sm " type="number" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.END_PAGE)"
                         (keyup)="changePdfPageNo(lesson.END_PAGE)" [max]="dataObj.selectedBook.TOTAL_PAGES" name="lession[][end_page]"
                         [(ngModel)]="lesson.END_PAGE" min="0">
                     </td>
-                    <td style="width: 10em">
+                    <td>
                       <button style="width: 10em" class="btn btn-sm btn-success" *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)">
 
                         <i class="fa fa-check"></i> Assigned
@@ -212,9 +216,7 @@
                                                            <button class="btn btn-sm btn-success"
                                                                    *ngIf="lesson.isAssignedByGroupId(selectedGroup.ID)"
                                                            (click)="removeAssignment(lesson)">
-
                                                                <i class="fa fa-check"></i> Remove Assignment
-
                                                            </button>
 																												 -->
 
@@ -229,10 +231,6 @@
               </table>
             </div>
           </div>
-
-          <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
-          <button (click)="saveLessons()" class="btn btn-primary ">Save</button>
-          <button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
           <!--<button type="button" class="btn btn-info" id="addLessonButton" data-toggle="modal" data-target="#newLessonModal">+ Add</button>-->
         </div>
       </div>
@@ -454,15 +452,12 @@
                 <input type="date" class="form-control" id="startDateHelp" formControlName="start_date" [(ngModel)]="editAssignmentForm.start_date"
                   name="start_date" placeholder="Enter available from date" />
               </div>
-
               <div class="form-group" [ngClass]="displayFieldCss(editAssignmentGroupForm,'due_date')">
                 <label for="dueDateHelp">Due :</label>
                 <input type="date" class="form-control" id="dueDateHelp" formControlName="due_date" [(ngModel)]="editAssignmentForm.due_date"
                   name="due_date" placeholder="Enter due date" />
               </div>
-
               <div class="form-group" [ngClass]="displayFieldCss(editAssignmentGroupForm,'minute')">
-
                 <label>Minimum reading time</label>
                 <div class="col-md-12 form-inline">
                   <input type="number" class="form-control col-sm-2" id="minuteHelp" formControlName="minute" [(ngModel)]="editAssignmentForm.minute"
@@ -471,7 +466,6 @@
                     name="second" />Seconds
                 </div>
               </div>
-
               <div class="form-group">
                 <label for="comment">Notes :</label>
                 <textarea name="comment" formControlName="comment" [(ngModel)]="editAssignmentForm.notes" id="comment" cols="30" class="form-control"
@@ -802,14 +796,26 @@
 
 </div>
 
-<div class="container" *ngIf="isLoggedIn && admin_id == 0">
-  <h1>Welcome to Liberty Elevator Safety Training</h1>
-  <p>This page has instructions for downloading and installing the app on your Android device.</p>
-  <p>Follow these instructions to begin receiving learning materials.</p>
-  <ol>
-    <li>Adjust settings to allow downloads from unknown sources</li>
-    <li>Download and install the application</li>
-    <li>Sign in and begin reading</li>
-  </ol>
-  <button type="button" class="btn-primary" (click)="getApk()"> Download App</button>
+<div class="container" *ngIf="newUser">
+  <img class="logo" src="assets/pngs/Liberty Logo.png" />
+  <form class="login-form" name="newUserForm" method="post">
+    <label style="margins: 20px;">First Name</label>
+    <input style="margins: 20px;" type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
+    <label style="margins: 20px;">Last Name</label>
+    <input style="margins: 20px;" type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
+    <label style="margins: 20px;">Phone Number</label>
+    <input style="margins: 20px;" type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <label style="margins: 20px;">New Password</label>
+    <input style="margins: 20px;" type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
+    <label style="margins: 20px;">Confirm Password</label>
+    <input style="margins: 20px;" type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
+    <div style="margins: 20px;" class="form-group">
+      <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
+        Update User Info
+      </button>
+    </div>
+  </form>
+  <div *ngIf="isLoginError==true" class="alert alert-danger">
+    <p>{{loginErrorMessage}}</p>
+  </div>
 </div>
