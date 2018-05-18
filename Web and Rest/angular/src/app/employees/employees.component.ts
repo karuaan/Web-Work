@@ -74,6 +74,7 @@ export class EmployeesComponent implements OnInit {
     authService: AuthService;
     emailContents: string;
     modalEmails: string;
+	modalEmailsIncomplete: string;
     testPdf: Object;
     viewPdf = false;
     lookAtAssignments = true;
@@ -156,6 +157,7 @@ export class EmployeesComponent implements OnInit {
         this.pdfCurrentPage = "1";
         this.bookForm = null;
         this.modalEmails = "";
+		this.modalEmailsIncomplete = "";
         this.emailContents = "";
         this.lookAtAssignments = true;
 
@@ -199,6 +201,8 @@ export class EmployeesComponent implements OnInit {
                                 -1
                             ).subscribe(employees => {
                                 this.employees = employees;
+								this.emailGroup();
+								this.emailGroupIncomplete();
                             });
                         }
                     } else {
@@ -230,6 +234,8 @@ export class EmployeesComponent implements OnInit {
                                 } else {
                                     this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
                                 }
+								this.emailGroup();
+								this.emailGroupIncomplete();
                             });
                         }
                         this.loadAssignmentPreview();
@@ -1197,16 +1203,25 @@ export class EmployeesComponent implements OnInit {
         });
     }
 
-    emailGroup(text) {
+    emailGroup() {
         this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function (total, next) {
             return total + "," + next
         });
+		console.log(this.modalEmails);
     }
 
-    emailGroupIncomplete(text) {
-        this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
-			return next !== '' ? total + "," + next : total;
-        });
+    emailGroupIncomplete() {
+        if(this.employees !== [] && this.employees != undefined){
+			if(this.employees[0].IS_COMPLETE != null && this.employees[0].IS_COMPLETE != undefined && this.employees[0].IS_COMPLETE != []){
+				this.modalEmailsIncomplete = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
+					return next !== '' ? total + "," + next : total;
+				});
+			}
+		}
+		else{
+			this.modalEmailsIncomplete = "";
+		}
+		console.log(this.modalEmailsIncomplete);
     }
 
     emailGroupLate(text) {
@@ -1255,9 +1270,11 @@ export class EmployeesComponent implements OnInit {
                         } else {
                             this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
                         }
-
+						this.emailGroup();
+						this.emailGroupIncomplete();
                     });
                 }
+				
             } else {
                 this.assignments = [{
                     "assignment_id": -1,
@@ -1291,6 +1308,9 @@ export class EmployeesComponent implements OnInit {
                     } else {
                         this.selectedAssignmentCompletion = Math.floor((complete / total) * 100) + "%";
                     }
+					
+					this.emailGroup();
+					this.emailGroupIncomplete();
 
                 });
             }

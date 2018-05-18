@@ -266,11 +266,11 @@
                 </div>
                 <div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">PDF</div>
               </div>
-              <div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
+              <div class="icon-action">
                 <div class="icon">
-                  <img src="assets/pngs/mail.png" />
+                  <a [(ngModel)]="modalEmails" href="mailTo:{{modalEmails}}"><img src="assets/pngs/mail.png" /></a>
                 </div>
-                <div class="text">Email all employees</div>
+                <div class="text"><a [(ngModel)]="modalEmails" href="mailTo:{{modalEmails}}">Email all employees</a></div>
               </div>
             </div>
             <div class="row">
@@ -286,11 +286,11 @@
                 </div>
                 <div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignmentCompletion}} of employees finished</div>
               </div>
-              <div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
+              <div class="icon-action">
                 <div class="icon">
-                  <img src="assets/pngs/mail.png" />
+                  <a [(ngModel)]="modalEmailsIncomplete" href="mailTo:{{modalEmailsIncomplete}}"><img src="assets/pngs/mail.png" /></a>
                 </div>
-                <div class="text">Email all incomplete</div>
+                <div class="text"><a [(ngModel)]="modalEmailsIncomplete" href="mailTo:{{modalEmailsIncomplete}}">Email all incomplete</a></div>
               </div>
             </div>
             <div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' && selectedAssignment.NOTES !== undefined: false">
