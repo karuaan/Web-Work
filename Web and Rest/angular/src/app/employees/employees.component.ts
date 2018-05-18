@@ -1616,7 +1616,7 @@ export class EmployeesComponent implements OnInit {
                         else {
                             console.log(5);
                             if (res2[0]['IS_ADMIN']['data'][0] == 1) {
-                                this.admin_id = 3; //Hardcode since groups shouldnt care about admin ids
+                                this.admin_id = res2[0]['ID']; //Hardcode since groups shouldnt care about admin ids
                                 this.onAdminLogin(this.admin_id);//HARDCODE FOR TESTING
                                 //this.onAdminLogin(this.admin_id);
                                 this.isLoggedIn = true;

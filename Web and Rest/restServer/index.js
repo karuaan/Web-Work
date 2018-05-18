@@ -2048,7 +2048,7 @@ app.post('/getAssignmentsUser', function(req, res){
 app.post('/getgroups',function(req,res){
 
 	console.log(req.body.admin_id)
-	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS WHERE ADMIN_ID=?",[req.body.admin_id],function(err,data,fields){
+	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS",function(err,data,fields){
 		if(!err){
 			res.json(data);
 		}
@@ -2283,7 +2283,7 @@ function getMasterTable(admin_id, callback){
 		  "USERS.LAST_NAME as USER_LAST_NAME, " +
 		  "USERS.EMAIL as USER_EMAIL " +
 		 "FROM USER_GROUPS JOIN USERS ON USERS.ID=USER_GROUPS.USER_ID " +
-		 "WHERE USER_GROUPS.ADMIN_ID=" + mysql.escape(admin_id) + ") as GROUP_USER_TABLE " +
+		 ") as GROUP_USER_TABLE " +
 		 "LEFT JOIN STATUS ON STATUS.EMPLOYEE_ID=GROUP_USER_TABLE.USER_ID " +
 		 "LEFT JOIN ASSIGNMENTS ON STATUS.ASSIGNMENT_ID=ASSIGNMENTS.ID ",
 		function(err, rows){
