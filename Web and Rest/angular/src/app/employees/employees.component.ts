@@ -1230,9 +1230,20 @@ export class EmployeesComponent implements OnInit {
     }
 
     emailGroupIncomplete() {
-        this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
-			return next !== '' ? total + ", " + next : total;
-        });
+		if(this.employees !== []){
+			if(this.employees[0].IS_COMPLETE != null){
+				this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
+					return next !== '' ? total + ", " + next : total;
+				});
+			}
+			else{
+				this.modalEmailsIncomplete = "";
+			}
+		}
+		else{
+			this.modalEmailsIncomplete = "";
+		}
+        
     }
 
     emailGroupLate(text) {
