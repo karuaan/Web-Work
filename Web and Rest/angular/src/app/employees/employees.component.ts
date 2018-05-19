@@ -75,6 +75,7 @@ export class EmployeesComponent implements OnInit {
     authService: AuthService;
     emailContents: string;
     modalEmails: string;
+	modalEmailsIncomplete: string;
     testPdf: Object;
     viewPdf = false;
     lookAtAssignments = true;
@@ -144,6 +145,8 @@ export class EmployeesComponent implements OnInit {
         this.newUser = false;
         this.loginErrorMessage = "";
         this.admin_password = "";
+		
+		this.modalEmailsIncomplete = "";
 
         this.newPassword = "";
         this.confirmPassword = "";
