@@ -1223,13 +1223,13 @@ export class EmployeesComponent implements OnInit {
         });
     }
 
-    emailGroup(text) {
+    emailGroup() {
         this.modalEmails = this.employees.map(employee => employee.EMAIL).reduce(function (total, next) {
             return total + ", " + next
         });
     }
 
-    emailGroupIncomplete(text) {
+    emailGroupIncomplete() {
         this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
 			return next !== '' ? total + ", " + next : total;
         });
