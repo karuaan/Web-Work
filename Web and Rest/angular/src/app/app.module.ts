@@ -47,7 +47,7 @@ import { Ng4LoadingSpinnerModule, Ng4LoadingSpinnerService } from 'ng4-loading-s
     AngularFireDatabaseModule,
 	AngularFirestoreModule,
     AngularFireAuthModule,
-	Ng4LoadingSpinner
+	Ng4LoadingSpinnerModule
   ],
   providers: [EmployeesService,BookService,AuthService],
   bootstrap: [AppComponent]
