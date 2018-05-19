@@ -1,3 +1,4 @@
+<ng4-loading-spinner> </ng4-loading-spinner>
 <div class="container" *ngIf="isLoggedIn==false && !newUser">
   <img class="logo" src="assets/pngs/Liberty Logo.png" />
   <form class="login-form" name="userform" method="post" #formCtrl="ngForm">
@@ -9,18 +10,18 @@
     <input type="password" class="form-control" id="userPassword" [(ngModel)]="userPassword" required [ngModelOptions]="{standalone: true}">
 
     <div class="form-group">
-      <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInWithEmail()">
+      <button type="buton" class="login-button btn btn-primary btn-block" style="font-size: 1em" (click)="signInWithEmail()">
         Login with Email
       </button>
 
     </div>
   </form>
-  <div *ngIf="isLoginError==true" class="alert alert-danger">
+  <div *ngIf="isLoginError==true" class="alert alert-danger" style="margin-bottom: 1.5em">
     <p>{{loginErrorMessage}}</p>
   </div>
-  <div>
+  <div style="font-size: 1.5em; padding: 0em 1em">
     <!--<button (click)="testGetEmployee()">Test Get Employee by Email</button>-->
-	<button id="resetButton" style="margin: 20px; padding: 5px; width: 400px; height: 50px; text-align: center; font-size: 24px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" class="btn btn-primary" (click)="resetPassword()" data-toggle="modal" data-target="#resetPasswordModal">Reset Password</button>
+	<button id="resetButton" style="width: 100%; height: 50px; text-align: center; font-size: 1em; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" class="btn btn-primary" (click)="resetPassword()" data-toggle="modal" data-target="#resetPasswordModal">Reset Password</button>
   </div>
 </div>
 
@@ -155,7 +156,7 @@
           </div>
           <div>
             <div class="col-md-12" *ngIf="dataObj.selectedBook">
-              
+
               <span>Total Pages :
                   <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong>
               </span>
@@ -163,7 +164,7 @@
             <button type="button" (click)="resetForm()" data-toggle="modal" data-target="#newBookModal" class="btn btn-info">Change Book</button>
           </div>
 
-          
+
 
 
           <div class="lesson-header">
@@ -812,7 +813,7 @@
         <br/>
         <a style="margin: 7em;color:black;" href="https://youtu.be/_N2ieQkvPOA">Android 6.0</a>
     </li>
-    
+
     <br/>
     <li>Download and install the application:
     	<br/>
@@ -822,6 +823,6 @@
     <br/>
     <li>Sign in and begin working</li>
   </ol>
- 
+
   <h5 class="text text-muted" style="color: blue; font-size: 16; margin-left: 3em;">If you are an admin trying to get to the admin console, you should not be seeing this page. Please contact an administrator.</h5>
 </div>
