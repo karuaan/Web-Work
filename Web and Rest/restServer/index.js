@@ -702,10 +702,10 @@ function addUser(first_name, last_name, email, callback){
 						firebaseAdmin.auth().createUser({
 							  'email': email,
 							  emailVerified: false,
-							  password: "secretPassword",
+							  password: "elevatorpass",
 							  disabled: false
 							}).then((record) => {
-								var mailOptions = {
+								/*var mailOptions = {
 									from: 'libertyelevatorreader@gmail.com',
 									to: [email],
 									subject: 'You have been invited to the liberty elevator app!',
@@ -714,10 +714,7 @@ function addUser(first_name, last_name, email, callback){
 								transporter.sendMail(mailOptions, function(error, info){
 									if(error){
 										
-										/*TODO - ADD ROLLBACK
-											- delete user from firebase
-											- delete user from database
-										*/
+										
 										console.log(error);
 										callback(error, null);
 										
@@ -725,7 +722,7 @@ function addUser(first_name, last_name, email, callback){
 									else{
 										callback(null, result)
 									}
-								});
+								});*/
 							},
 							(firebase_err) => {
 								/*TODO - ADD ROLLBACK

@@ -180,6 +180,14 @@ export class EmployeesComponent implements OnInit {
                 this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
                     console.log(this.selectedGroup);
                     if (assignments && assignments.hasOwnProperty('err')) {
+                        if (this.selectedGroup) {
+                            this.employeesService.getEmployees(
+                                this.selectedGroup.ID,
+                                -1
+                            ).subscribe(employees => {
+                                this.employees = employees;
+                            });
+                        }
                         this.assignments = [{
                             "assignment_id": -1,
                             "NAME": "No assignments",
@@ -191,16 +199,8 @@ export class EmployeesComponent implements OnInit {
                             "TIME_TO_COMPLETE": 0
                         }];
                         this.selectedAssignment = assignments[0];
-						this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
+                        this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
                         this.countdown = new Date(1970, 0, 1).setSeconds(0);
-                        if (this.selectedGroup && this.selectedAssignment) {
-                            this.employeesService.getEmployees(
-                                this.selectedGroup.ID,
-                                -1
-                            ).subscribe(employees => {
-                                this.employees = employees;
-                            });
-                        }
                     } else {
                         this.assignments = assignments;
                         this.selectedAssignment = assignments[0];
@@ -1223,6 +1223,7 @@ export class EmployeesComponent implements OnInit {
 			}
 		}
         this.selectedGroup = group;
+        this.newBookAdded = false;
         this.transformResponseAndPopulate();
         this.employeesService.getAssignments(group.ID).subscribe(data2 => {
             if (!data2['err']) {
@@ -1648,7 +1649,7 @@ export class EmployeesComponent implements OnInit {
 					else{
 						this.admin_id = res2[0]['ID'];
 						console.log(this.admin_id)
-						this.onAdminLogin(3);
+						this.onAdminLogin(this.admin_id);
 						this.isLoggedIn = true;
 					}
 				},
