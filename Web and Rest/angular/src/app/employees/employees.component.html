@@ -13,7 +13,6 @@
       <button type="buton" class="login-button btn btn-primary btn-block" style="font-size: 1em" (click)="signInWithEmail()">
         Login with Email
       </button>
-
     </div>
   </form>
   <div *ngIf="isLoginError==true" class="alert alert-danger" style="margin-bottom: 1.5em">
@@ -801,28 +800,24 @@
 
 </div>
 
-<div class="container" *ngIf="isLoggedIn && admin_id <= 0">
-  <h1 style="margin-bottom: 1.5em; margin-top: 2em; margin-left: 4em;">Welcome to Liberty Elevator Safety Training</h1>
-  <h3 style="margin-left: 4em;">This page has instructions for downloading and installing the app on your Android Device.</h3>
-  <h4 style="margin-left: 10em;">Follow these instructions to begin receiving learning materials:</h4>
-  <ol style="margin-top: 2em; margin-left: 10em; font-size: 18">
+<div class="container" *ngIf="isLoggedIn && admin_id <= 0" style="width: calc(100% - 10em); margin: 1em 5em; border: black dashed; padding: 1em; background: #e8ffff;">
+  <h1 style="text-align: center; padding: 1em 0.5em; margin-bottom: 0;">Welcome to Liberty Elevator Safety Training</h1>
+  <h3 style="padding: 0em 1em; margin-bottom: 1em">This page has instructions for downloading and installing the app on your Android Device.</h3>
+  <h4 style="padding: 0em 1.2em; margin-bottom: 1em;">Follow these instructions to begin receiving learning materials:</h4>
+  <ol style="font-size: 1.5em; margin-left: 0.4em">
     <li>Adjust settings to allow downloads from unknown sources:
+			<ul style="list-style: none;">
+    		<li><a style="color: #1faa0f" href="https://youtu.be/bvZP4cS2yyc">Android 5.0</a></li>
+    		<li><a style="color: #1faa0f" href="https://youtu.be/_N2ieQkvPOA">Android 6.0</a></li>
+    	</ul>
+		</li>
+		<li>Download and install the application:
     	<br/>
-        <br/>
-    	<a style="margin: 7em;color:black;" href="https://youtu.be/bvZP4cS2yyc">Android 5.0</a>
-        <br/>
-        <a style="margin: 7em;color:black;" href="https://youtu.be/_N2ieQkvPOA">Android 6.0</a>
-    </li>
-
-    <br/>
-    <li>Download and install the application:
-    	<br/>
-        <br/>
-        <button type="button" class="btn-primary" (click)="getApk()" style=" height:35px; width:200px; margin-left: 6em;"> Download App</button>
+      <br/>
+      <button type="button" class="btn-primary" (click)="getApk()" style="transform: translate(-50%, 0%); height: 50px; width: 250px; margin-left: 50%;"> Download App</button>
     </li>
     <br/>
     <li>Sign in and begin working</li>
   </ol>
-
-  <h5 class="text text-muted" style="color: blue; font-size: 16; margin-left: 3em;">If you are an admin trying to get to the admin console, you should not be seeing this page. Please contact an administrator.</h5>
+  <h5 class="text text-muted" style="padding: 0em 1.2em">If you are an admin trying to get to the admin console, you should not be seeing this page. Please contact an administrator.</h5>
 </div>
