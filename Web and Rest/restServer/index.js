@@ -703,6 +703,7 @@ function addUser(first_name, last_name, email, callback){
 						  'email': email,
 						  emailVerified: false,
 						  password: "elevatorpass",
+						  photoURL: "user",
 						  disabled: false
 						}).then((record) => {
 							callback(null, record);
@@ -745,6 +746,7 @@ function addAdmin(email, callback){
 						  'email': email,
 						  emailVerified: false,
 						  password: "elevatorPassAdmin123",
+						  photoURL: "admin",
 						  disabled: false
 						}).then((record) => {
 							callback(null, record);
