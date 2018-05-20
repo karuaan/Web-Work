@@ -30,9 +30,10 @@ exports.sendWelcomeEmail = functions.auth.user().onCreate((user) => {
   // [START eventAttributes]
   const email = user.email; // The email of the user.
   const displayName = user.displayName; // The display name of the user.
+  const userType = user.photoURL; //A quick fix
   // [END eventAttributes]
 
-  return sendWelcomeEmail(email, displayName);
+  return sendWelcomeEmail(email, displayName, userType);
 });
 // [END sendWelcomeEmail]
 
@@ -51,7 +52,7 @@ exports.sendByeEmail = functions.auth.user().onDelete((user) => {
 // [END sendByeEmail]
 
 // Sends a welcome email to the given user.
-function sendWelcomeEmail(email, displayName) {
+function sendWelcomeEmail(email, displayName, userType) {
   const mailOptions = {
     from: `${APP_NAME} <noreply@firebase.com>`,
     to: email,
@@ -59,7 +60,12 @@ function sendWelcomeEmail(email, displayName) {
 
   // The user subscribed to the newsletter.
   mailOptions.subject = `Welcome to ${APP_NAME}!`;
-  mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. Please login using your email address at this address: https://safetytraining.libertyelevator.com/ and this temporary password: elevatorpass.`;
+  if(userType != 'http://admin.com'){
+	mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. Please login using your email address at this address: https://safetytraining.libertyelevator.com/ and this temporary password: elevatorpass.`;
+  }
+  else{
+	mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. Please login using your email address at this address: https://safetytraining.libertyelevator.com/ and this temporary password: elevatorPassAdmin123.`;
+  }
   return mailTransport.sendMail(mailOptions).then(() => {
     return console.log('New welcome email sent to:', email);
   });
