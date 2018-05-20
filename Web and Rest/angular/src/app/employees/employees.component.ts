@@ -13,6 +13,7 @@ import { ToastrService } from 'ngx-toastr';
 import { PDFDocumentProxy, PDFProgressData } from 'ng2-pdf-viewer';
 import { AuthService } from '../auth.service';
 import {saveAs} from 'file-saver';
+import { Ng4LoadingSpinnerModule, Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
 
 declare var $: any;
 
@@ -109,6 +110,7 @@ export class EmployeesComponent implements OnInit {
     warningDate: Date;
 
     private bookService: BookService;
+	private ng4LoadingSpinnerService: Ng4LoadingSpinnerService;
 
     selectedGroup: Group;
     public selectedBook: number;
@@ -120,9 +122,12 @@ export class EmployeesComponent implements OnInit {
     };
 
     constructor(employeesService: EmployeesService,
-        toastrService: ToastrService,
-        authService: AuthService,
-        bookService: BookService, fb: FormBuilder) {
+			toastrService: ToastrService,
+			authService: AuthService,
+			bookService: BookService, 
+			fb: FormBuilder,
+			ng4LoadingSpinnerService: Ng4LoadingSpinnerService
+		) {
         this.currentDate = new Date();
         let testDate = new Date();
         testDate = new Date(testDate.setDate(new Date().getDate() - 3));
@@ -132,13 +137,16 @@ export class EmployeesComponent implements OnInit {
         this.bookService = bookService;
         this.authService = authService;
         this.toastrService = toastrService;
-
+		this.ng4LoadingSpinnerService = ng4LoadingSpinnerService;
+		
         this.userEmail = "";
         this.userPassword = "";
         this.isLoginError = false;
         this.newUser = false;
         this.loginErrorMessage = "";
         this.admin_password = "";
+		
+		this.modalEmailsIncomplete = "";
 
         this.newPassword = "";
         this.confirmPassword = "";
@@ -170,6 +178,7 @@ export class EmployeesComponent implements OnInit {
 
 
     onAdminLogin(admin_id) {
+		this.ng4LoadingSpinnerService.show();
         this.employeesService.getUserData(admin_id).subscribe(userData => {
 
 
@@ -182,6 +191,19 @@ export class EmployeesComponent implements OnInit {
                 this.employeesService.getAssignments(this.selectedGroup.ID).subscribe(assignments => {
                     console.log(this.selectedGroup);
                     if (assignments && assignments.hasOwnProperty('err')) {
+                        if (this.selectedGroup) {
+                            this.employeesService.getEmployees(
+                                this.selectedGroup.ID,
+                                -1
+                            ).subscribe(employees => {
+                                this.employees = employees;
+								this.emailGroup();
+								this.emailGroupIncomplete();
+								this.ng4LoadingSpinnerService.hide();
+                            }, err => {
+								this.toastrService.warning('Server Error', 'Unable to populate employees, please try again or contract support');
+							});
+                        }
                         this.assignments = [{
                             "assignment_id": -1,
                             "NAME": "No assignments",
@@ -193,18 +215,8 @@ export class EmployeesComponent implements OnInit {
                             "TIME_TO_COMPLETE": 0
                         }];
                         this.selectedAssignment = assignments[0];
-						this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
+                        this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
                         this.countdown = new Date(1970, 0, 1).setSeconds(0);
-                        if (this.selectedGroup && this.selectedAssignment) {
-                            this.employeesService.getEmployees(
-                                this.selectedGroup.ID,
-                                -1
-                            ).subscribe(employees => {
-                                this.employees = employees;
-								this.emailGroup();
-								this.emailGroupIncomplete();
-                            });
-                        }
                     } else {
                         this.assignments = assignments;
                         this.selectedAssignment = assignments[0];
@@ -236,14 +248,21 @@ export class EmployeesComponent implements OnInit {
                                 }
 								this.emailGroup();
 								this.emailGroupIncomplete();
-                            });
+								this.ng4LoadingSpinnerService.hide();
+                            }, err => {
+								this.toastrService.warning('Server Error', 'Unable to populate employees, please try again or contract support');
+							});
                         }
                         this.loadAssignmentPreview();
                     }
                     this.loadAssignmentPreview();
                 });
-            });
-        });
+            }, err => {
+				this.toastrService.warning('Server Error', 'Unable to populate groups, please try again or contract support');
+			});
+        }, err => {
+			this.toastrService.warning('Server Error', 'Unable to populate user data, please try again or contract support');
+		});
     }
 
 
@@ -444,7 +463,7 @@ export class EmployeesComponent implements OnInit {
                 $('#newBookModal').modal('hide');
             },
                 (err) => {
-                    this.toastrService.success('Book', 'Save fail');
+                    this.toastrService.warning('Book', 'Save fail');
                 });
         } else {
             this.toastrService.success('Book', 'Enter proper data');
@@ -690,10 +709,11 @@ export class EmployeesComponent implements OnInit {
         document.getElementById('adminMenu').style.display = 'none';
     }
     inviteAdmin() {
-
+		this.ng4LoadingSpinnerService.show();
         document.getElementById('adminMenu').style.display = 'none';
         if (this.inviteAdminForm.invalid) {
-            this.toastrService.warning('Invite', 'Enter Email address');
+            this.toastrService.warning('Invite', 'Enter valid Email address');
+			this.ng4LoadingSpinnerService.hide();
             return;
         }
         this.admin_password = this.makepass();
@@ -705,6 +725,7 @@ export class EmployeesComponent implements OnInit {
         this.employeesService.sendInvitationAdmin(inviteData).subscribe((res: any) => {
             if (res && !res.status && res.message) {
                 this.toastrService.warning('Invite', res.message);
+				this.ng4LoadingSpinnerService.hide();
             } else {
 				//console.log(inviteData.email);
 				//console.log(inviteData.pass);
@@ -712,14 +733,17 @@ export class EmployeesComponent implements OnInit {
                     this.toastrService.success('Invite', 'Success');
                     this.inviteAdminForm.reset();
                     $('#inviteAdminModal').modal('hide');
+					this.ng4LoadingSpinnerService.hide();
                 })
                     .catch(err => {
                         this.toastrService.warning('Invite', 'Internal server error');
+						this.ng4LoadingSpinnerService.hide();
                     });
 
             }
         }, (err) => {
             this.toastrService.warning('Invite', 'Internal server error');
+			this.ng4LoadingSpinnerService.hide();
         });
     }
 
@@ -850,6 +874,7 @@ export class EmployeesComponent implements OnInit {
                     titleSecondLineRegex = /^(?!Section)((\D\s*\w+)(\-| )*)+/g,
                     elipsesRegex = /^( *\.){2,}/g,
                     pageNumberRegex = /^\d+ ?(?!\.)/;
+                    
                 let lessons = [];
                 let lesson = {};
                 let title = "";
@@ -1211,17 +1236,20 @@ export class EmployeesComponent implements OnInit {
     }
 
     emailGroupIncomplete() {
-        if(this.employees !== [] && this.employees != undefined){
-			if(this.employees[0].IS_COMPLETE != null && this.employees[0].IS_COMPLETE != undefined && this.employees[0].IS_COMPLETE != []){
-				this.modalEmailsIncomplete = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
-					return next !== '' ? total + "," + next : total;
+		if(this.employees !== []){
+			if(this.employees[0].IS_COMPLETE != null){
+				this.modalEmails = this.employees.map(employee => employee.IS_COMPLETE.data[0] === 0 ? employee.EMAIL : '').reduce(function (total, next) {
+					return next !== '' ? total + ", " + next : total;
 				});
+			}
+			else{
+				this.modalEmailsIncomplete = "";
 			}
 		}
 		else{
 			this.modalEmailsIncomplete = "";
 		}
-		console.log(this.modalEmailsIncomplete);
+        
     }
 
     emailGroupLate(text) {
@@ -1238,6 +1266,7 @@ export class EmployeesComponent implements OnInit {
 			}
 		}
         this.selectedGroup = group;
+        this.newBookAdded = false;
         this.transformResponseAndPopulate();
         this.employeesService.getAssignments(group.ID).subscribe(data2 => {
             if (!data2['err']) {
@@ -1613,6 +1642,7 @@ export class EmployeesComponent implements OnInit {
 
     signInWithEmail() {
         console.log(1);
+		this.ng4LoadingSpinnerService.show();
         this.authService.signInRegular(this.userEmail, this.userPassword)
             .then((res) => {
                 this.employeesService.getUserByEmail(this.userEmail).subscribe((res2) => {
@@ -1620,6 +1650,7 @@ export class EmployeesComponent implements OnInit {
                         this.loginErrorMessage = "You are not in the website database. If you received an email invitation, but get this error, something went wrong. Please contact an administrator";
                         this.isLoginError = true;
                         //this.isLoggedIn = true;
+						this.ng4LoadingSpinnerService.hide();
                         console.log(2);
                     }
                     else {
@@ -1631,6 +1662,7 @@ export class EmployeesComponent implements OnInit {
                         if (res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined) {
                             this.isLoginError = false;
                             this.newUser = true;
+							this.ng4LoadingSpinnerService.hide();
                             console.log(4);
                         }
                         else {
@@ -1649,6 +1681,7 @@ export class EmployeesComponent implements OnInit {
                                 this.admin_id=0;
                                 this.isLoggedIn = true;
                                 this.newUser = false;
+								this.ng4LoadingSpinnerService.hide();
                                 console.log(7);
                             }
                         }
@@ -1656,6 +1689,7 @@ export class EmployeesComponent implements OnInit {
                 }, (err2) => {
                     this.loginErrorMessage = err2;
                     this.isLoginError = true;
+					this.ng4LoadingSpinnerService.hide();
                 });
                 //*/
 				/*
@@ -1668,7 +1702,7 @@ export class EmployeesComponent implements OnInit {
 					else{
 						this.admin_id = res2[0]['ID'];
 						console.log(this.admin_id)
-						this.onAdminLogin(3);
+						this.onAdminLogin(this.admin_id);
 						this.isLoggedIn = true;
 					}
 				},
@@ -1682,6 +1716,7 @@ export class EmployeesComponent implements OnInit {
             .catch((err) => {
                 this.loginErrorMessage = err;
                 this.isLoginError = true;
+				this.ng4LoadingSpinnerService.hide();
             });
     }
 

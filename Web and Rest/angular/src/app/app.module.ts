@@ -26,6 +26,7 @@ import { AngularFireAuthModule } from 'angularfire2/auth';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
 
 import { AuthService } from './auth.service';
+import { Ng4LoadingSpinnerModule, Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { AuthService } from './auth.service';
 	AngularFireModule.initializeApp(environment.firebase, 'angular-auth-firebase'),
     AngularFireDatabaseModule,
 	AngularFirestoreModule,
-    AngularFireAuthModule
+    AngularFireAuthModule,
+	Ng4LoadingSpinnerModule
   ],
   providers: [EmployeesService,BookService,AuthService],
   bootstrap: [AppComponent]
