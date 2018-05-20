@@ -124,7 +124,7 @@ export class EmployeesComponent implements OnInit {
     constructor(employeesService: EmployeesService,
 			toastrService: ToastrService,
 			authService: AuthService,
-			bookService: BookService, 
+			bookService: BookService,
 			fb: FormBuilder,
 			ng4LoadingSpinnerService: Ng4LoadingSpinnerService
 		) {
@@ -138,14 +138,14 @@ export class EmployeesComponent implements OnInit {
         this.authService = authService;
         this.toastrService = toastrService;
 		this.ng4LoadingSpinnerService = ng4LoadingSpinnerService;
-		
+
         this.userEmail = "";
         this.userPassword = "";
         this.isLoginError = false;
         this.newUser = false;
         this.loginErrorMessage = "";
         this.admin_password = "";
-		
+
 		this.modalEmailsIncomplete = "";
 
         this.newPassword = "";
@@ -172,7 +172,6 @@ export class EmployeesComponent implements OnInit {
         this.reactiveFormGroup();
 
         document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
-
     }
 
 
@@ -1022,7 +1021,7 @@ export class EmployeesComponent implements OnInit {
             this.pdfCurrentPage = pageNo;
         }
     }
-  
+
     saveLessons(): void {
         const new_lessons: any[] = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
             let validation = item.NAME != '' && item.START_PAGE > 0 && item.END_PAGE > 0;
@@ -1172,7 +1171,7 @@ export class EmployeesComponent implements OnInit {
         console.log(remove);
 
         this.bookService.deleteLessons(remove).subscribe((res: any) => {
-            
+
             //this.dataObj.selectedBook.LESSONS = res.results;
             this.dataObj.selectedBook.LESSONS = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
                 console.log(item);
@@ -1246,7 +1245,7 @@ export class EmployeesComponent implements OnInit {
 		else{
 			this.modalEmailsIncomplete = "";
 		}
-        
+
     }
 
     emailGroupLate(text) {
@@ -1654,6 +1653,12 @@ export class EmployeesComponent implements OnInit {
                         if (res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined) {
                             this.isLoginError = false;
                             this.newUser = true;
+                            setTimeout(function() {
+                              $('#newUserPhoneNumber').keyup(function(){
+                                $(this).val($(this).val().replace(/(\d{3})\-?(\d{3})\-?(\d{4})/,'($1) - $2 - $3'))
+                              });
+                            }, 10);
+
 							this.ng4LoadingSpinnerService.hide();
                             console.log(4);
                         }

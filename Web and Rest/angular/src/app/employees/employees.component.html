@@ -1,5 +1,4 @@
 <ng4-loading-spinner> </ng4-loading-spinner>
-
 <div class="container" *ngIf="isLoggedIn==false && !newUser">
   <img class="logo" src="assets/pngs/Liberty Logo.png" />
   <form class="login-form" name="userform" method="post" #formCtrl="ngForm">
@@ -25,20 +24,26 @@
 </div>
 
 <div class="container" *ngIf="newUser">
+  <p style="text-align: center; font-size: 2em; padding: 1em; padding-bottom: 0em; margin-bottom: 0em;">Create your Liberty Elevator Safety Traning Account</p>
   <form class="login-form" name="newUserForm" method="post">
     <label>First Name</label>
     <input type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>Last Name</label>
     <input type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>Phone Number</label>
-    <input type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <input type="text" maxlength="18" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>New Password</label>
     <input type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>Confirm Password</label>
     <input type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
-    <div class="form-group">
-      <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
-        Update User Info
+    <br/>
+    <div class="form-group" style="font-size: 1em">
+      <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px; font-size: 1em" (click)="signInFirstTime()">
+        Register
       </button>
     </div>
   </form>
@@ -46,7 +51,6 @@
     <p>{{loginErrorMessage}}</p>
   </div>
 </div>
-
 
 <div class="container" *ngIf="isLoggedIn && admin_id > 0 && !newUser">
   <!--
