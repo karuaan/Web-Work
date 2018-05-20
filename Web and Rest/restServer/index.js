@@ -700,36 +700,24 @@ function addUser(first_name, last_name, email, callback){
 					}
 					else{
 						firebaseAdmin.auth().createUser({
-							  'email': email,
-							  emailVerified: false,
-							  password: "elevatorpass",
-							  disabled: false
-							}).then((record) => {
-								/*var mailOptions = {
-									from: 'libertyelevatorreader@gmail.com',
-									to: [email],
-									subject: 'You have been invited to the liberty elevator app!',
-									text: 'Follow this link. https://safetytraining.libertyelevator.com/ Use this email and the provided password to login, then follow the steps. secretPassword'
+						  'email': email,
+						  emailVerified: false,
+						  password: "elevatorpass",
+						  disabled: false
+						}).then((record) => {
+							callback(null, record);
+						},
+						(firebase_err) => {//Rollback DB
+							con.query('DELETE FROM USERS WHERE EMAIL=?', [email], function(del_err, result){
+								if(del_err){
+									callback(del_err, null);
 								}
-								transporter.sendMail(mailOptions, function(error, info){
-									if(error){
-										
-										
-										console.log(error);
-										callback(error, null);
-										
-									}
-									else{
-										callback(null, result)
-									}
-								});*/
-							},
-							(firebase_err) => {
-								/*TODO - ADD ROLLBACK
-											- delete user from database
-										*/
-								callback(firebase_err, null);
-							})
+								else{
+									callback({'error': 'could not add user to firebase'}, null);
+								}
+							});
+							callback(firebase_err, null);
+						});
 					}
 				})
 			}
@@ -753,7 +741,25 @@ function addAdmin(email, callback){
 				console.log("ROWS ARE EMPTY")
 				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES (?,?,?, ?)', ["","",email,1], function(err2, result){
 					if(!err2){
-						callback(null, result)
+						firebaseAdmin.auth().createUser({
+						  'email': email,
+						  emailVerified: false,
+						  password: "elevatorPassAdmin123",
+						  disabled: false
+						}).then((record) => {
+							callback(null, record);
+						},
+						(firebase_err) => {//Rollback DB
+							con.query('DELETE FROM USERS WHERE EMAIL=?', [email], function(del_err, result){
+								if(del_err){
+									callback(del_err, null);
+								}
+								else{
+									callback({'error': 'could not add user to firebase'}, null);
+								}
+							});
+							callback(firebase_err, null);
+						});
 
 					}
 					else{
@@ -2494,7 +2500,7 @@ app.post('/inviteAdmin', function(req, res){
 			res.json(err);
 		}
 		else{
-			var mailOptions = {
+/* 			var mailOptions = {
 				from: 'libertyelevatorreader@gmail.com',
 				to: [req.body.email],
 				subject: 'You have been added to Liberty Elevator Reader app!',
@@ -2509,7 +2515,8 @@ app.post('/inviteAdmin', function(req, res){
 					console.log(info);
 					res.json(info);
 				}
-			});
+			}); */
+			res.json(result);
 		}
 	});
 });

@@ -725,19 +725,10 @@ export class EmployeesComponent implements OnInit {
                 this.toastrService.warning('Invite', res.message);
 				this.ng4LoadingSpinnerService.hide();
             } else {
-				//console.log(inviteData.email);
-				//console.log(inviteData.pass);
-                this.authService.signUpRegular(inviteData.email, inviteData.pass).then(data => {
                     this.toastrService.success('Invite', 'Success');
                     this.inviteAdminForm.reset();
                     $('#inviteAdminModal').modal('hide');
 					this.ng4LoadingSpinnerService.hide();
-                })
-                    .catch(err => {
-                        this.toastrService.warning('Invite', 'Internal server error');
-						this.ng4LoadingSpinnerService.hide();
-                    });
-
             }
         }, (err) => {
             this.toastrService.warning('Invite', 'Internal server error');
