@@ -171,8 +171,14 @@
 
 
           <div class="lesson-header">
-            <h4>Lessons</h4>
-          </div>
+			  <h4 class="panel-title pull-left" style="padding-top: 7.5px; display: inline;">Lessons
+			  <div id="lessonButtons" style="float: right;">
+				<button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
+				<button (click)="saveLessons()" class="btn btn-primary ">Save</button>
+				<button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
+			   </div>
+			  </h4>
+			</div>
           <div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
             <div class="scrollbar">
               <table class="table table-hover lessons">
@@ -231,10 +237,6 @@
               </table>
             </div>
           </div>
-
-          <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
-          <button (click)="saveLessons()" class="btn btn-primary ">Save</button>
-          <button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
           <!--<button type="button" class="btn btn-info" id="addLessonButton" data-toggle="modal" data-target="#newLessonModal">+ Add</button>-->
         </div>
       </div>
