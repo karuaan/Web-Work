@@ -1744,6 +1744,7 @@ app.post('/groups/:groupId/employees', /*admin_oidc.ensureAuthenticated(),*/ fun
 
 
 	 BookService.saveGroup({
+		ADMIN_ID: req.body.admin_id,
 		NAME : req.body.group_name,
 		GROUP_ID : req.params.groupId,
 		employees : [
@@ -2150,6 +2151,7 @@ app.get('/groups/:id', function(req, res){
 			let assignmentPromises = [];
 			groups.forEach(function(element, index, array){
 				assignmentPromises.push(getAssignmentsUser(Number(req.params.id), element.group_id).then(function(assignments){
+					console.log(element, assignments);
 					return formatGroupAssignments(element, assignments);
 				}, function(error){
 					return error;
@@ -2157,6 +2159,7 @@ app.get('/groups/:id', function(req, res){
 
 			});
 			return Promise.all(assignmentPromises).then(function(array){
+				console.log(array);
 				res.json(array);
 			});
 		}
