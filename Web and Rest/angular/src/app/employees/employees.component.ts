@@ -21,8 +21,7 @@ declare var $: any;
     selector: 'app-employees',
     templateUrl: './employees.component.html',
     styleUrls: ['./employees.component.css'],
-    providers: [HttpClientModule],
-	pipes: [PhonePipe]
+    providers: [HttpClientModule]
 })
 export class EmployeesComponent implements OnInit {
 

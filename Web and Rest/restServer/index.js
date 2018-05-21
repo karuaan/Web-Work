@@ -439,7 +439,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 			}
 		}
 		else{
-			console.log(error);
+			console.log(err);
 		}
 	})
 });
