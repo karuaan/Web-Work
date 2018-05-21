@@ -162,7 +162,6 @@ public class GridAdapter extends BaseAdapter {
                 i.putExtra("adminName", group.getAdminName());
                 i.putExtra("adminEmail", group.getAdminEmail());
                 i.putExtra("groupName", group.getName());
-                i.putExtra("serverPath", group.getServerPath());
                 i.putExtra("localPath", group.getLocalPath());
                 mContext.startActivity(i);
             }

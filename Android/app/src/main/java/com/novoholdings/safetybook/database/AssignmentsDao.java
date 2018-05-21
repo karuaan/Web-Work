@@ -61,7 +61,7 @@ public class AssignmentsDao {
         }
     }
 
-    public long insertData(long serverId, String name, long groupId, String isSynced, int timeToRead, String dueDate, boolean isComplete, int startPage, int endPage)
+    public long insertData(long serverId, String name, long groupId, String isSynced, int timeToRead, String dueDate, boolean isComplete, int startPage, int endPage, String bookServerPath)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -82,6 +82,7 @@ public class AssignmentsDao {
         values.put(COLUMN_ID, serverId);
         values.put(COLUMN_START_PAGE, startPage);
         values.put(COLUMN_END_PAGE, endPage);
+        values.put(COLUMN_SERVER_PATH, bookServerPath);
 
         try
         {
@@ -96,7 +97,7 @@ public class AssignmentsDao {
         return res;
     }
 
-    public long updateData(long id, String name,String isSynced, int timeToRead, boolean isComplete, String dueDate, int startPage, int endPage)
+    public long updateData(long id, String name,String isSynced, int timeToRead, boolean isComplete, String dueDate, int startPage, int endPage, String bookServerPath)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -119,6 +120,9 @@ public class AssignmentsDao {
             values.put(COLUMN_START_PAGE, startPage);
         if (endPage > 0)
             values.put(COLUMN_END_PAGE, endPage);
+        if (!AppProperties.isNull(bookServerPath)){
+            values.put(COLUMN_SERVER_PATH, bookServerPath);
+        }
         try
         {
             res = _database.update(TABLE_NAME, values, COLUMN_ID+"=?",new String[] { String.valueOf(id) });
@@ -411,7 +415,13 @@ public class AssignmentsDao {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                //     f.setPath(cursor.getString(cursor.getColumnIndex("path")));
+                //BOOK PDF URL
+                try{
+
+                    f.setBookServerPath(cursor.getString(cursor.getColumnIndex(COLUMN_SERVER_PATH)));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
 
 
 

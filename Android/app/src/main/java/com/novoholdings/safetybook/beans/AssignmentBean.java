@@ -15,9 +15,9 @@ public class AssignmentBean implements Parcelable {
     private int mData;
     private int pageStart, pageEnd, readingTime;
     long groupId, id;
-    private String name,  dueDate;
+    private String name,  dueDate, bookServerPath;
     private PdfDocument pdf;
-    private boolean isComplete, timeToComplete;
+    private boolean isComplete;
     private float lastReadPosition;
 
     public int getStartPage() {
@@ -103,6 +103,13 @@ public class AssignmentBean implements Parcelable {
     }
     public void setLastReadPosition(float lastReadPosition){
         this.lastReadPosition = lastReadPosition;
+    }
+
+    public String getBookServerPath(){
+        return bookServerPath;
+    }
+    public void setBookServerPath(String serverPath){
+        bookServerPath = serverPath;
     }
 
 

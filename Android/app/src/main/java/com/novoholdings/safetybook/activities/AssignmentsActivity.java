@@ -86,7 +86,7 @@ import static com.novoholdings.safetybook.common.AppProperties.getFileNameFromPa
  */
 
 public class AssignmentsActivity extends AppCompatActivity{
-    private String groupName, adminName, adminEmail, localFilePath = "", localFolderPath, serverFilePath, fileName;
+    private String groupName, adminName, adminEmail, localFilePath = "", localFolderPath, fileName;
     private long groupId, userId, currentAssignmentId,  bookDownload=-1L;
 
     private PDFView pdfView;
@@ -169,8 +169,6 @@ public class AssignmentsActivity extends AppCompatActivity{
         }
 
         //if book is not downloaded, show download button
-        if (!AppProperties.isDemoMode())
-            checkBookFile();
 
         IntentFilter intentFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
 
@@ -219,19 +217,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         }catch (NullPointerException e){
             e.printStackTrace();
         }
-        try{
-            serverFilePath = AppProperties.DIR_SERVER_ROOT + extras.getString("serverPath");
-           // serverFilePath = serverFilePath.replaceAll(" ", "%20");
-        }catch (NullPointerException e){
-            e.printStackTrace();
-        }
-        try{
-            localFilePath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName + "/" + AppProperties.getFileNameFromPath(serverFilePath);
-            localFolderPath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName;
-            fileName = getFileNameFromPath(serverFilePath);
-        }catch (NullPointerException e){
-            e.printStackTrace();
-        }
+
         try{
             userId = AppProperties.getUserId(AssignmentsActivity.this);
 
@@ -252,7 +238,7 @@ public class AssignmentsActivity extends AppCompatActivity{
 
         File file = new File(Environment.getExternalStorageDirectory()+localFilePath);
 
-        if (!file.exists() && !AppProperties.isNull(serverFilePath)){
+        if (!file.exists() && !AppProperties.isNull(currentAssignment.getBookServerPath())){
             String message = "Download book";
             chapterNameTV.setText(message);
             //set download button on click
@@ -260,7 +246,7 @@ public class AssignmentsActivity extends AppCompatActivity{
             startButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startDownload();
+                    startDownload(currentAssignment.getBookServerPath());
                 }
             });
             startButton.setVisibility(View.VISIBLE);
@@ -284,14 +270,22 @@ public class AssignmentsActivity extends AppCompatActivity{
         currentAssignmentId = assignmentBean.getId();
         currentAssignment = assignmentBean;
 
-        String label = getMinutes(assignmentBean.getReadingTime()) + ":" + getSeconds(assignmentBean.getReadingTime());
-        String pageCount = assignmentBean.getPageCount() + " pages";
-        String days = getRelativeDueDate(assignmentBean.getDueDateIso(), DateTime.parse(AppProperties.getCurrentDate()));
+        String label = getMinutes(currentAssignment.getReadingTime()) + ":" + getSeconds(currentAssignment.getReadingTime());
+        String pageCount = currentAssignment.getPageCount() + " pages";
+        String days = getRelativeDueDate(currentAssignment.getDueDateIso(), DateTime.parse(AppProperties.getCurrentDate()));
 
-        chapterNameTV.setText(assignmentBean.getName());
+        chapterNameTV.setText(currentAssignment.getName());
         readingTimeTV.setText(label);
         pageCountTV.setText(String.valueOf(pageCount));
         relativeDueDateTV.setText(days);
+
+        try{
+            localFilePath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName + "/" + AppProperties.getFileNameFromPath(currentAssignment.getBookServerPath());
+            localFolderPath = AppProperties.SDCARD_APP_FOLDER_NAME+"/"+groupName;
+            fileName = getFileNameFromPath(currentAssignment.getBookServerPath());
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
 
         File file = new File(Environment.getExternalStorageDirectory()+localFilePath);
 
@@ -300,7 +294,7 @@ public class AssignmentsActivity extends AppCompatActivity{
             startButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startReading(file, assignmentBean);
+                    startReading(file, currentAssignment);
                 }
             });
         }
@@ -310,7 +304,7 @@ public class AssignmentsActivity extends AppCompatActivity{
             startButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startDownload();
+                    startDownload(currentAssignment.getBookServerPath());
                 }
             });
         }
@@ -395,12 +389,12 @@ public class AssignmentsActivity extends AppCompatActivity{
         }
     };
 
-    public void startDownload() {
+    public void startDownload(String url) {
 
-        if (serverFilePath.substring(47, 54).equals("/public")){
-            serverFilePath = serverFilePath.substring(0,48)+serverFilePath.substring(55);
+        if (url.contains("/public")){
+            url = url.replace("public/", "");
         }
-        Uri uri = Uri.parse(serverFilePath);
+        Uri uri = Uri.parse(url);
         startButton.setEnabled(false);
         startButton.setText("Downloading...");
 
@@ -418,35 +412,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                         .setVisibleInDownloadsUi(true)
                         .setDestinationInExternalPublicDir(localFolderPath, uri.getLastPathSegment()));
     }
-
-    //todo remove
-
-    /*private long downloadData(Uri uri, String fileName) {
-
-        long downloadReference;
-
-        // Create request for android download manager
-        downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-
-        //Setting title of request
-        request.setTitle("PDF download");
-
-        //Setting description of request
-        request.setDescription("PDF download using DownloadManager.");
-
-        //Set the local destination for the downloaded file to a localFilePath
-        //within the application's external files directory
-        String path = groupName+"/"+fileName+".pdf";
-        request.setDestinationInExternalFilesDir(AssignmentsActivity.this,
-                AppProperties.SDCARD_APP_FOLDER_NAME,path);
-
-        //Enqueue download and save into referenceId
-        downloadReference = downloadManager.enqueue(request);
-
-        return downloadReference;
-    }*/
-
+    
     private void checkDownloadStatus(long downloadId) {
 
         DownloadManager.Query pdfDownloadQuery = new DownloadManager.Query();
@@ -599,7 +565,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                                 .setPositiveButton("Download", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        startDownload();
+                                        startDownload(currentAssignment.getBookServerPath());
                                     }
                                 })
                                 .setNeutralButton("Contact", new DialogInterface.OnClickListener() {

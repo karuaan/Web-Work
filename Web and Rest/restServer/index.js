@@ -696,10 +696,9 @@ function getGroups3(email, callback){
 }
 
 function getGroups4(user_id, callback){
-	let groupQuery = 'SELECT USER_GROUPS.ID as group_id, USER_GROUPS.NAME as group_name, BOOKS.PDF_FILE as book_path, BOOKS.NAME as book_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email '+
+	let groupQuery = 'SELECT USER_GROUPS.ID as group_id, USER_GROUPS.NAME as group_name, USERS.FIRST_NAME as admin_first_name, USERS.LAST_NAME as admin_last_name, USERS.EMAIL as admin_email '+
 					'FROM USER_GROUPS INNER JOIN USERS ON USER_GROUPS.ADMIN_ID=USERS.ID '+
 					'INNER JOIN LESSONS ON LESSONS.GROUP_ID = USER_GROUPS.ID '+
-					'INNER JOIN BOOKS ON BOOKS.ID = LESSONS.BOOK_ID '+
 					'WHERE USER_GROUPS.USER_ID = '+mysql.escape(user_id)+
 					' GROUP BY USER_GROUPS.ID;';
 	con.query(groupQuery, function(err, rows){
@@ -2016,9 +2015,9 @@ function getAssignmentsUser(user_id, group_id){
 
 	return new Promise(function(resolve, reject){
 		con.query('select STATUS.IS_COMPLETE as is_complete, LESSONS.START_PAGE as start_page, LESSONS.PDF_FILE as lesson_pdf, LESSONS.END_PAGE as end_page, LESSONS.NAME as name, '+
-		'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id, ASSIGNMENTS.GROUP_ID as group_id FROM LESSONS '+
+		'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id, ASSIGNMENTS.GROUP_ID as group_id, BOOKS.PDF_FILE as book_pdf FROM LESSONS '+
 		'JOIN ASSIGNMENTS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID JOIN STATUS ON STATUS.ASSIGNMENT_ID='+
-		'ASSIGNMENTS.ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
+		'ASSIGNMENTS.ID JOIN BOOKS ON LESSONS.BOOK_ID = BOOKS.ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND STATUS.EMPLOYEE_ID=' + mysql.escape(user_id) + ' AND STATUS.GROUP_ID='+ mysql.escape(group_id)
 			, function(err, rows){
 				if(err){
 					reject(err);

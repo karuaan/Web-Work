@@ -45,13 +45,13 @@ public class GroupsDao {
         _database = AppDatabase.openDataBase(ctx);
 
         if (AppProperties.isDemoMode() && !AppDatabase.alreadyExists(TABLE_NAME, "status='"+AppProperties.STATUS_ACTIVE+"'")){
-            insertData("Example Group", 1, AppProperties.getCurrentDate(), AppProperties.YES, "Administrator Name", "admin@gmail.com", "Example Book", "");
+            insertData("Example Group", 1, AppProperties.getCurrentDate(), AppProperties.YES, "Administrator Name", "admin@gmail.com", "Example Book");
         }
 
     }
 
 
-    public long insertData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName, String bookServerPath)
+    public long insertData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -65,7 +65,6 @@ public class GroupsDao {
         values.put(COLUMN_ADMIN_NAME, AppProperties.NVL(adminName, null));
         values.put(COLUMN_ADMIN_EMAIL, AppProperties.NVL(adminEmail, null));
         values.put(COLUMN_BOOK_NAME, AppProperties.NVL(bookName, null));
-        values.put(COLUMN_BOOK_SERVER_PATH, AppProperties.NVL(bookServerPath, null));
 
         values.put(COLUMN_SERVER_ID, serverId);
 
@@ -82,7 +81,7 @@ public class GroupsDao {
         return res;
     }
 
-    public long updateData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName, String bookServerPath)
+    public long updateData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -96,7 +95,6 @@ public class GroupsDao {
         values.put(COLUMN_ADMIN_NAME, AppProperties.NVL(adminName, "-1"));
         values.put(COLUMN_ADMIN_EMAIL, AppProperties.NVL(adminEmail, "-1"));
         values.put(COLUMN_BOOK_NAME, AppProperties.NVL(bookName, "-1"));
-        values.put(COLUMN_BOOK_SERVER_PATH, AppProperties.NVL(bookServerPath, "-1"));
 
         values.put(COLUMN_MODIFIED_ON, AppProperties.getCurrentDate());
         values.put(COLUMN_IS_SYNCED, AppProperties.YES);

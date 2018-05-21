@@ -390,19 +390,16 @@ public class GroupsActivity extends AppCompatActivity {
                         String adminName = group.getString("admin_first_name") + " " + group.getString("admin_last_name");
                         String adminEmail = group.getString("admin_email");
                         String bookName = group.getString("book_name");
-                        String bookServerPath = group.getString("book_path");
-                        if (bookServerPath.substring(0, 7).equals("public/")){
-                            bookServerPath = bookServerPath.substring(6);
-                        }
+
 
                         //add group
                         if (!AppDatabase.alreadyExists(GroupsDao.TABLE_NAME, "server_id=" + groupId)) {
-                            groupsDao.insertData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName, bookServerPath);
+                            groupsDao.insertData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName);
                             subscribeToGroupNotifications(groupId);
                         }
                         //update group
                         else {
-                            groupsDao.updateData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName, bookServerPath);
+                            groupsDao.updateData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName);
                         }
 
                         if (group.getJSONArray("assignments")!=null){
@@ -420,12 +417,19 @@ public class GroupsActivity extends AppCompatActivity {
                                 int endPage = assignment.getInt("end_page");
                                 int readingTime = assignment.getInt("reading_time");
                                 boolean complete = assignment.getBoolean("is_complete");
+                                String bookServerPath = group.getString("book_path");
+                                if (bookServerPath.contains("public/")){
+                                    bookServerPath = bookServerPath.replace("public/", "");
+                                }
+                                if (bookServerPath.contains("\\")){
+                                    bookServerPath = bookServerPath.replace("\\", "/");
+                                }
 
                                 if (!assignmentsDao.checkRecExists(serverId)) {
-                                    assignmentsDao.insertData(serverId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, complete, startPage, endPage);
+                                    assignmentsDao.insertData(serverId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, complete, startPage, endPage, bookServerPath);
                                 }
                                 else
-                                    assignmentsDao.updateData(serverId, assignmentName, AppProperties.YES, readingTime, complete, dueDate, startPage, endPage);
+                                    assignmentsDao.updateData(serverId, assignmentName, AppProperties.YES, readingTime, complete, dueDate, startPage, endPage, bookServerPath);
                             }
                         }
                     }
