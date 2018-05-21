@@ -282,13 +282,17 @@ export class EmployeesComponent implements OnInit {
         this.employeesService.getBooks(this.selectedGroup.ID).subscribe(books => {
             const bookMapping = (books: BookNew[], lessons: Lesson[]) => {
                 return books.map((book: BookNew) => {
-                    if (book.ACTIVE){
-                        this.dataObj.selectedBook = book;
-                        this.selectedBook = book.ID;
+                    if (!lessons || lessons.length==0){
+                        book.LESSONS = [];
                     }
                     book.LESSONS = lessons.filter((lesson: Lesson) => lesson.BOOK_ID == book.ID).map((tempLession: Lesson) => {
                         return this.transformLessonModel(tempLession);
                     });
+                    if (book.ACTIVE){
+                        this.dataObj.selectedBook = book;
+                        this.selectedBook = book.ID;
+                    }
+                    console.log(book);
                     return book;
                 });
             };
@@ -443,8 +447,7 @@ export class EmployeesComponent implements OnInit {
             this.bookService.saveBooks(formData).subscribe((res: any) => {
                 if (res.data && res.data.ID) {
                     const newBook = res.data as BookNew;
-                    this.dataObj.book = newBook;
-					this.dataObj.books.push(newBook.ID);
+					this.dataObj.books.push(newBook);
                     this.selectedBook = newBook.ID;
                     this.dataObj.selectedBook = newBook;
                     this.newBookAdded = true;
@@ -921,9 +924,13 @@ export class EmployeesComponent implements OnInit {
     }
     onChangeBook(event) {
         let book = this.selectedBook;
-        console.log(book);
         if (book) {
-            this.dataObj.selectedBook = book;
+            this.dataObj.books.forEach(element => {
+                if (element.ID == book){
+                    this.dataObj.selectedBook = element;     
+                }
+            });
+            
             //set active book
             const formData: FormData = new FormData();
             formData.append('book_id', this.selectedBook.toString());
