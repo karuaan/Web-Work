@@ -444,7 +444,7 @@ export class EmployeesComponent implements OnInit {
                 if (res.data && res.data.ID) {
                     const newBook = res.data as BookNew;
                     this.dataObj.book = newBook;
-					this.dataObj.books.push(newBook.ID);
+					this.dataObj.books.push(newBook);
                     this.selectedBook = newBook.ID;
                     this.dataObj.selectedBook = newBook;
                     this.newBookAdded = true;
