@@ -1497,11 +1497,14 @@ export class EmployeesComponent implements OnInit {
 
 		console.log(notes);
 
-		start_date.setDate(start_date.getDate())
-		due_date.setDate(due_date.getDate())
+		start_date.setDate(start_date.getDate());
+		due_date.setDate(due_date.getDate());
 		
-		const display_start_date = (start_date.getDate() + 1)
-		const display_due_date = (due_date.getDate() + 1)
+		var display_start_date = new Date(start_date);
+		var display_due_date = new Date(due_date);
+		
+		display_start_date.setDate(display_start_date.getDate() + 1);
+		display_due_date.setDate(display_due_date.getDate() + 1);
 
 		console.log(start_date);
 		console.log(display_start_date);
