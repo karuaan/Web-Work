@@ -512,6 +512,7 @@ export class EmployeesComponent implements OnInit {
                     START_DATE: this.assignmentForm.start_date,
                     NOTES: this.assignmentForm.notes,
                     assignment_id: res.data.ID,
+					percent_complete: 0,
                     TIME_TO_COMPLETE: this.assignmentForm.time_to_complete
                 };
 
