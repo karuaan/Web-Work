@@ -1495,10 +1495,10 @@ export class EmployeesComponent implements OnInit {
         let start_date = new Date((<HTMLInputElement>document.getElementById('startDateEdit')).value);
         let due_date = new Date((<HTMLInputElement>document.getElementById('dueDateEdit')).value);
 
-		console.log(start_date);
+		console.log(notes);
 
-		start_date.setDate(start_date.getDate() + 1)
-		due_date.setDate(due_date.getDate() + 1)
+		start_date.setDate(start_date.getDate())
+		due_date.setDate(due_date.getDate())
 
 		console.log(start_date.toString());
 
@@ -1540,6 +1540,7 @@ export class EmployeesComponent implements OnInit {
         }
 
         this.selectedAssignment = assign;
+		console.log(this.selectedAssignment.NOTES);
 		this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
         this.bookService.editAssignment(this.selectedAssignment.assignment_id, dataForm).subscribe((res: any) => {
