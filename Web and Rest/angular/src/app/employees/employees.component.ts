@@ -297,9 +297,6 @@ export class EmployeesComponent implements OnInit {
                 });
             };
 			console.log(books);
-			if(books == []){
-				this.dataObj.selectedBook = null;
-			}
             console.log("Group ID");
             console.log(this.selectedGroup.ID);
             if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
@@ -320,6 +317,10 @@ export class EmployeesComponent implements OnInit {
                 this.dataObj.books = bookMapping(books, []);
                 this.updatePdfBookPreview();
             }
+			if(books == []){
+				this.dataObj.selectedBook = null;
+				this.dataObj.books = []
+			}
         });
     }
 
