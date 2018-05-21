@@ -1505,12 +1505,16 @@ export class EmployeesComponent implements OnInit {
         let start_date = new Date((<HTMLInputElement>document.getElementById('startDateEdit')).value);
         let due_date = new Date((<HTMLInputElement>document.getElementById('dueDateEdit')).value);
 
+		console.log(notes);
+
+		start_date.setDate(start_date.getDate())
+		due_date.setDate(due_date.getDate())
+		
+		const display_start_date = (start_date.getDate() + 1)
+		const display_due_date = (due_date.getDate() + 1)
+
 		console.log(start_date);
-
-		start_date.setDate(start_date.getDate() + 1)
-		due_date.setDate(due_date.getDate() + 1)
-
-		console.log(start_date.toString());
+		console.log(display_start_date);
 
         const dataForm = {
             assignment_id: this.selectedAssignment.assignment_id,
@@ -1524,14 +1528,12 @@ export class EmployeesComponent implements OnInit {
             TIME_TO_COMPLETE: time_to_complete
         };
 
-        let startDate = new Date(start_date);
-        let dueDate = new Date(due_date);
         let assign: Assignment = {
             NAME: this.selectedAssignment.NAME,
             lesson_id: this.selectedAssignment.lesson_id,
             book_id: this.selectedAssignment.book_id,
-            DUE_DATE: dueDate,
-            START_DATE: startDate,
+            DUE_DATE: display_due_date,
+            START_DATE: display_start_date,
             TIME_TO_COMPLETE: time_to_complete,
             assignment_id: this.selectedAssignment.assignment_id,
             NOTES: notes
@@ -1550,6 +1552,7 @@ export class EmployeesComponent implements OnInit {
         }
 
         this.selectedAssignment = assign;
+		console.log(this.selectedAssignment.NOTES);
 		this.editAssignmentValues = {'START_DATE' : this.selectedAssignment.START_DATE, 'DUE_DATE' : this.selectedAssignment.DUE_DATE, 'MINUTES' : this.selectedAssignment.TIME_TO_COMPLETE / 60, 'SECONDS' : this.selectedAssignment.TIME_TO_COMPLETE % 60, 'NOTES' : this.selectedAssignment.NOTES};
 
         this.bookService.editAssignment(this.selectedAssignment.assignment_id, dataForm).subscribe((res: any) => {
