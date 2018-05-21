@@ -1888,7 +1888,7 @@ app.post('/getassignments', function(req, res){
 
 function getAssignments2(group_id, callback){
 	con.query(
-	"SELECT assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, NAME, book_id, lesson_id, percent_complete "+
+	"SELECT assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, NAME, book_id, lesson_id, percent_complete, NOTES "+
 	"FROM (SELECT SUM(IS_COMPLETE)/COUNT(*) as percent_complete, " +
 		"ASSIGNMENT_ID as join_assignment_id " + 
 		"FROM STATUS WHERE GROUP_ID=" + mysql.escape(group_id) + " GROUP BY ASSIGNMENT_ID) as PERCENT_TABLE JOIN " + 
