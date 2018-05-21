@@ -439,7 +439,7 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 			}
 		}
 		else{
-			console.log(error);
+			console.log(err);
 		}
 	})
 });
@@ -1886,7 +1886,7 @@ function getAssignments2(group_id, callback){
 		"ASSIGNMENT_ID as join_assignment_id " + 
 		"FROM STATUS WHERE GROUP_ID=" + mysql.escape(group_id) + " GROUP BY ASSIGNMENT_ID) as PERCENT_TABLE JOIN " + 
 	
-	"(SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME as NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id FROM " +
+	"(SELECT DISTINCT ASSIGNMENTS.ID as assignment_id, DUE_DATE, START_DATE, TIME_TO_COMPLETE, ASSIGNMENTS.NAME as NAME, BOOKS.ID as book_id, LESSONS.ID as lesson_id, ASSIGNMENTS.NOTES as NOTES FROM " +
 	"(ASSIGNMENTS JOIN USER_GROUPS ON ASSIGNMENTS.GROUP_ID=USER_GROUPS.ID JOIN LESSONS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID " +
 	"JOIN BOOKS ON LESSONS.BOOK_ID=BOOKS.ID) "+
 //	"WHERE ADMIN_ID="+mysql.escape(admin_id) + " AND " +
@@ -2586,8 +2586,8 @@ app.post('/getUserByEmail', function(req, res){
 	})
 });
 
-function updateUserNamesByEmail(email, first_name, last_name, callback){
-	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
+function updateUserNamesByEmail(email, first_name, last_name, phone_number, callback){
+	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + ", PHONE_NUMBER=" + mysql.escape(phone_number) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
 		if(err){
 			callback(err, null);
 		}
@@ -2598,7 +2598,7 @@ function updateUserNamesByEmail(email, first_name, last_name, callback){
 }
 
 app.put('/updateUserNamesByEmail', function(req, res){
-	updateUserNamesByEmail(req.body.email, req.body.first_name, req.body.last_name, function(err, result){
+	updateUserNamesByEmail(req.body.email, req.body.first_name, req.body.last_name, req.body.phone_number, function(err, result){
 		if(err){
 			res.json(err);
 		}

@@ -1752,12 +1752,12 @@ export class EmployeesComponent implements OnInit {
             this.loginErrorMessage = "Passwords must match";
             this.isLoginError = true;
         }
-        else if (this.newUserPhoneNumber.length != 10) {
-            this.loginErrorMessage = "Please enter a valid phone number (at least 10 numbers)";
+        else if (this.newUserPhoneNumber.replace(/\D/g,'').length != 10) {
+            this.loginErrorMessage = "Please enter a valid phone number (exactly 10 numbers)";
             this.isLoginError = true;
         }
         else {
-            this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword, this.newUserPhoneNumber).then
+            this.authService.updateUserNames(this.newUserFirstName, this.newUserLastName, this.newPassword, this.newUserPhoneNumber.replace(/\D/g,'')).then
             ((ret) => {
 
                 this.newUserObject = ret;
@@ -1782,6 +1782,8 @@ export class EmployeesComponent implements OnInit {
                 console.log(this.loginErrorMessage);
             },
             (err) => {
+				this.loginErrorMessage = "Issue with authentication server. Please refresh this page and try again.";
+				this.isLoginError = true;
                 console.log(err);
             }
     )

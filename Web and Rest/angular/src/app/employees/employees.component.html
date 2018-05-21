@@ -153,7 +153,7 @@
         </div>
 
 
-        <div *ngIf="viewLessons" id="lessonsContainer">
+        <div *ngIf="viewLessons" id="lessonsContainer" style="width: inherit;">
           <div class="book-header">
             <h3 *ngIf="dataObj.selectedBook">{{dataObj.selectedBook.NAME}}</h3>
           </div>
@@ -174,7 +174,7 @@
 
 
 
-          <div class="lesson-header">
+          <div class="lesson-header" style="width: 100%;">
 			  <h4 class="panel-title pull-left" style="padding-top: 7.5px; width: 100%; display: inline;">Lessons
 			  <div id="lessonButtons" style="float: right;">
 				<button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>

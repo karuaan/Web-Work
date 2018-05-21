@@ -27,12 +27,14 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
 
 import { AuthService } from './auth.service';
 import { Ng4LoadingSpinnerModule, Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
+import { PhonePipe } from './phone.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     EmployeesComponent,
     PendingPipe,
+    PhonePipe,
   ],
   imports: [
     BrowserModule,
