@@ -296,6 +296,10 @@ export class EmployeesComponent implements OnInit {
                     return book;
                 });
             };
+			console.log(books);
+			if(books == []){
+				this.dataObj.selectedBook = null;
+			}
             console.log("Group ID");
             console.log(this.selectedGroup.ID);
             if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
