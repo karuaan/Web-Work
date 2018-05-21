@@ -29,18 +29,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="536dp"
+        android:gravity="top"
         android:padding="5dp"
         android:text="Assignment Number"
         android:textColor="#000"
         android:textSize="18sp"
-        android:gravity="top"
-        app:layout_constraintStart_toEndOf="@id/bookIcon"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintBottom_toTopOf="@+id/dueDate"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintHorizontal_weight="10"
+        app:layout_constraintStart_toEndOf="@id/bookIcon"
         app:layout_constraintTop_toTopOf="@id/bookIcon"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="1.0"/>
 
     <ImageView
         android:id="@+id/due_date_icon"

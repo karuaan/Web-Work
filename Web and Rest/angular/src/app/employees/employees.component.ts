@@ -298,6 +298,10 @@ export class EmployeesComponent implements OnInit {
                 this.employeesService.getLessons(this.selectedGroup.ID).subscribe(data => {
                     console.log(books);
                     this.dataObj.books = bookMapping(books, data);
+                    if (!this.dataObj.selectedBook){
+                        this.selectedBook = books[0].ID;
+                        this.dataObj.selectedBook = books[0];
+                    }
                     this.updatePdfBookPreview();
                 }, (err) => {
                     this.dataObj.books = bookMapping(books, []);
