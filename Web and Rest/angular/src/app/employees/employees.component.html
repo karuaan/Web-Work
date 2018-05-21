@@ -19,7 +19,8 @@
     <p>{{loginErrorMessage}}</p>
   </div>
   <div style="font-size: 1.5em; padding: 0em 1em">
-	<button id="resetButton" style="width: 100%; height: 50px; text-align: center; font-size: 1em; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" class="btn btn-primary" (click)="resetPassword()" data-toggle="modal" data-target="#resetPasswordModal">Reset Password</button>
+    <button id="resetButton" style="width: 100%; height: 50px; text-align: center; font-size: 1em; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);"
+      class="btn btn-primary" (click)="resetPassword()" data-toggle="modal" data-target="#resetPasswordModal">Reset Password</button>
   </div>
 </div>
 
@@ -33,7 +34,8 @@
     <input type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
     <br/>
     <label>Phone Number</label>
-    <input type="text" maxlength="18" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <input type="text" maxlength="18" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required
+      [ngModelOptions]="{standalone: true}">
     <br/>
     <label>New Password</label>
     <input type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
@@ -59,7 +61,7 @@
 	</div>
 	-->
   <div class="name-container" style="width: 100%; height: 6em; margin-top:1em">
-		<img style="height: 6em; margin-top: -1em; padding: 2px;" src="assets/pngs/Liberty Logo.png" />
+    <img style="height: 6em; margin-top: -1em; padding: 2px;" src="assets/pngs/Liberty Logo.png" />
     <img style="float: right; height: 1.5em; margin: 0em 0em 0em 1em; cursor: pointer" (click)="toggleMenu()" src="assets/pngs/cog.png"
     />
     <p style="margin: 0; float: right; font-size: 1.2em;">{{firstName}} {{lastName}}</p>
@@ -96,67 +98,68 @@
     <div class="col-xl-0" id="secondColumn">
       <div *ngIf="viewAssignments || viewLessons" id="secondaryContainer">
         <div *ngIf="viewAssignments" id="assignmentsContainer">
-	<div id="assignmentHeader">
-          <div class="date-header" style="height: 7em">
-            <h4 style="float: left; margin-top: 1em;">Due Date</h4>
-            <div class="due-sort" style="float: right" (click)="toggleSort()">
-              <div class="due-asc" *ngIf="sortAscending">
-                <img src="assets/pngs/arrow-up3.png" />
-              </div>
-              <div class="due-desc" *ngIf="sortDescending">
-                <img src="assets/pngs/arrow-down3.png" />
+          <div id="assignmentHeader">
+            <div class="date-header" style="height: 7em">
+              <h4 style="float: left; margin-top: 1em;">Due Date</h4>
+              <div class="due-sort" style="float: right" (click)="toggleSort()">
+                <div class="due-asc" *ngIf="sortAscending">
+                  <img src="assets/pngs/arrow-up3.png" />
+                </div>
+                <div class="due-desc" *ngIf="sortDescending">
+                  <img src="assets/pngs/arrow-down3.png" />
+                </div>
               </div>
             </div>
+            <div *ngIf="assignments[0].NAME == 'No assignments'" class="empty-assignments">No Assignments</div>
           </div>
-          <div *ngIf="assignments[0].NAME == 'No assignments'" class="empty-assignments">No Assignments</div>
-	</div>
-	<div id="assignmentList" style="overflow-y: auto; height: 60em;">
-          <div *ngIf="assignments[0].NAME !== 'No assignments'" class="assignment-list--container">
-            <div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
-              <h5>{{assignment.NAME}}</h5>
-              <!--
+          <div id="assignmentList" style="overflow-y: auto; height: 60em;">
+            <div *ngIf="assignments[0].NAME !== 'No assignments'" class="assignment-list--container">
+              <div *ngFor="let assignment of assignments; let i = index" class="assignment-summary" (click)="assignmentSelect(assignment, i)">
+                <h5>{{assignment.NAME}}</h5>
+                <!--
 							<button class="btn btn-sm btn-success" (click)="removeAssignment(assignment)" style="width: 100%">
 								<i class="fa fa-check"></i> Remove Assignment
 							</button>
 							-->
-              <div class="due-holder">
-                <p class="due-title">Due: </p>
-                <p class="due-value">{{assignment.DUE_DATE | date:'MM/dd/yyyy'}}</p>
-              </div>
-              <div class="due-holder">
-                <p class="due-title">Available: </p>
-                <p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
-              </div>
+                <div class="due-holder">
+                  <p class="due-title">Due: </p>
+                  <p class="due-value">{{assignment.DUE_DATE | date:'MM/dd/yyyy'}}</p>
+                </div>
+                <div class="due-holder">
+                  <p class="due-title">Available: </p>
+                  <p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
+                </div>
 
 
-              <div *ngIf="assignment.percent_complete == 1 && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')" class="due-holder status-complete status">
-                <p class="due-title">Percent Complete: </p>
-                <p class="due-value">{{assignment.percent_complete | percent}}</p>
-              </div>
-							<div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (warningDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') > (currentDate | date:'MM/dd/yyyy') && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')" class="due-holder status-warning status">
-								<p class="due-title">Percent Complete: </p>
-                <p class="due-value">{{assignment.percent_complete | percent}}</p>
-              </div>
-							<div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') < (currentDate | date:'MM/dd/yyyy')" class="due-holder status-incomplete status">
-								<p class="due-title">Percent Complete: </p>
-                <p class="due-value">{{assignment.percent_complete | percent}}</p>
-              </div>
+                <div *ngIf="assignment.percent_complete == 1 && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')"
+                  class="due-holder status-complete status">
+                  <p class="due-title">Percent Complete: </p>
+                  <p class="due-value">{{assignment.percent_complete | percent}}</p>
+                </div>
+                <div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (warningDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') > (currentDate | date:'MM/dd/yyyy') && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')"
+                  class="due-holder status-warning status">
+                  <p class="due-title">Percent Complete: </p>
+                  <p class="due-value">{{assignment.percent_complete | percent}}</p>
+                </div>
+                <div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') < (currentDate | date:'MM/dd/yyyy')"
+                  class="due-holder status-incomplete status">
+                  <p class="due-title">Percent Complete: </p>
+                  <p class="due-value">{{assignment.percent_complete | percent}}</p>
+                </div>
 
-							<div *ngIf="assignment.percent_complete !== 1 && ((assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (currentDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') < (warningDate | date:'MM/dd/yyyy'))" class="due-holder">
-                <p class="due-title">Percent Complete: </p>
-                <p class="due-value">{{assignment.percent_complete | percent}}</p>
-              </div>
+                <div *ngIf="assignment.percent_complete !== 1 && ((assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (currentDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') < (warningDate | date:'MM/dd/yyyy'))"
+                  class="due-holder">
+                  <p class="due-title">Percent Complete: </p>
+                  <p class="due-value">{{assignment.percent_complete | percent}}</p>
+                </div>
 
+              </div>
             </div>
           </div>
-	</div>
         </div>
 
 
-        <div *ngIf="viewLessons" id="lessonsContainer" style="width: inherit;">
-          <div class="book-header">
-            <h3 *ngIf="dataObj.selectedBook">{{dataObj.selectedBook.NAME}}</h3>
-          </div>
+        <div *ngIf="viewLessons" id="lessonsContainer">
           <div>
             <select name="book" id="bookDropdown" [(ngModel)]="selectedBook" (change)="onChangeBook($event)" class="form-control input-sm">
               <option *ngFor="let book of dataObj.books;" [value]="book.ID">{{book.NAME}}</option>
@@ -165,7 +168,6 @@
           </div>
 
           <div class="col-md-12" *ngIf="dataObj.selectedBook">
-            <h3>{{dataObj.selectedBook.NAME}}</h3>
             <span>Total Pages :
               <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong>
             </span>
@@ -175,14 +177,14 @@
 
 
           <div class="lesson-header" style="width: 100%;">
-			  <h4 class="panel-title pull-left" style="padding-top: 7.5px; width: 100%; display: inline;">Lessons
-			  <div id="lessonButtons" style="float: right;">
-				<button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
-				<button (click)="saveLessons()" class="btn btn-primary ">Save</button>
-				<button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
-			   </div>
-			  </h4>
-			</div>
+            <h4 class="panel-title pull-left" style="padding-top: 7.5px; width: 100%; display: inline;">Lessons
+              <div id="lessonButtons" style="float: right;">
+                <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
+                <button (click)="saveLessons()" class="btn btn-primary ">Save</button>
+                <button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
+              </div>
+            </h4>
+          </div>
           <div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
             <div class="scrollbar">
               <table class="table table-hover lessons">
@@ -201,7 +203,8 @@
                       <input type="checkbox" name="lession[][id]" (click)="toggle(lesson)">
                     </td>
                     <td>
-                      <input type="text" class="lesson-name-input form-control input-lg col-lg-8" (change)="lesson.changed()" name="lession[][name]" [(ngModel)]="lesson.NAME">
+                      <input type="text" class="lesson-name-input form-control input-lg col-lg-8" (change)="lesson.changed()" name="lession[][name]"
+                        [(ngModel)]="lesson.NAME">
                     </td>
                     <td style="width: 7em">
                       <input type="number" class="form-control input-sm" (change)="lesson.changed();" (click)="changePdfPageNo(lesson.START_PAGE)"
@@ -249,11 +252,11 @@
     <div class="col-xl-10" id="thirdColumn">
       <div *ngIf="viewAssignments || !viewLessons">
         <div id="groupSummary">
-		<h4 *ngIf="selectedAssignment === undefined">No Assignment Selected</h4>
-		<div *ngIf="selectedAssignment !== undefined">
-          <h4 *ngIf="selectedAssignment.assignment_id === -1 ? selectedAssignment.NAME !== 'No assignments' : false">No Assignment Selected</h4>
-          <h4 *ngIf="selectedAssignment.assignment_id > -1 ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
-		 </div>
+          <h4 *ngIf="selectedAssignment === undefined">No Assignment Selected</h4>
+          <div *ngIf="selectedAssignment !== undefined">
+            <h4 *ngIf="selectedAssignment.assignment_id === -1 ? selectedAssignment.NAME !== 'No assignments' : false">No Assignment Selected</h4>
+            <h4 *ngIf="selectedAssignment.assignment_id > -1 ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignment.NAME}}</h4>
+          </div>
           <div id="groupActions">
             <div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">
               <div data-toggle="modal" data-target="#editAssignmentModal" (click)="editAssignment(selectedAssignment)">
@@ -276,11 +279,11 @@
                 </div>
                 <div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">PDF</div>
               </div>
-              <div class="icon-action">
+              <div class="icon-action" (click)="emailGroup()" data-toggle="modal" data-target="#emailModal">
                 <div class="icon">
-                  <a [(ngModel)]="modalEmails" href="mailTo:{{modalEmails}}"><img src="assets/pngs/mail.png" /></a>
+                  <img src="assets/pngs/mail.png" />
                 </div>
-                <div class="text"><a [(ngModel)]="modalEmails" href="mailTo:{{modalEmails}}">Email all employees</a></div>
+                <div class="text">Email all employees</div>
               </div>
             </div>
             <div class="row">
@@ -296,11 +299,11 @@
                 </div>
                 <div class="text" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' : false">{{selectedAssignmentCompletion}} of employees finished</div>
               </div>
-              <div class="icon-action">
+              <div class="icon-action" (click)="emailGroupIncomplete()" data-toggle="modal" data-target="#emailModal">
                 <div class="icon">
-                  <a [(ngModel)]="modalEmailsIncomplete" href="mailTo:{{modalEmailsIncomplete}}"><img src="assets/pngs/mail.png" /></a>
+                  <img src="assets/pngs/mail.png" />
                 </div>
-                <div class="text"><a [(ngModel)]="modalEmailsIncomplete" href="mailTo:{{modalEmailsIncomplete}}">Email all incomplete</a></div>
+                <div class="text">Email all incomplete</div>
               </div>
             </div>
             <div class="row" *ngIf="selectedAssignment !== undefined ? selectedAssignment.NAME !== 'No assignments' && selectedAssignment.NOTES !== undefined: false">
@@ -322,7 +325,7 @@
           <table class="table table-hover" style="width: 100%;">
             <thead>
               <th style="width: 10%;"></th>
-              <th scope="col" style= "width: 25%;">First Name</th>
+              <th scope="col" style="width: 25%;">First Name</th>
               <th scope="col" style="width: 25%;">Last Name</th>
               <th scope="col" style="width: 27%;">Email</th>
               <th scope="col" style="width: 13%;">Completed</th>
@@ -331,15 +334,15 @@
               <td style="width: 10%;" class="employee-delete">
                 <p>X</p>
               </td>
-              <td style= "width: 25%;">{{employee.FIRST_NAME | pending}}</td>
-              <td style= "width: 25%;">{{employee.LAST_NAME | pending}}</td>
-              <td style= "width: 30%;">
+              <td style="width: 25%;">{{employee.FIRST_NAME | pending}}</td>
+              <td style="width: 25%;">{{employee.LAST_NAME | pending}}</td>
+              <td style="width: 30%;">
                 <a style="color: black; text-decoration: underline;" href="mailto:{{employee.EMAIL}}">{{employee.EMAIL}}</a>
               </td>
-              <td style= "width: 10%;" *ngIf="selectedAssignment !== null && employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 1 : false">
+              <td style="width: 10%;" *ngIf="selectedAssignment !== null && employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 1 : false">
                 <input type="checkbox" disabled checked/>
               </td>
-              <td style= "width: 10%;" *ngIf="employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 0 : true">
+              <td style="width: 10%;" *ngIf="employee.IS_COMPLETE != null ? employee.IS_COMPLETE.data[0] === 0 : true">
                 <input type="checkbox" disabled/>
               </td>
             </tr>
@@ -454,7 +457,7 @@
 						<p *ngIf="dataObj.selectedLesson && dataObj.selectedLesson !== undefined">{{dataObj.selectedLesson.NAME}}</p>
 					-->
 
-		<!--
+          <!--
 		<form novalidate [formGroup]="editAssignmentGroupForm" name="editAssignmentForm">
             <fieldset>
               <div class="form-group" [ngClass]="displayFieldCss(editAssignmentGroupForm,'start_date')">
@@ -502,9 +505,9 @@
               <br>
               <p>Minimum reading time: </p>
               <div class="reading-time-input">
-                <input type="number" id="minutesEdit" [ngModel]="editAssignmentValues.MINUTES" [ngModelOptions]="{standalone: true}"/>
+                <input type="number" id="minutesEdit" [ngModel]="editAssignmentValues.MINUTES" [ngModelOptions]="{standalone: true}" />
                 <p>minutes</p>
-                <input type="seconds" id="secondsEdit" [ngModel]="editAssignmentValues.SECONDS" [ngModelOptions]="{standalone: true}"/>
+                <input type="seconds" id="secondsEdit" [ngModel]="editAssignmentValues.SECONDS" [ngModelOptions]="{standalone: true}" />
                 <p>seconds</p>
               </div>
               <br>
@@ -532,14 +535,13 @@
         </div>
         <div class="modal-body">
           <label>Recipients</label>
-		  <a href="mailTo:{{modalEmails}}">Send email</a>
-          <!--
-		  <input type="text" class="form-control form-control-sm" [ngModel]="modalEmails">
-           <label>Message</label>
-          <textarea class="form-control" rows="3" [(ngModel)]="emailContents"></textarea> -->
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="modalEmails">
+          <label>Message</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="emailContents"></textarea>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" (click)="emailConfirm()" data-dismiss="modal">Send Email</button>
         </div>
       </div>
     </div>
@@ -810,7 +812,8 @@
   </div>
 </div>
 
-<img *ngIf="isLoggedIn && admin_id <= 0" style="margin-top: 1em; margin-bottom: 3em" class="logo" src="assets/pngs/Liberty Logo.png" />
+<img *ngIf="isLoggedIn && admin_id <= 0" style="margin-top: 1em; margin-bottom: 3em" class="logo" src="assets/pngs/Liberty Logo.png"
+/>
 <div *ngIf="isLoggedIn && admin_id <= 0" class="container" style="width: calc(100% - 10em); margin: 1em 5em; border: black dashed; padding: 1em; background: #e8ffff;">
   <h1 style="text-align: center; padding: 1em 0.5em; margin-bottom: 0;">Welcome to Liberty Elevator Safety Training</h1>
   <h3 style="padding: 0em 1em; margin-bottom: 1em">This page has instructions for downloading and installing the app on your Samsung Tablet.</h3>
@@ -819,17 +822,21 @@
     <li>Adjust settings to allow downloads from unknown sources:
       <br/>
       <br/>
-      <a href="https://youtu.be/bvZP4cS2yyc" style="color: #FFFFFF; background: #ff0000; padding: 0.5em 1em; border-radius: 0.5em; transform: translate(0em, -0.75em); display: inline-block; margin-left: calc(50% - 13em); margin-right: 1em; width: 13em"><img style="transform: translate(-0.1em, -0.2em); width: 1.7em" src="assets/pngs/YoutubeLogoInverted.png" />Android 5.0 or Lower</a>
-  		<a href="https://youtu.be/_N2ieQkvPOA" style="color: #FFFFFF; background: #ff0000; padding: 0.5em; border-radius: 0.5em; transform: translate(0em, -0.75em); display: inline-block;"><img style="transform: translate(-0.1em, -0.2em); width: 1.7em" src="assets/pngs/YoutubeLogoInverted.png" />Android 6.0 or Higher</a>
+      <a href="https://youtu.be/bvZP4cS2yyc" style="color: #FFFFFF; background: #ff0000; padding: 0.5em 1em; border-radius: 0.5em; transform: translate(0em, -0.75em); display: inline-block; margin-left: calc(50% - 13em); margin-right: 1em; width: 13em">
+        <img style="transform: translate(-0.1em, -0.2em); width: 1.7em" src="assets/pngs/YoutubeLogoInverted.png" />Android 5.0 or Lower</a>
+      <a href="https://youtu.be/_N2ieQkvPOA" style="color: #FFFFFF; background: #ff0000; padding: 0.5em; border-radius: 0.5em; transform: translate(0em, -0.75em); display: inline-block;">
+        <img style="transform: translate(-0.1em, -0.2em); width: 1.7em" src="assets/pngs/YoutubeLogoInverted.png" />Android 6.0 or Higher</a>
       <br/>
-		</li>
-		<li>Download and install the application:
-    	<br/>
+    </li>
+    <li>Download and install the application:
       <br/>
-      <button type="button" class="btn-primary" (click)="getApk()" style="transform: translate(-50%, 0%); height: 50px; width: 250px; margin-left: 50%;"> Download App</button>
+      <br/>
+      <button type="button" class="btn-primary" (click)="getApk()" style="transform: translate(-50%, 0%); height: 50px; width: 250px; margin-left: 50%;">
+      Download App</button>
     </li>
     <br/>
     <li>Sign in and begin working</li>
   </ol>
-  <h5 class="text text-muted" style="font-size: 1.5em; padding: 0em 1.2em">Having issues? Please contact us at <a href="mailto:libertyelevatorreader@gmail.com">libertyelevatorreader@gmail.com</a> for support.</h5>
+  <h5 class="text text-muted" style="font-size: 1.5em; padding: 0em 1.2em">Having issues? Please contact us at
+    <a href="mailto:libertyelevatorreader@gmail.com">libertyelevatorreader@gmail.com</a> for support.</h5>
 </div>

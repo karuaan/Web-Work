@@ -548,13 +548,20 @@ app.post('/group/activebook', function(req, res){
 })
 
 function setActiveBook(group_id, book_id, callback){
-	let activeBookQuery = con.query('UPDATE BOOKS SET ACTIVE=1 WHERE ID='+mysql.escape(book_id), function(err, rows, fields){
+	con.query('UPDATE BOOKS SET ACTIVE=0 WHERE GROUP_ID='+mysql.escape(group_id), function(err, rows, fields){
 		if(!err){
-			callback(null, "active book updated");
+			con.query('UPDATE BOOKS SET ACTIVE=1 WHERE ID='+mysql.escape(book_id), function(err, rows, fields){
+				if(!err){
+					callback(null, "active book updated");
+				}
+				else{
+					callback(err, null);
+					console.log(err);
+				}
+			});
 		}
 		else{
 			callback(err, null);
-			console.log('Error during books query');
 		}
 	});
 }

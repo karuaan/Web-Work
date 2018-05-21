@@ -31,6 +31,7 @@ export class EmployeesComponent implements OnInit {
         book_lessons: [],
         selected_group: null,
         selectedBook: null,
+        activeBooks: {},
         selectedLessonPlan: null,
         selectedLesson: null,
         selectedAssignment: null,
@@ -178,8 +179,6 @@ export class EmployeesComponent implements OnInit {
 
     onAdminLogin(admin_id) {
 		this.ng4LoadingSpinnerService.show();
-        this.employeesService.getUserData(admin_id).subscribe(userData => {
-
 
             this.employeesService.getGroups(admin_id).subscribe(groups => {
                 this.groups = groups;
@@ -195,10 +194,11 @@ export class EmployeesComponent implements OnInit {
                                 this.selectedGroup.ID,
                                 -1
                             ).subscribe(employees => {
+                                console.log(employees);
                                 this.employees = employees;
 								this.emailGroup();
 								this.emailGroupIncomplete();
-								this.ng4LoadingSpinnerService.hide();
+                                this.ng4LoadingSpinnerService.hide();
                             }, err => {
 								this.toastrService.warning('Server Error', 'Unable to populate employees, please try again or contract support');
 							});
@@ -247,7 +247,7 @@ export class EmployeesComponent implements OnInit {
                                 }
 								this.emailGroup();
 								this.emailGroupIncomplete();
-								this.ng4LoadingSpinnerService.hide();
+                                this.ng4LoadingSpinnerService.hide();
                             }, err => {
 								this.toastrService.warning('Server Error', 'Unable to populate employees, please try again or contract support');
 							});
@@ -259,9 +259,6 @@ export class EmployeesComponent implements OnInit {
             }, err => {
 				this.toastrService.warning('Server Error', 'Unable to populate groups, please try again or contract support');
 			});
-        }, err => {
-			this.toastrService.warning('Server Error', 'Unable to populate user data, please try again or contract support');
-		});
     }
 
 
@@ -301,20 +298,14 @@ export class EmployeesComponent implements OnInit {
                 this.employeesService.getLessons(this.selectedGroup.ID).subscribe(data => {
                     console.log(books);
                     this.dataObj.books = bookMapping(books, data);
-                    /* this.dataObj.selectedBook = this.dataObj.books[0];
-                    this.selectedBook = this.dataObj.books[0].ID; */
                     this.updatePdfBookPreview();
                 }, (err) => {
                     this.dataObj.books = bookMapping(books, []);
-                    /* this.dataObj.selectedBook = this.dataObj.books[0];
-                    this.selectedBook = this.dataObj.books[0].ID; */
                     this.updatePdfBookPreview();
                 });
             }
             else {
                 this.dataObj.books = bookMapping(books, []);
-                this.dataObj.selectedBook = this.dataObj.books[0];
-                this.selectedBook = this.dataObj.books[0].ID;
                 this.updatePdfBookPreview();
             }
         });
@@ -932,7 +923,10 @@ export class EmployeesComponent implements OnInit {
             const formData: FormData = new FormData();
             formData.append('book_id', this.selectedBook.toString());
             formData.append('group_id', this.selectedGroup.ID.toString());
-            this.bookService.setActiveBook(formData);
+            this.bookService.setActiveBook(formData).subscribe((res)=>{
+                console.log(res);
+            });
+           // console.log(formData);
             this.testPdf = {
                 url: `${this.bookService._api.endpoint}/read-pdf?path=${this.dataObj.selectedBook.PDF_FILE}`,
                 withCredentials: false

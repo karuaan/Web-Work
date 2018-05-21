@@ -27,7 +27,7 @@ export class BookService {
   }
 
   setActiveBook(data): Observable<any>{
-    return this.http.post<any>(this.restURL + '/group/activebook', data);
+    return this.http.post<any>(`${this.restURL}/group/activebook`, data);
   }
   saveAssignment(lessionId, data): Observable<Book[]> {
     return this.http.post<any>(`${this.restURL}/lessons/${lessionId}/assignment`, data);

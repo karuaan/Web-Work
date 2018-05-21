@@ -24,7 +24,7 @@ export class EmployeesService {
   }
 
   getUserData(user_id){
-	var response = this.http.get(this.restURL + '/user/${user_id}');
+	var response = this.http.get(`${this.restURL}/user/${user_id}`);
 	return response;
   }
   
