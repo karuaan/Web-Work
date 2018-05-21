@@ -318,14 +318,14 @@ export class EmployeesComponent implements OnInit {
                 this.dataObj.books = bookMapping(books, []);
                 this.updatePdfBookPreview();
             }
-			if(books.length == 0){
+			/* if(books.length == 0){
 				console.log('got to books empty')
 				this.dataObj.selectedBook = null;
 				this.dataObj.books = []
 			}
 			console.log('---');
 			console.log(this.dataObj.selectedBook);
-			console.log(books);
+			console.log(books); */
         });
     }
 
