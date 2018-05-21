@@ -4,8 +4,8 @@
 	<img class="logo" src="assets/pngs/Liberty Logo.png" />
   </div>
   <div class="row">
-  <div class="col-xl-4"></div>
-  <div class="col-xl-4">
+  <div class="col-xl-3"></div>
+  <div class="col-xl-6">
   <form class="login-form" name="userform" method="post" #formCtrl="ngForm">
 
     <label for="exampleInputEmail1">Email address</label>
@@ -24,12 +24,12 @@
   </div>
 
   <div class="row" style="font-size: 1.5em; padding: 0em 1em">
-	<div class="col-xl-4"></div>
-	<div class="col-xl-4">
-    <button id="resetButton" style="width: 100%; height: 50px; text-align: center; font-size: 1em; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);"
+	<div class="col-xl-3"></div>
+	<div class="col-xl-6">
+    <button id="resetButton" style="height: 50px; text-align: center; font-size: 1em; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);"
       class="btn btn-primary" (click)="resetPassword()" data-toggle="modal" data-target="#resetPasswordModal">Reset Password</button>
 	  </div>
-	  <div class="col-xl-4"></div>
+	  <div class="col-xl-3"></div>
   </div>
     <div *ngIf="isLoginError==true" class="alert alert-danger row" style="margin-bottom: 1.5em">
     <p>{{loginErrorMessage}}</p>
