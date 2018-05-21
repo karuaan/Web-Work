@@ -1500,10 +1500,11 @@ export class EmployeesComponent implements OnInit {
 		start_date.setDate(start_date.getDate())
 		due_date.setDate(due_date.getDate())
 		
-		const display_start_date.setDate(start_date.getDate() + 1)
-		const display_due_date.setDate(due_date.getDate() + 1)
+		const display_start_date = (start_date.getDate() + 1)
+		const display_due_date = (due_date.getDate() + 1)
 
-		console.log(start_date.toString());
+		console.log(start_date);
+		console.log(display_start_date);
 
         const dataForm = {
             assignment_id: this.selectedAssignment.assignment_id,
