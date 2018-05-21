@@ -124,7 +124,7 @@ export class EmployeesComponent implements OnInit {
     constructor(employeesService: EmployeesService,
 			toastrService: ToastrService,
 			authService: AuthService,
-			bookService: BookService, 
+			bookService: BookService,
 			fb: FormBuilder,
 			ng4LoadingSpinnerService: Ng4LoadingSpinnerService
 		) {
@@ -138,14 +138,14 @@ export class EmployeesComponent implements OnInit {
         this.authService = authService;
         this.toastrService = toastrService;
 		this.ng4LoadingSpinnerService = ng4LoadingSpinnerService;
-		
+
         this.userEmail = "";
         this.userPassword = "";
         this.isLoginError = false;
         this.newUser = false;
         this.loginErrorMessage = "";
         this.admin_password = "";
-		
+
 		this.modalEmailsIncomplete = "";
 
         this.newPassword = "";
@@ -173,7 +173,6 @@ export class EmployeesComponent implements OnInit {
         this.reactiveFormGroup();
 
         document.getElementsByTagName('body')[0].style.backgroundColor = '#89CFF0';
-
     }
 
 
@@ -283,42 +282,39 @@ export class EmployeesComponent implements OnInit {
             this.dataObj.employee_status = res;
         });
 
-        this.employeesService.getBook(this.selectedGroup.ID).subscribe(book => {
-            const bookMapping = (book: BookNew, lessons: Lesson[]) => {
-                console.log(book);
-                console.log(lessons);
-                book.LESSONS = lessons.filter((lesson: Lesson) => lesson.BOOK_ID == book.ID).map((tempLession: Lesson) => {
-                    //console.log(tempLession);
-                    return this.transformLessonModel(tempLession);
+        this.employeesService.getBooks(this.selectedGroup.ID).subscribe(books => {
+            const bookMapping = (books: BookNew[], lessons: Lesson[]) => {
+                return books.map((book: BookNew) => {
+                    if (book.ACTIVE){
+                        this.dataObj.selectedBook = book;
+                        this.selectedBook = book.ID;
+                    }
+                    book.LESSONS = lessons.filter((lesson: Lesson) => lesson.BOOK_ID == book.ID).map((tempLession: Lesson) => {
+                        return this.transformLessonModel(tempLession);
+                    });
+                    return book;
                 });
-                return book;
             };
             console.log("Group ID");
             console.log(this.selectedGroup.ID);
-            if (!book){
-                this.dataObj.book = null;
-                this.dataObj.selectedBook = null;
-                this.selectedBook = this.dataObj.book.ID;
-                this.updatePdfBookPreview();
-            }
-            else if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
-                this.employeesService.getLessons(this.selectedGroup.ID).subscribe(lessonPlan => {
-                    this.dataObj.book = bookMapping(book, lessonPlan);
-                    console.log(this.dataObj.book);
-                    this.dataObj.selectedBook = this.dataObj.book;
-                    this.selectedBook = this.dataObj.book.ID;
+            if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
+                this.employeesService.getLessons(this.selectedGroup.ID).subscribe(data => {
+                    console.log(books);
+                    this.dataObj.books = bookMapping(books, data);
+                    /* this.dataObj.selectedBook = this.dataObj.books[0];
+                    this.selectedBook = this.dataObj.books[0].ID; */
                     this.updatePdfBookPreview();
                 }, (err) => {
-                    this.dataObj.book = bookMapping(book, []);
-                    this.dataObj.selectedBook = this.dataObj.book;
-                    this.selectedBook = this.dataObj.book.ID;
+                    this.dataObj.books = bookMapping(books, []);
+                    /* this.dataObj.selectedBook = this.dataObj.books[0];
+                    this.selectedBook = this.dataObj.books[0].ID; */
                     this.updatePdfBookPreview();
                 });
             }
             else {
-                this.dataObj.book = bookMapping(book, []);
-                this.dataObj.selectedBook = this.dataObj.book;
-                this.selectedBook = this.dataObj.book.ID;
+                this.dataObj.books = bookMapping(books, []);
+                this.dataObj.selectedBook = this.dataObj.books[0];
+                this.selectedBook = this.dataObj.books[0].ID;
                 this.updatePdfBookPreview();
             }
         });
@@ -727,19 +723,10 @@ export class EmployeesComponent implements OnInit {
                 this.toastrService.warning('Invite', res.message);
 				this.ng4LoadingSpinnerService.hide();
             } else {
-				//console.log(inviteData.email);
-				//console.log(inviteData.pass);
-                this.authService.signUpRegular(inviteData.email, inviteData.pass).then(data => {
                     this.toastrService.success('Invite', 'Success');
                     this.inviteAdminForm.reset();
                     $('#inviteAdminModal').modal('hide');
 					this.ng4LoadingSpinnerService.hide();
-                })
-                    .catch(err => {
-                        this.toastrService.warning('Invite', 'Internal server error');
-						this.ng4LoadingSpinnerService.hide();
-                    });
-
             }
         }, (err) => {
             this.toastrService.warning('Invite', 'Internal server error');
@@ -938,9 +925,14 @@ export class EmployeesComponent implements OnInit {
     }
     onChangeBook(event) {
         let book = this.selectedBook;
+        console.log(book);
         if (book) {
-            // this.selectedBookData = book[0];
             this.dataObj.selectedBook = book;
+            //set active book
+            const formData: FormData = new FormData();
+            formData.append('book_id', this.selectedBook.toString());
+            formData.append('group_id', this.selectedGroup.ID.toString());
+            this.bookService.setActiveBook(formData);
             this.testPdf = {
                 url: `${this.bookService._api.endpoint}/read-pdf?path=${this.dataObj.selectedBook.PDF_FILE}`,
                 withCredentials: false
@@ -1024,7 +1016,7 @@ export class EmployeesComponent implements OnInit {
             this.pdfCurrentPage = pageNo;
         }
     }
-  
+
     saveLessons(): void {
         const new_lessons: any[] = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
             let validation = item.NAME != '' && item.START_PAGE > 0 && item.END_PAGE > 0;
@@ -1174,7 +1166,7 @@ export class EmployeesComponent implements OnInit {
         console.log(remove);
 
         this.bookService.deleteLessons(remove).subscribe((res: any) => {
-            
+
             //this.dataObj.selectedBook.LESSONS = res.results;
             this.dataObj.selectedBook.LESSONS = this.dataObj.selectedBook.LESSONS.filter((item: Lesson) => {
                 console.log(item);
@@ -1249,7 +1241,7 @@ export class EmployeesComponent implements OnInit {
 		else{
 			this.modalEmailsIncomplete = "";
 		}
-        
+
     }
 
     emailGroupLate(text) {
@@ -1662,6 +1654,12 @@ export class EmployeesComponent implements OnInit {
                         if (res2[0]['FIRST_NAME'] == '' || res2[0]['FIRST_NAME'] == null || res2[0]['FIRST_NAME'] == undefined) {
                             this.isLoginError = false;
                             this.newUser = true;
+                            setTimeout(function() {
+                              $('#newUserPhoneNumber').keyup(function(){
+                                $(this).val($(this).val().replace(/(\d{3})\-?(\d{3})\-?(\d{4})/,'($1) - $2 - $3'))
+                              });
+                            }, 10);
+
 							this.ng4LoadingSpinnerService.hide();
                             console.log(4);
                         }

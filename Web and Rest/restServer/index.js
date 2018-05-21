@@ -38,10 +38,10 @@ var con;
 if(!debug){
     console.log('production')
 	con = mysql.createConnection(
-		{host: "127.0.0.1",
-		user: "root", password: "Stevens2018#MVPHWB",
+		{host: "mysql.cgkepgzez06k.us-east-2.rds.amazonaws.com",
+		user: "admin", password: "Stevens2018#MVPHWB",
 		port: "3306",
-		database: "TRAINING_DB"}
+		database: "FEB_2"}
 	)
 }
 else{
@@ -534,14 +534,38 @@ app.get('/getPercentages', function(req, res) {
     })
 });
 
+app.post('/group/activebook', function(req, res){
+	let groupId = req.body.group_id;
+	let bookId = req.body.book_id;
+	setActiveBook(groupId, bookId, function(err, result){
+		if (err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	});
+})
+
+function setActiveBook(group_id, book_id, callback){
+	let activeBookQuery = con.query('UPDATE BOOKS SET ACTIVE=1 WHERE ID='+mysql.escape(book_id), function(err, rows, fields){
+		if(!err){
+			callback(null, "active book updated");
+		}
+		else{
+			callback(err, null);
+			console.log('Error during books query');
+		}
+	});
+}
 //Done
-function getBook(group_id, callback){
+function getBooks(group_id, callback){
 
 	var bookQuery = con.query('SELECT * FROM BOOKS WHERE GROUP_ID='+mysql.escape(group_id), function(err, rows, fields) {
 
 		if(!err){
 			if(rows){
-				callback(null, rows[0]);
+				callback(null, rows);
 			}
 		}
 		else{
@@ -700,39 +724,25 @@ function addUser(first_name, last_name, email, callback){
 					}
 					else{
 						firebaseAdmin.auth().createUser({
-							  'email': email,
-							  emailVerified: false,
-							  password: "secretPassword",
-							  disabled: false
-							}).then((record) => {
-								var mailOptions = {
-									from: 'libertyelevatorreader@gmail.com',
-									to: [email],
-									subject: 'You have been invited to the liberty elevator app!',
-									text: 'Follow this link. https://safetytraining.libertyelevator.com/ Use this email and the provided password to login, then follow the steps. secretPassword'
+						  'email': email,
+						  emailVerified: false,
+						  password: "elevatorpass",
+						  photoURL: "http://user.com",
+						  disabled: false
+						}).then((record) => {
+							callback(null, record);
+						},
+						(firebase_err) => {//Rollback DB
+							con.query('DELETE FROM USERS WHERE EMAIL=?', [email], function(del_err, result){
+								if(del_err){
+									callback(del_err, null);
 								}
-								transporter.sendMail(mailOptions, function(error, info){
-									if(error){
-										
-										/*TODO - ADD ROLLBACK
-											- delete user from firebase
-											- delete user from database
-										*/
-										console.log(error);
-										callback(error, null);
-										
-									}
-									else{
-										callback(null, result)
-									}
-								});
-							},
-							(firebase_err) => {
-								/*TODO - ADD ROLLBACK
-											- delete user from database
-										*/
-								callback(firebase_err, null);
-							})
+								else{
+									callback({'error': 'could not add user to firebase'}, null);
+								}
+							});
+							callback(firebase_err, null);
+						});
 					}
 				})
 			}
@@ -756,7 +766,26 @@ function addAdmin(email, callback){
 				console.log("ROWS ARE EMPTY")
 				con.query('INSERT INTO USERS (FIRST_NAME, LAST_NAME, EMAIL, IS_ADMIN) VALUES (?,?,?, ?)', ["","",email,1], function(err2, result){
 					if(!err2){
-						callback(null, result)
+						firebaseAdmin.auth().createUser({
+						  'email': email,
+						  emailVerified: false,
+						  password: "elevatorPassAdmin123",
+						  photoURL: "http://admin.com",
+						  disabled: false
+						}).then((record) => {
+							callback(null, record);
+						},
+						(firebase_err) => {//Rollback DB
+							con.query('DELETE FROM USERS WHERE EMAIL=?', [email], function(del_err, result){
+								if(del_err){
+									callback(del_err, null);
+								}
+								else{
+									callback({'error': 'could not add user to firebase'}, null);
+								}
+							});
+							callback(firebase_err, null);
+						});
 
 					}
 					else{
@@ -1569,7 +1598,7 @@ const BookService = require('./services/book.service')(app,con,fs,hummus,Busboy,
 
 app.get('/book/:group_id', function(req, res) {
 	let group_id = req.params.group_id;
-	getBook(group_id, function(err, result){
+	getBooks(group_id, function(err, result){
 		if(err){
 			console.log(err);
 		}
@@ -2497,7 +2526,7 @@ app.post('/inviteAdmin', function(req, res){
 			res.json(err);
 		}
 		else{
-			var mailOptions = {
+/* 			var mailOptions = {
 				from: 'libertyelevatorreader@gmail.com',
 				to: [req.body.email],
 				subject: 'You have been added to Liberty Elevator Reader app!',
@@ -2512,7 +2541,8 @@ app.post('/inviteAdmin', function(req, res){
 					console.log(info);
 					res.json(info);
 				}
-			});
+			}); */
+			res.json(result);
 		}
 	});
 });
@@ -2616,6 +2646,6 @@ const sslOptions = {
 
 //http.createServer(app).listen(80);
 
-//app.listen(3000, () => console.log('server running on 3000'));
+//https.createServer(sslOptions, app).listen(3000);
 
-https.createServer(sslOptions, app).listen(3000);
+app.listen(3000, () => console.log('server running on 3000'));

@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer');
 // For other types of transports such as Sendgrid see https://nodemailer.com/transports/
 // TODO: Configure the `gmail.email` and `gmail.password` Google Cloud environment variables.
 const gmailEmail = "libertyelevatorreader@gmail.com";//functions.config().gmail.email;
-const gmailPassword = "readerreaderreader";//functions.config().gmail.password;
+const gmailPassword = "elevatorpassword";//functions.config().gmail.password;
 const mailTransport = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -30,9 +30,10 @@ exports.sendWelcomeEmail = functions.auth.user().onCreate((user) => {
   // [START eventAttributes]
   const email = user.email; // The email of the user.
   const displayName = user.displayName; // The display name of the user.
+  const userType = user.photoURL; //A quick fix
   // [END eventAttributes]
 
-  return sendWelcomeEmail(email, displayName);
+  return sendWelcomeEmail(email, displayName, userType);
 });
 // [END sendWelcomeEmail]
 
@@ -51,7 +52,7 @@ exports.sendByeEmail = functions.auth.user().onDelete((user) => {
 // [END sendByeEmail]
 
 // Sends a welcome email to the given user.
-function sendWelcomeEmail(email, displayName) {
+function sendWelcomeEmail(email, displayName, userType) {
   const mailOptions = {
     from: `${APP_NAME} <noreply@firebase.com>`,
     to: email,
@@ -59,7 +60,9 @@ function sendWelcomeEmail(email, displayName) {
 
   // The user subscribed to the newsletter.
   mailOptions.subject = `Welcome to ${APP_NAME}!`;
-  mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. Please login using your email address at this address: https://safetytraining.libertyelevator.com/ and this temporary password: elevatorpass.`;
+
+	mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. Please login using your email address at this address: https://safetytraining.libertyelevator.com/ and this temporary password: elevatorPass.`;
+  
   return mailTransport.sendMail(mailOptions).then(() => {
     return console.log('New welcome email sent to:', email);
   });

@@ -19,26 +19,31 @@
     <p>{{loginErrorMessage}}</p>
   </div>
   <div style="font-size: 1.5em; padding: 0em 1em">
-    <!--<button (click)="testGetEmployee()">Test Get Employee by Email</button>-->
 	<button id="resetButton" style="width: 100%; height: 50px; text-align: center; font-size: 1em; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" class="btn btn-primary" (click)="resetPassword()" data-toggle="modal" data-target="#resetPasswordModal">Reset Password</button>
   </div>
 </div>
 
 <div class="container" *ngIf="newUser">
+  <p style="text-align: center; font-size: 2em; padding: 1em; padding-bottom: 0em; margin-bottom: 0em;">Create your Liberty Elevator Safety Traning Account</p>
   <form class="login-form" name="newUserForm" method="post">
     <label>First Name</label>
     <input type="text" class="form-control" id="newUserFirstName" [(ngModel)]="newUserFirstName" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>Last Name</label>
     <input type="text" class="form-control" id="newUserLastName" [(ngModel)]="newUserLastName" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>Phone Number</label>
-    <input type="tel" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <input type="text" maxlength="18" class="form-control" id="newUserPhoneNumber" [(ngModel)]="newUserPhoneNumber" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>New Password</label>
     <input type="password" class="form-control" id="newPassword" [(ngModel)]="newPassword" required [ngModelOptions]="{standalone: true}">
+    <br/>
     <label>Confirm Password</label>
     <input type="password" class="form-control" id="confirmPassword" [(ngModel)]="confirmPassword" required [ngModelOptions]="{standalone: true}">
-    <div class="form-group">
-      <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px" (click)="signInFirstTime()">
-        Update User Info
+    <br/>
+    <div class="form-group" style="font-size: 1em">
+      <button type="buton" class="login-button btn btn-primary btn-block" style="margin-bottom: 20px; font-size: 1em" (click)="signInFirstTime()">
+        Register
       </button>
     </div>
   </form>
@@ -46,7 +51,6 @@
     <p>{{loginErrorMessage}}</p>
   </div>
 </div>
-
 
 <div class="container" *ngIf="isLoggedIn && admin_id > 0 && !newUser">
   <!--
@@ -154,21 +158,31 @@
             <h3 *ngIf="dataObj.selectedBook">{{dataObj.selectedBook.NAME}}</h3>
           </div>
           <div>
-            <div class="col-md-12" *ngIf="dataObj.selectedBook">
+            <select name="book" id="bookDropdown" [(ngModel)]="selectedBook" (change)="onChangeBook($event)" class="form-control input-sm">
+              <option *ngFor="let book of dataObj.books;" [value]="book.ID">{{book.NAME}}</option>
+            </select>
+            <button type="button" (click)="resetForm()" data-toggle="modal" data-target="#newBookModal" class="btn btn-info">+Add Book</button>
+          </div>
 
-              <span>Total Pages :
-                  <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong>
-              </span>
-            </div>
-            <button type="button" (click)="resetForm()" data-toggle="modal" data-target="#newBookModal" class="btn btn-info">Change Book</button>
+          <div class="col-md-12" *ngIf="dataObj.selectedBook">
+            <h3>{{dataObj.selectedBook.NAME}}</h3>
+            <span>Total Pages :
+              <strong>{{dataObj.selectedBook.TOTAL_PAGES}}</strong>
+            </span>
           </div>
 
 
 
 
           <div class="lesson-header">
-            <h4>Lessons</h4>
-          </div>
+			  <h4 class="panel-title pull-left" style="padding-top: 7.5px; width: 100%; display: inline;">Lessons
+			  <div id="lessonButtons" style="float: right;">
+				<button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
+				<button (click)="saveLessons()" class="btn btn-primary ">Save</button>
+				<button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
+			   </div>
+			  </h4>
+			</div>
           <div *ngIf="dataObj.selectedBook && dataObj.selectedBook.TOTAL_PAGES > 0">
             <div class="scrollbar">
               <table class="table table-hover lessons">
@@ -227,10 +241,6 @@
               </table>
             </div>
           </div>
-
-          <button (click)="addLesson()" class="btn btn-primary ">+ Add Lesson</button>
-          <button (click)="saveLessons()" class="btn btn-primary ">Save</button>
-          <button id="deleteLessonButton" (click)="deleteLessons()" class="btn btn-primary">Remove Lessons</button>
           <!--<button type="button" class="btn btn-info" id="addLessonButton" data-toggle="modal" data-target="#newLessonModal">+ Add</button>-->
         </div>
       </div>
@@ -798,19 +808,20 @@
       </div>
     </div>
   </div>
-
 </div>
 
-<div class="container" *ngIf="isLoggedIn && admin_id <= 0" style="width: calc(100% - 10em); margin: 1em 5em; border: black dashed; padding: 1em; background: #e8ffff;">
+<img *ngIf="isLoggedIn && admin_id <= 0" style="margin-top: 1em; margin-bottom: 3em" class="logo" src="assets/pngs/Liberty Logo.png" />
+<div *ngIf="isLoggedIn && admin_id <= 0" class="container" style="width: calc(100% - 10em); margin: 1em 5em; border: black dashed; padding: 1em; background: #e8ffff;">
   <h1 style="text-align: center; padding: 1em 0.5em; margin-bottom: 0;">Welcome to Liberty Elevator Safety Training</h1>
-  <h3 style="padding: 0em 1em; margin-bottom: 1em">This page has instructions for downloading and installing the app on your Android Device.</h3>
+  <h3 style="padding: 0em 1em; margin-bottom: 1em">This page has instructions for downloading and installing the app on your Samsung Tablet.</h3>
   <h4 style="padding: 0em 1.2em; margin-bottom: 1em;">Follow these instructions to begin receiving learning materials:</h4>
   <ol style="font-size: 1.5em; margin-left: 0.4em">
     <li>Adjust settings to allow downloads from unknown sources:
-			<ul style="list-style: none;">
-    		<li><a style="color: #1faa0f" href="https://youtu.be/bvZP4cS2yyc">Android 5.0</a></li>
-    		<li><a style="color: #1faa0f" href="https://youtu.be/_N2ieQkvPOA">Android 6.0</a></li>
-    	</ul>
+      <br/>
+      <br/>
+      <a href="https://youtu.be/bvZP4cS2yyc" style="color: #FFFFFF; background: #ff0000; padding: 0.5em 1em; border-radius: 0.5em; transform: translate(0em, -0.75em); display: inline-block; margin-left: calc(50% - 13em); margin-right: 1em; width: 13em"><img style="transform: translate(-0.1em, -0.2em); width: 1.7em" src="assets/pngs/YoutubeLogoInverted.png" />Android 5.0 or Lower</a>
+  		<a href="https://youtu.be/_N2ieQkvPOA" style="color: #FFFFFF; background: #ff0000; padding: 0.5em; border-radius: 0.5em; transform: translate(0em, -0.75em); display: inline-block;"><img style="transform: translate(-0.1em, -0.2em); width: 1.7em" src="assets/pngs/YoutubeLogoInverted.png" />Android 6.0 or Higher</a>
+      <br/>
 		</li>
 		<li>Download and install the application:
     	<br/>
@@ -820,5 +831,5 @@
     <br/>
     <li>Sign in and begin working</li>
   </ol>
-  <h5 class="text text-muted" style="padding: 0em 1.2em">If you are an admin trying to get to the admin console, you should not be seeing this page. Please contact an administrator.</h5>
+  <h5 class="text text-muted" style="font-size: 1.5em; padding: 0em 1.2em">Having issues? Please contact us at <a href="mailto:libertyelevatorreader@gmail.com">libertyelevatorreader@gmail.com</a> for support.</h5>
 </div>

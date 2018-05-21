@@ -21,7 +21,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
      const insertBook = (bookReq) => {
         return new Promise((resolve,reject) => {
-            con.query('INSERT INTO BOOKS (`NAME`, `PDF_FILE`,`TOTAL_PAGES`, `GROUP_ID`) VALUES (?,?,?, ?)', [
+            con.query('INSERT INTO BOOKS (`NAME`, `PDF_FILE`,`TOTAL_PAGES`, `GROUP_ID`, `ACTIVE`) VALUES (?,?,?,?, 1)', [
                 bookReq.NAME,
                 bookReq.PDF_FILE,
                 bookReq.TOTAL_PAGES,
