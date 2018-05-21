@@ -309,6 +309,7 @@ export class EmployeesComponent implements OnInit {
                     }
                     this.updatePdfBookPreview();
                 }, (err) => {
+					console.log(err);
                     this.dataObj.books = bookMapping(books, []);
                     this.updatePdfBookPreview();
                 });
@@ -318,9 +319,13 @@ export class EmployeesComponent implements OnInit {
                 this.updatePdfBookPreview();
             }
 			if(books == []){
+				console.log('got to books empty')
 				this.dataObj.selectedBook = null;
 				this.dataObj.books = []
 			}
+			console.log('---');
+			console.log(this.dataObj.selectedBook);
+			console.log(books);
         });
     }
 
