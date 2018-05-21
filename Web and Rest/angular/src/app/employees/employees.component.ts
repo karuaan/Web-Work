@@ -1500,8 +1500,8 @@ export class EmployeesComponent implements OnInit {
 		start_date.setDate(start_date.getDate())
 		due_date.setDate(due_date.getDate())
 		
-		//const display_start_date.setDate(start_date.getDate() + 1)
-		//const display_due_date.setDate(due_date.getDate() + 1)
+		const display_start_date.setDate(start_date.getDate() + 1)
+		const display_due_date.setDate(due_date.getDate() + 1)
 
 		console.log(start_date.toString());
 
@@ -1521,8 +1521,8 @@ export class EmployeesComponent implements OnInit {
             NAME: this.selectedAssignment.NAME,
             lesson_id: this.selectedAssignment.lesson_id,
             book_id: this.selectedAssignment.book_id,
-            DUE_DATE: due_date,
-            START_DATE: start_date,
+            DUE_DATE: display_due_date,
+            START_DATE: display_start_date,
             TIME_TO_COMPLETE: time_to_complete,
             assignment_id: this.selectedAssignment.assignment_id,
             NOTES: notes
