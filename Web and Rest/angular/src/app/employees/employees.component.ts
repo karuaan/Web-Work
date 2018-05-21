@@ -590,6 +590,7 @@ export class EmployeesComponent implements OnInit {
             return;
         }
         const dataEmployee = {
+			ADMIN_ID: this.admin_id,
             FIRST_NAME: '',
             LAST_NAME: '',
             group_name: this.selectedGroup.NAME,
