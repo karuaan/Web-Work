@@ -28,6 +28,7 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { AuthService } from './auth.service';
 import { Ng4LoadingSpinnerModule, Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
 import { PhonePipe } from './phone.pipe';
+import { DefaultToZeroPipe } from './default-to-zero.pipe';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { PhonePipe } from './phone.pipe';
     EmployeesComponent,
     PendingPipe,
     PhonePipe,
+    DefaultToZeroPipe,
   ],
   imports: [
     BrowserModule,
