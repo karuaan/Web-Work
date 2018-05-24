@@ -7,7 +7,7 @@
     card_view:cardCornerRadius="5dp"
     card_view:cardElevation="5dp"
     android:layout_width="300dp"
-    android:layout_height="wrap_content"
+    android:layout_height="300dp"
     card_view:cardPreventCornerOverlap="false"
     card_view:cardUseCompatPadding="true">
 
@@ -58,13 +58,13 @@
                     android:src="@drawable/ic_book_name" android:contentDescription="TODO" />
 
                 <TextView
-                    android:id="@+id/bookName"
+                    android:id="@+id/unread"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="10dp"
-                    android:text="@string/book_name"
+                    android:text="@string/unread_assignments"
                     android:textSize="18sp"
-                    android:gravity="center" />
+                    android:gravity="left" />
             </LinearLayout>
 
             <TextView
@@ -73,7 +73,6 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:layout_marginStart="70dp"
-                android:text="Chapter 13 due 11/19/17"
                 android:textSize="18sp" />
 
             <LinearLayout
@@ -83,6 +82,7 @@
                 android:id="@+id/adminEmail"
                 android:weightSum="5"
                 android:padding="10dp"
+                android:layout_gravity="bottom"
                 android:gravity="center">
 
                 <ImageView

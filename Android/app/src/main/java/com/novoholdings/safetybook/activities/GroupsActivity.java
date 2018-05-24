@@ -375,7 +375,6 @@ public class GroupsActivity extends AppCompatActivity {
 
             //success
 
-            ArrayList<AssignmentBean> assignmentsArray = new ArrayList<>();
             try {
 
                 assignmentArray = new ArrayList<>();
@@ -389,47 +388,46 @@ public class GroupsActivity extends AppCompatActivity {
                         String groupName = group.getString("group_name");
                         String adminName = group.getString("admin_first_name") + " " + group.getString("admin_last_name");
                         String adminEmail = group.getString("admin_email");
-                        String bookName = group.getString("book_name");
 
 
                         //add group
                         if (!AppDatabase.alreadyExists(GroupsDao.TABLE_NAME, "server_id=" + groupId)) {
-                            groupsDao.insertData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName);
+                            groupsDao.insertData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail);
                             subscribeToGroupNotifications(groupId);
                         }
                         //update group
                         else {
-                            groupsDao.updateData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail, bookName);
+                            groupsDao.updateData(groupName, groupId, AppProperties.getCurrentDate(), AppProperties.YES, adminName, adminEmail);
                         }
 
                         if (group.getJSONArray("assignments")!=null){
                             JSONArray assignmentsFromServer = group.getJSONArray("assignments");
                             JSONObject assignment = null;
-                            for (int j = 0; i<  assignmentsFromServer.length(); i++){
-                                 assignment = (JSONObject) assignmentsFromServer.getJSONObject(j);
-                            }
+                            for (int j = 0; j<  assignmentsFromServer.length(); j++) {
+                                assignment = (JSONObject) assignmentsFromServer.getJSONObject(j);
 
-                            if (assignment!=null){
-                                long serverId = assignment.getLong("id");
-                                String assignmentName = assignment.getString("name");
-                                String dueDate = assignment.getString("due_date");
-                                int startPage = assignment.getInt("start_page");
-                                int endPage = assignment.getInt("end_page");
-                                int readingTime = assignment.getInt("reading_time");
-                                boolean complete = assignment.getBoolean("is_complete");
-                                String bookServerPath = group.getString("book_path");
-                                if (bookServerPath.contains("public/")){
-                                    bookServerPath = bookServerPath.replace("public/", "");
-                                }
-                                if (bookServerPath.contains("\\")){
-                                    bookServerPath = bookServerPath.replace("\\", "/");
-                                }
 
-                                if (!assignmentsDao.checkRecExists(serverId)) {
-                                    assignmentsDao.insertData(serverId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, complete, startPage, endPage, bookServerPath);
+                                if (assignment != null) {
+                                    long serverId = assignment.getLong("id");
+                                    String assignmentName = assignment.getString("name");
+                                    String dueDate = assignment.getString("due_date");
+                                    int startPage = assignment.getInt("start_page");
+                                    int endPage = assignment.getInt("end_page");
+                                    int readingTime = assignment.getInt("reading_time");
+                                    boolean complete = assignment.getBoolean("is_complete");
+                                    String bookServerPath = assignment.getString("book_pdf");
+                                    if (bookServerPath.contains("public/")) {
+                                        bookServerPath = bookServerPath.replace("public/", "");
+                                    }
+                                    if (bookServerPath.contains("\\")) {
+                                        bookServerPath = bookServerPath.replace("\\", "/");
+                                    }
+
+                                    if (!assignmentsDao.checkRecExists(serverId)) {
+                                        assignmentsDao.insertData(serverId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, complete, startPage, endPage, bookServerPath);
+                                    } else
+                                        assignmentsDao.updateData(serverId, assignmentName, AppProperties.YES, readingTime, complete, dueDate, startPage, endPage, bookServerPath);
                                 }
-                                else
-                                    assignmentsDao.updateData(serverId, assignmentName, AppProperties.YES, readingTime, complete, dueDate, startPage, endPage, bookServerPath);
                             }
                         }
                     }
@@ -448,20 +446,7 @@ public class GroupsActivity extends AppCompatActivity {
     public void populateGroups(){
         userGroups = groupsDao.getGroupsData();
 
-        assignmentGroupsMap = new HashMap<>();
-
-        if (AppProperties.isDemoMode() && assignmentArray.size()>0){
-            for (AssignmentBean bean : assignmentArray){
-                assignmentGroupsMap.put(bean.getGroupId(), bean);
-            }
-        }
-        else{
-            for (AssignmentBean bean : assignmentArray){
-                assignmentGroupsMap.put(bean.getGroupId(), bean);
-            }
-        }
-
-        GridAdapter gridAdapter = new GridAdapter(GroupsActivity.this, assignmentsDao, userGroups, assignmentGroupsMap);
+        GridAdapter gridAdapter = new GridAdapter(GroupsActivity.this, assignmentsDao, userGroups);
         studentGrid = (GridView)findViewById(R.id.studentGrid);
 
         studentGrid.setAdapter(gridAdapter);

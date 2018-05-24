@@ -18,7 +18,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -82,6 +84,7 @@ public class LoginActivity extends AppCompatActivity {
 
     RequestQueue requestQueue;
     ProgressDialog progressDialog;
+    RelativeLayout downloadMessage;
 
     private final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE=2233;
 
@@ -91,12 +94,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         requestQueue = RequestQueue.getInstance(this);
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.setMessage("Loading please wait ..");
+
         mAuth = FirebaseAuth.getInstance();
         setContentView(R.layout.activity_main);
         Stetho.initializeWithDefaults(this);
+        downloadMessage = findViewById(R.id.downloadMessage);
 
         int permissionCheck = ContextCompat.checkSelfPermission(
                 this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -107,10 +109,13 @@ public class LoginActivity extends AppCompatActivity {
         } else {
 
             if (Utils.isOnline(LoginActivity.this)) {
-            updateChecker();
+                updateChecker();
             } else if (mAuth.getCurrentUser() == null) {
                 getLoginScreen();
             }else{
+                progressDialog = new ProgressDialog(this);
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.setMessage("Loading please wait ..");
                 getDetailsFromServer();
             }
 
@@ -143,6 +148,7 @@ public class LoginActivity extends AppCompatActivity {
                 try {
                     int latestVersionNumber = response.getInt("version_number");
                     String downloadLinkStr = response.getString("version_url");
+                    String fileName = AppProperties.getFileNameFromPath(downloadLinkStr);
                     Uri downloadLinkUri = Uri.parse(AppProperties.DIR_SERVER_ROOT + downloadLinkStr);
 
                     if (currentVersionNumber < latestVersionNumber) {
@@ -152,7 +158,7 @@ public class LoginActivity extends AppCompatActivity {
                                 .setPositiveButton("Download", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        downloadUpdate(downloadLinkUri);
+                                        downloadUpdate(downloadLinkUri, fileName);
                                     }
                                 })
                                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -203,8 +209,9 @@ public class LoginActivity extends AppCompatActivity {
         Volley.newRequestQueue(this).add(getComplete);
     }
 
-    private void downloadUpdate(Uri uri)
+    private void downloadUpdate(Uri uri, String fileName)
     {
+
         try {
             String localFolderPath = AppProperties.SDCARD_APP_FOLDER_NAME;
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
@@ -214,6 +221,7 @@ public class LoginActivity extends AppCompatActivity {
             //request.setDestinationUri(Uri.fromFile(file));
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            downloadReceiver.fileName = fileName;
             downloadReceiver.apkDownload = downloadManager.enqueue(request
                             .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI |
                                     DownloadManager.Request.NETWORK_MOBILE)
@@ -222,6 +230,7 @@ public class LoginActivity extends AppCompatActivity {
                             .setDescription("Newest app version")
                             .setVisibleInDownloadsUi(true)
                             .setDestinationInExternalPublicDir(localFolderPath, uri.getLastPathSegment()));
+            downloadMessage.setVisibility(View.VISIBLE);
 
         }
         catch (IllegalArgumentException e) {

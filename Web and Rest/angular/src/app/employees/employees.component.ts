@@ -301,8 +301,14 @@ export class EmployeesComponent implements OnInit {
             console.log(this.selectedGroup.ID);
             if (this.selectedGroup !== undefined && this.selectedGroup !== null) {
                 this.employeesService.getLessons(this.selectedGroup.ID).subscribe(data => {
-                    console.log(books);
-                    this.dataObj.books = bookMapping(books, data);
+                    if (!books || books.length==0){
+                        this.dataObj.books = null;
+                        this.dataObj.selectedBook = null;
+                    }
+                    else{
+                        this.dataObj.books = bookMapping(books, data);
+                    }
+                    
                     if (!this.dataObj.selectedBook){
                         this.selectedBook = books[0].ID;
                         this.dataObj.selectedBook = books[0];

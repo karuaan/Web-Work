@@ -105,7 +105,7 @@ public class AssignmentsActivity extends AppCompatActivity{
     View infoPane;
     Button startButton;
 
-    private boolean isFabShowing, lastPageReached, immersiveMode, readingStarted, readingFinished, assignmentsDueSoon;
+    private boolean isFabShowing, lastPageReached, immersiveMode, readingStarted, readingFinished, assignmentsDueSoon, timerFinished;
     private FloatingActionButton fab;
     private int timeToRead;
 
@@ -154,7 +154,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         //get assignments from local storage
         assignmentsDao = new AssignmentsDao(AssignmentsActivity.this);
         //assignmentsDao.insertData("Chapter Name", 1, groupId, YES, 900, "11-30-17T00:00.000Z", YES, "filename.pdf", 1, 10);
-        assignmentsList = assignmentsDao.getAssignmentsByGroup(groupId);
+        assignmentsList = assignmentsDao.getAssignments(groupId);
         assignmentsDueSoon = assignmentsList.size() > 0;
 
         if (assignmentsDueSoon){
@@ -271,7 +271,7 @@ public class AssignmentsActivity extends AppCompatActivity{
         currentAssignment = assignmentBean;
 
         String label = getMinutes(currentAssignment.getReadingTime()) + ":" + getSeconds(currentAssignment.getReadingTime());
-        String pageCount = currentAssignment.getPageCount() + " pages";
+        String pageCount = (currentAssignment.getPageCount()==1) ? "1 page" : currentAssignment.getPageCount()+" pages";
         String days = getRelativeDueDate(currentAssignment.getDueDateIso(), DateTime.parse(AppProperties.getCurrentDate()));
 
         chapterNameTV.setText(currentAssignment.getName());
@@ -291,6 +291,7 @@ public class AssignmentsActivity extends AppCompatActivity{
 
         if (file.exists()){
             //set start button on click
+            startButton.setText(R.string.start_reading);
             startButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -391,8 +392,11 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     public void startDownload(String url) {
 
-        if (url.contains("/public")){
+        if (url.contains("public/")){
             url = url.replace("public/", "");
+        }
+        if (!url.contains("safetytraining")){
+            url = AppProperties.DIR_SERVER_ROOT+url;
         }
         Uri uri = Uri.parse(url);
         startButton.setEnabled(false);
@@ -412,7 +416,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                         .setVisibleInDownloadsUi(true)
                         .setDestinationInExternalPublicDir(localFolderPath, uri.getLastPathSegment()));
     }
-    
+
     private void checkDownloadStatus(long downloadId) {
 
         DownloadManager.Query pdfDownloadQuery = new DownloadManager.Query();
@@ -429,7 +433,9 @@ public class AssignmentsActivity extends AppCompatActivity{
     private void completeAssignment(){
         if (!currentAssignment.isComplete()){
 
-            assignmentsDao.completeReading(currentAssignmentId);
+            currentAssignment.setComplete(true);
+            currentAssignment.setReadingTime(0);
+            assignmentsDao.completeReading(currentAssignment.getId());
             Toast.makeText(AssignmentsActivity.this, "Reading complete!", Toast.LENGTH_LONG).show();
             syncCompletionStatus();
             populateRecyclerView();
@@ -495,6 +501,11 @@ public class AssignmentsActivity extends AppCompatActivity{
 
         assignment.setLastReadPosition(0);
 
+        int[] pagesToShow = new int[assignment.getPageCount()];
+        for (int i = assignment.getStartPage(); i <= assignment.getEndPage(); i++){
+            pagesToShow[i-assignment.getStartPage()]= i-1;
+        }
+
         pdfView.fromFile(file)
                 .enableSwipe(true) // allows to block changing pages using swipe
                 .swipeHorizontal(false)
@@ -516,7 +527,7 @@ public class AssignmentsActivity extends AppCompatActivity{
 
                         hideSystemUI();
 
-                        if (timeToRead>0)
+                        if (timeToRead>0 && !assignment.isComplete())
                             startTimer(timeToRead);
                         else
                             floatingActionButtonReadingCompleted();
@@ -552,6 +563,9 @@ public class AssignmentsActivity extends AppCompatActivity{
                             else if (positionOffset < assignment.getLastReadPosition()){
                                 showFab();
                                 assignment.setLastReadPosition(positionOffset);
+                            }
+                            if (timerFinished){
+                                floatingActionButtonReadingCompleted();
                             }
                         }
                     }
@@ -614,7 +628,7 @@ public class AssignmentsActivity extends AppCompatActivity{
                 .enableAntialiasing(true) // improve rendering a little bit on low-res screens
                 // spacing between pages in dp. To define spacing color, set view background
                 .spacing(2)
-                .pages(assignment.getStartPage()-1, assignment.getEndPage()-1)
+                .pages(pagesToShow)
                 //.pageFitPolicy(WIDTH)
                 .load();
 
@@ -786,19 +800,34 @@ public class AssignmentsActivity extends AppCompatActivity{
 
 
 
-                timerLabelTV.setText(timeRemaining);
+                floatingActionButtonReadingStarted(timeRemaining);
                 //timeToRead-=1;
             }
 
             public void onFinish() {
-                floatingActionButtonReadingCompleted();
+                timerFinished = true;
+                if (lastPageReached)
+                    floatingActionButtonReadingCompleted();
             }
 
         }.start();
     }
 
+    private void floatingActionButtonReadingStarted(String timeRemaining){
+        timerLabelTV.setText(timeRemaining);
+        timerLabelTV.setVisibility(View.VISIBLE);
+        FloatingActionButton floatingActionButton = (FloatingActionButton)fab.findViewById(R.id.completionButton);
+        floatingActionButton.setImageResource(0);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+    }
     private void floatingActionButtonReadingCompleted(){
         readingFinished = true;
+        timerLabelTV.setText("");
         timerLabelTV.setVisibility(View.GONE);
         FloatingActionButton floatingActionButton = (FloatingActionButton)fab.findViewById(R.id.completionButton);
         floatingActionButton.setImageResource(R.drawable.fab_complete);

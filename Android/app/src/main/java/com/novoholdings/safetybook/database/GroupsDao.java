@@ -25,15 +25,12 @@ public class GroupsDao {
 
     private static String COLUMN_ID="id";
     private static String COLUMN_NAME="name";
-    private static String COLUMN_BOOK_NAME="book_name";
     private static String COLUMN_MODIFIED_ON="modified_on";
     private static String COLUMN_IS_SYNCED="is_synced";
     private static String COLUMN_STATUS="status";
     private static String COLUMN_ADMIN_NAME="admin_name";
     private static String COLUMN_ADMIN_EMAIL="admin_email";
     private static String COLUMN_SERVER_ID="server_id";
-    private static String COLUMN_BOOK_SERVER_PATH="server_path";
-    private static String COLUMN_BOOK_LOCAL_PATH="local_path";
 
     SQLiteDatabase _database;
 
@@ -45,13 +42,13 @@ public class GroupsDao {
         _database = AppDatabase.openDataBase(ctx);
 
         if (AppProperties.isDemoMode() && !AppDatabase.alreadyExists(TABLE_NAME, "status='"+AppProperties.STATUS_ACTIVE+"'")){
-            insertData("Example Group", 1, AppProperties.getCurrentDate(), AppProperties.YES, "Administrator Name", "admin@gmail.com", "Example Book");
+            insertData("Example Group", 1, AppProperties.getCurrentDate(), AppProperties.YES, "Administrator Name", "admin@gmail.com");
         }
 
     }
 
 
-    public long insertData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName)
+    public long insertData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -64,7 +61,6 @@ public class GroupsDao {
 
         values.put(COLUMN_ADMIN_NAME, AppProperties.NVL(adminName, null));
         values.put(COLUMN_ADMIN_EMAIL, AppProperties.NVL(adminEmail, null));
-        values.put(COLUMN_BOOK_NAME, AppProperties.NVL(bookName, null));
 
         values.put(COLUMN_SERVER_ID, serverId);
 
@@ -81,7 +77,7 @@ public class GroupsDao {
         return res;
     }
 
-    public long updateData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail, String bookName)
+    public long updateData(String name, long serverId, String recordTime,String isSynced, String adminName, String adminEmail)
     {
         long res;
         ContentValues values = new ContentValues();
@@ -94,7 +90,6 @@ public class GroupsDao {
 
         values.put(COLUMN_ADMIN_NAME, AppProperties.NVL(adminName, "-1"));
         values.put(COLUMN_ADMIN_EMAIL, AppProperties.NVL(adminEmail, "-1"));
-        values.put(COLUMN_BOOK_NAME, AppProperties.NVL(bookName, "-1"));
 
         values.put(COLUMN_MODIFIED_ON, AppProperties.getCurrentDate());
         values.put(COLUMN_IS_SYNCED, AppProperties.YES);
@@ -244,27 +239,9 @@ public class GroupsDao {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                //BOOK NAME
-                try{
-                    f.setBookName(cursor.getString(cursor.getColumnIndex(COLUMN_BOOK_NAME)));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
                 //STATUS
                 try{
                     f.setStatus(cursor.getString(cursor.getColumnIndex(COLUMN_STATUS)).equals("A"));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                //BOOK DIRECTORY (SERVER)
-                try{
-                    f.setServerPath(cursor.getString(cursor.getColumnIndex(COLUMN_BOOK_SERVER_PATH)));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                //BOOK DIRECTORY (LOCAL)
-                try{
-                    f.setLocalPath(cursor.getString(cursor.getColumnIndex(COLUMN_BOOK_LOCAL_PATH)));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

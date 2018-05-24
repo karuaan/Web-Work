@@ -4,6 +4,8 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="download">Download</string>
+    <string name="start_reading">Start</string>
+    <string name="no_assignments_due">No assignments due</string>
 
     <string name="loading_initializing">Initializing</string>
     <string name="init_failure">Initialization failed</string>
@@ -34,6 +36,7 @@
     <string name="network_failure_message">Encountered a network failure</string>
     <string name="group_name">Group Name</string>
     <string name="book_name">Book Name</string>
+    <string name="unread_assignments">All assignments complete</string>
     <string name="number_of_chapters_completed">Number of Chapters Completed</string>
     <string name="admin_name">Admin Name (Job Title)</string>
     <string name="no_internet_connection">No Internet connection</string>

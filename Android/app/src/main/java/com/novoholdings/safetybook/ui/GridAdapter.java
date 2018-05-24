@@ -44,19 +44,16 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class GridAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<GroupBean> groupList;
-    private HashMap<Long, AssignmentBean> assignmentGroupMap;
     private AssignmentsDao assignmentsDao;
     private long lastDownload;
     private DownloadManager downloadManager;
     private LongSparseArray<AssignmentBean> assignmentDownloadIdServerIdMap;
 
 
-    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList, HashMap<Long, AssignmentBean> assignmentsList) {
+    public GridAdapter(Context context, AssignmentsDao assignmentsDao, ArrayList<GroupBean> groupList) {
         this.assignmentsDao = assignmentsDao;
         this.mContext = context;
         this.groupList = groupList;
-        if (assignmentsList!=null)
-            assignmentGroupMap = assignmentsList;
     }
 
 
@@ -96,8 +93,8 @@ public class GridAdapter extends BaseAdapter {
                 (ImageView) convertView.findViewById(R.id.bookIcon);
         TextView groupName =
                 (TextView) convertView.findViewById(R.id.groupName),
-                bookName =
-                (TextView) convertView.findViewById(R.id.bookName),
+                unreadInfo =
+                (TextView) convertView.findViewById(R.id.unread),
                 dueDate =
                 (TextView)convertView.findViewById(R.id.dueDate);
 
@@ -106,40 +103,53 @@ public class GridAdapter extends BaseAdapter {
 
         final GroupBean group = getItem(position);
 
-        ArrayList<AssignmentBean> list = assignmentsDao.getAssignmentsByGroup(group.getId());
+        ArrayList<AssignmentBean> list = assignmentsDao.getAssignments(group.getId());
+        int unreadCount = 0;
+        AssignmentBean latestUnread = null;
+        for (AssignmentBean assignment : list){
+            if (!assignment.isComplete()){
+                if (unreadCount==0){
+                    latestUnread = assignment;
+                }
+                unreadCount++;
+            }
+        }
 
-        if (list.size()>0){
+        if (unreadCount>0){
 
-            final AssignmentBean assignment = list.get(0);
+            String unreadText = (unreadCount==1) ? "1 unread assignment" : unreadCount+" unread assignments";
+            unreadInfo.setText(unreadText);
 
-            String currentChapter = assignment.getName();
-            String completionStatus = (assignment.isComplete()) ? "Finished!" : "Incomplete";
-            currentChapter+=" ("+completionStatus+")" + "\nDue "+ assignment.getDueDate();
+
+            String currentChapter = latestUnread.getName();
+           // String completionStatus = (latestUnread.isComplete()) ? "Finished!" : "Incomplete";
+            currentChapter+="\nDue "+ latestUnread.getDueDate();
             dueDate.setText(AppProperties.NVL(currentChapter, "Latest assignment due"));
 
 
-            if (!assignment.isComplete()){
+            if (!latestUnread.isComplete()){
 /*
                 Calendar calendar = Calendar.getInstance();
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
                 calendar.setTime(simpleDateFormat.parse(assignment.getDueDate()));
 */
-                String date = assignment.getDueDate();
+                String date = latestUnread.getDueDate();
                 dueDate.setText(currentChapter);
 
             }
             else {
-                dueDate.setVisibility(View.GONE);
+                dueDate.setText(R.string.no_assignments_due);
             }
         }
         else {
-
+            String unreadText = "No unread assignments";
+            unreadInfo.setText(unreadText);
+            dueDate.setVisibility(View.GONE);
         }
 
         final String email = group.getAdminEmail();
 
         groupName.setText(AppProperties.NVL(group.getName(), "Group Name"));
-        bookName.setText(AppProperties.NVL(group.getBookName(), "Book Name"));
 
         adminName.setText(AppProperties.NVL(group.getAdminName(), "Admin Name"));
 

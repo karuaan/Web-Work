@@ -25,7 +25,7 @@ public class AssignmentsDao {
     public static final String QUERY_TABLE_CREATE = "create table "+ TABLE_NAME + " (name text, modified_on TIMESTAMP, is_synced text, time_to_read INTEGER, status text, start_page INTEGER, end_page INTEGER, due_date text, server_path text, local_path text, file_name text, complete text, server_id INTEGER, group_id INTEGER);";
 
 
-    public static final String QUERY_GET_ALL="SELECT * from "+TABLE_NAME+ " WHERE status='"+ AppProperties.STATUS_ACTIVE+"'";
+    public static final String QUERY_GET_ALL="SELECT * from "+TABLE_NAME;
 
     public static final String QUERY_GET_ALL_LABEL_VALUE="SELECT serverId,name from "+TABLE_NAME+ " WHERE status='"+AppProperties.STATUS_ACTIVE+"'";
 
@@ -113,7 +113,14 @@ public class AssignmentsDao {
             values.put(COLUMN_IS_SYNCED, isSynced);
         if (timeToRead > 0)
             values.put(COLUMN_TIME_TO_READ, timeToRead);
-        values.put(COLUMN_IS_COMPLETE, isComplete);
+
+        if (isComplete){
+            values.put(COLUMN_IS_COMPLETE, AppProperties.YES);
+        }
+        else {
+            values.put(COLUMN_IS_COMPLETE, AppProperties.NO);
+        }
+
         if (!AppProperties.isNull(dueDate))
             values.put(COLUMN_DUE_DATE, dueDate);
         if (startPage > 0)
@@ -159,6 +166,7 @@ public class AssignmentsDao {
         ContentValues values = new ContentValues();
 
         values.put(COLUMN_IS_COMPLETE, AppProperties.YES);
+        values.put(COLUMN_TIME_TO_READ, 0);
 
         try
         {
@@ -326,10 +334,11 @@ public class AssignmentsDao {
         return arList;
     }
 
-    public ArrayList<AssignmentBean> getAssignmentsByGroup(long id){
+    public ArrayList<AssignmentBean> getUnreadAssignments(long id){
         ArrayList<AssignmentBean> arList = null;
         Cursor c;
-        String query = QUERY_GET_ALL+" AND "+COLUMN_GROUP_ID+"="+id;
+        String query = QUERY_GET_ALL+" WHERE "+COLUMN_GROUP_ID+"="+id+ " AND "+COLUMN_IS_COMPLETE+"!="+AppProperties.YES;
+        query+=" ORDER BY date(due_date) ASC";
 
         c = AppDatabase.get(query,mContext);
 
@@ -351,6 +360,21 @@ public class AssignmentsDao {
         }
 
         return arList;
+    }
+
+    public int getUnreadCount(long groupId){
+        ArrayList<AssignmentBean> arList = null;
+        Cursor c;
+        String query = QUERY_GET_ALL+" AND "+COLUMN_GROUP_ID+"="+groupId + " AND "+COLUMN_IS_COMPLETE+"="+AppProperties.NO;
+
+        c = AppDatabase.get(query,mContext);
+
+        int unread = 0;
+        if (c!=null){
+            unread = c.getCount();
+        }
+
+        return unread;
     }
 
     public ArrayList<AssignmentBean> getAllAssignments(){

@@ -46,8 +46,8 @@ android {
         full {
             dimension "feature_set"
             applicationId "com.novoholdings.safetybook"
-            versionCode 4
-            versionName "2"
+            versionCode 9
+            versionName "1.0"
         }
     }
     compileOptions {

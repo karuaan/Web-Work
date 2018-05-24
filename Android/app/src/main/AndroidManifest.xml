@@ -63,6 +63,7 @@
             <intent-filter>
                 <action android:name= "android.intent.action.DOWNLOAD_COMPLETE"
                android:enabled = "true" />
+
             </intent-filter>
         </receiver>
 

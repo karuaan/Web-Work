@@ -97,9 +97,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             int startPage = assignment.getInt("start_page");
                             int endPage = assignment.getInt("end_page");
                             int readingTime = assignment.getInt("reading_time");
+                            String bookUrl = assignment.getString("book_url");
 
                             AssignmentsDao assignmentsDao = new AssignmentsDao(MyFirebaseMessagingService.this);
-                            assignmentsDao.insertData(assignId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, false, startPage, endPage);
+                            assignmentsDao.insertData(assignId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, false, startPage, endPage, bookUrl);
 
                             sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), (int)assignId, (int)groupId);
 
@@ -121,7 +122,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                                 }
 
                                 if (millisecondsUntilDueDate >= oneDay){
-                                    scheduleNotification(oneHour, notificationId, assignmentName, "Due tomorrow", groupName);
+                                    scheduleNotification(oneHour, notificationId, assignmentName, "Due in one hour", groupName);
                                 }
 
                             } catch (ParseException e) {
