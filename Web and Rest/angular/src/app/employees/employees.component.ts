@@ -131,8 +131,9 @@ export class EmployeesComponent implements OnInit {
 		) {
         this.currentDate = new Date();
         let testDate = new Date();
-        testDate = new Date(testDate.setDate(new Date().getDate() - 3));
+        testDate = new Date(testDate.setDate(new Date().getDate() + 3));
         this.warningDate = testDate;
+		
         this.fb = fb;
         this.employeesService = employeesService;
         this.bookService = bookService;
