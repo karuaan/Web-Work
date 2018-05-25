@@ -445,6 +445,19 @@ export class EmployeesComponent implements OnInit {
             group_id: null
         };
     }
+	
+	prepopulateAssignmentValues(): void{
+		this.assignmentForm = {
+            start_date: new Date(),
+            due_date: new Date(new Date().getDate() + 3),
+            minute: 10,
+            second: null,
+            comment: null,
+            time_to_complete: null,
+            lesson_id: null,
+            group_id: null
+        };
+	}
 
     saveBook(): void {
         // console.log('ss',this.bookForm);
