@@ -758,13 +758,13 @@
             <fieldset>
               <div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'start_date')">
                 <label for="bookName">Available from :</label>
-                <input type="date" class="form-control" id="startDateHelp" formControlName="start_date" [(ngModel)]="assignmentForm.start_date | date:'MM/dd/yyyy'"
+                <input type="date" class="form-control" id="startDateHelp" formControlName="start_date" [(ngModel)]="assignmentForm.start_date"
                   name="start_date" placeholder="Enter available from date" />
               </div>
 
               <div class="form-group" [ngClass]="displayFieldCss(assignmentGroupForm,'due_date')">
                 <label for="dueDateHelp">Due :</label>
-                <input type="date" class="form-control" id="dueDateHelp" formControlName="due_date" [(ngModel)]="assignmentForm.due_date | date:'MM/dd/yyyy'"
+                <input type="date" class="form-control" id="dueDateHelp" formControlName="due_date" [(ngModel)]="assignmentForm.due_date"
                   name="due_date" placeholder="Enter due date" />
               </div>
 
