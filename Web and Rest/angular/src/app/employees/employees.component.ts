@@ -1846,6 +1846,27 @@ export class EmployeesComponent implements OnInit {
         this.isLoginError = false;
         this.isLoggedIn = false;
     }
+	
+	getAssignmentColor(assignment) {
+		returnClassArray = ['due-holder', 'status'];
+		if(assignment.percent_complete == 1){
+			returnClassArray.push('status-complete');
+		}
+		else{
+			if(assignment.DUE_DATE > this.warningDate){
+				return returnClassArray;
+			}
+			else{
+				if(assignment.DUE_DATE >= this.currentDate && assignment.DUE_DATE <= this.warningDate){
+					returnClassArray.push('status-warn');
+				}
+				else{
+					returnClassArray.push('status-incomplete');
+				}
+			}
+		}
+		return returnClassArray;
+	}
 
     ngOnInit() {
 
