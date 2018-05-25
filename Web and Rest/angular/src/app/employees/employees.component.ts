@@ -463,7 +463,13 @@ export class EmployeesComponent implements OnInit {
             this.bookService.saveBooks(formData).subscribe((res: any) => {
                 if (res.data && res.data.ID) {
                     const newBook = res.data as BookNew;
-					this.dataObj.books.push(newBook);
+					if(this.dataObj.books){
+						this.dataObj.books.push(newBook);
+					}
+					else{
+						this.dataObj.books = [];
+						this.dataObj.books.push(newBook);
+					}
                     this.selectedBook = newBook.ID;
                     this.dataObj.selectedBook = newBook;
                     this.newBookAdded = true;
