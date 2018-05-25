@@ -9,22 +9,24 @@
     android:layout_width="300dp"
     android:layout_height="300dp"
     card_view:cardPreventCornerOverlap="false"
+    android:baselineAligned="false"
+
     card_view:cardUseCompatPadding="true">
 
 
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="10dp"
-                android:background="@color/oceanBlue">
+                android:padding="5dp"
+                android:id="@+id/header"
+                android:background="@color/colorAccentBlue">
 
                 <ImageView
                     android:id="@+id/groupIcon"
@@ -37,7 +39,7 @@
                     android:id="@+id/groupName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
+                    android:padding="5dp"
                     android:text="@string/group_name"
                     android:textSize="18sp"
                     android:textColor="#FFF"
@@ -45,45 +47,52 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/unreadLine"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/header"
                 android:orientation="horizontal"
-                android:padding="10dp">
+                android:padding="5dp">
 
                 <ImageView
                     android:id="@+id/bookIcon"
                     android:layout_width="60dp"
                     android:layout_height="50dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_book_name" android:contentDescription="TODO" />
+                    android:contentDescription="TODO"
+                    android:src="@drawable/ic_book_name"/>
 
                 <TextView
                     android:id="@+id/unread"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
+                    android:gravity="left"
+                    android:padding="5dp"
                     android:text="@string/unread_assignments"
-                    android:textSize="18sp"
-                    android:gravity="left" />
+                    android:textSize="18sp"/>
             </LinearLayout>
 
             <TextView
                 android:id="@+id/dueDate"
+                android:layout_below="@id/unreadLine"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
+                android:padding="5dp"
                 android:layout_marginStart="70dp"
                 android:textSize="18sp" />
 
             <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:id="@+id/adminEmail"
-                android:weightSum="5"
-                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
                 android:layout_gravity="bottom"
-                android:gravity="center">
+                android:minHeight="50dp"
+                android:orientation="horizontal"
+                android:padding="5dp"
+                android:weightSum="5">
 
                 <ImageView
                     android:id="@+id/adminIcon"
@@ -91,25 +100,27 @@
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:background="@drawable/rounded_corners_email"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_email"
+                    android:contentDescription="TODO"
                     android:maxHeight="60dp"
-                    android:maxWidth="60dp" android:contentDescription="TODO" />
+                    android:maxWidth="60dp"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_email"/>
 
                 <TextView
                     android:id="@+id/adminName"
                     android:layout_width="wrap_content"
                     android:layout_height="50dp"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="4"
-                    android:padding="10dp"
+                    android:background="@drawable/rounded_corners_text_view"
+                    android:gravity="left|center_vertical"
+                    android:maxHeight="60dp"
+                    android:maxWidth="60dp"
+                    android:padding="5dp"
                     android:text="@string/admin_name"
                     android:textColor="#fff"
-                    android:textSize="18sp"
-                    android:gravity="left"
-                    android:background="@drawable/rounded_corners_text_view"
-                    android:maxHeight="60dp"
-                    android:maxWidth="60dp"/>
+                    android:textSize="18sp"/>
             </LinearLayout>
 
-        </LinearLayout>
+        </RelativeLayout>
 </android.support.v7.widget.CardView>

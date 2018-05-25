@@ -374,10 +374,18 @@ app.get('/sendEmailReport', function(req, res){
 
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
-	con.query("select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, USER_GROUPS.ID as group_id, USER_GROUPS.USER_ID as user_id, USER_GROUPS.NAME as group_name from ASSIGNMENTS INNER JOIN USER_GROUPS ON USER_GROUPS.ID = ASSIGNMENTS.GROUP_ID WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID", function(err, assignments){
+	let newAssignmentsQuery = "select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, "+
+	"ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, "+
+	"LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page "+
+	"USER_GROUPS.ID as group_id, USER_GROUPS.USER_ID as user_id, USER_GROUPS.NAME as group_name, "+
+	"BOOKS.PDF_FILE as book_pdf "+
+	"from ASSIGNMENTS INNER JOIN USER_GROUPS ON USER_GROUPS.ID = ASSIGNMENTS.GROUP_ID "+
+	"INNER JOIN LESSONS ON LESSONS.ID = ASSIGNMENTS.LESSON_ID "+
+	"WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID";
+	con.query(newAssignmentsQuery, function(err, assignments){
 		if (!err){
 			console.log(assignments);
-			if (assignments.length>0){
+			if (assignmenst && assignments.length>0){
 				let statusQuery = "INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ";
 				assignments.forEach(function(element, index, array){
 					if (index>0){
@@ -416,14 +424,16 @@ var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
 									}
 									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
 									let notes;
+									let notificationType;
 									if (element.notes){
 										notes = body+"\n"+element.notes;
+										type = "expandable";
 									} //could be null
 									else{
 										notes = body;
+										type = "standard";
 									}
-
-									sendMessageToGroup("group"+element.group_id,title,body, "expandable", element.group_name);
+									sendMessageToGroup("group"+element.group_id,title,body, type, element.group_name, element);
 								});
 							}
 							else{
@@ -775,8 +785,7 @@ function addAdmin(email, callback){
 						firebaseAdmin.auth().createUser({
 						  'email': email,
 						  emailVerified: false,
-						  password: "elevatorPassAdmin123",
-						  photoURL: "http://admin.com",
+						  password: "elevatorpass",
 						  disabled: false
 						}).then((record) => {
 							callback(null, record);
@@ -1472,6 +1481,18 @@ app.get('/user/:id', (req, res)=>{
 		}
 	});
 })
+
+app.get('/assignment/:id', (req, res)=>{
+	let id = Number(req.params.id);
+	getAssignmentById(id, function(err, result){
+		if (err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	});
+});
 //End add
 function deleteUserByEmail(email, callback){
 
@@ -1841,8 +1862,44 @@ app.get('/books/:id/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req
 })
 
 app.post('/lessons/:id/assignment', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
-	BookService.addAssignment(req.body).then((data) => {
+	let assignment = req.body;
+	BookService.addAssignment(assignment).then((data) => {
 		if(data.data){
+			let assignStartDate = new Date(assignment.START_DATE);
+			if (assignStartDate <= new Date()){
+				//send notification
+
+				//TOPIC 
+				let topic = "group"+assignment.GROUP_ID;
+
+				//TITLE
+				let title = assignment.NAME + " now available";
+
+				//BODY
+				let minutes = Math.floor(assignment.TIME_TO_COMPLETE / 60);
+				let seconds = assignment.TIME_TO_COMPLETE - minutes * 60;
+				let readingTimeStr = "";
+				if (minutes > 0){
+					readingTimeStr += minutes + " minutes ";
+				}
+				if (seconds > 0){
+					readingTimeStr += seconds + " seconds";
+				}
+				let body = "Due "+assignment.DUE_DATE+" \u2022 "+readingTimeStr;
+				let notes;
+				let notificationType;
+				if (assignment.NOTES){
+					type = "expandable";
+				} //could be null
+				else{
+					type = "standard";
+				}
+
+				let groupName = assignment.GROUP_NAME;
+				sendMessageToGroup(topic, title, body, type, groupName, assignment);
+
+			}
+
 			res.json(data.data);
 		}else{
 			res.json(data);
@@ -1868,6 +1925,30 @@ function getAssignments(group_id, callback){
 				}
 				else{
 					console.log(rows);
+					callback(null, rows);
+				}
+			}
+		}
+	)
+}
+
+function getAssignmentById(assignId, callback){
+	con.query('select LESSONS.START_PAGE as start_page, LESSONS.PDF_FILE as lesson_pdf, LESSONS.END_PAGE as end_page, LESSONS.NAME as name, '+
+	'ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.ID as id, ASSIGNMENTS.GROUP_ID as group_id, BOOKS.PDF_FILE as book_pdf FROM LESSONS '+
+	'JOIN ASSIGNMENTS ON LESSONS.ID=ASSIGNMENTS.LESSON_ID JOIN STATUS ON STATUS.ASSIGNMENT_ID='+
+	'ASSIGNMENTS.ID JOIN BOOKS ON LESSONS.BOOK_ID = BOOKS.ID WHERE ASSIGNMENTS.ID='+ mysql.escape(assignId),
+		function(err, rows){
+			if(err){
+				console.log(err);
+				callback(err, null);
+			}
+			else{
+				if(rows[0]===undefined){
+					console.log(rows);
+					callback({'err': 'no results'}, null)
+				}
+				else{
+					console.log(rows[0]);
 					callback(null, rows);
 				}
 			}
@@ -2152,6 +2233,9 @@ app.get('/groups/:id', function(req, res){
 			groups.forEach(function(element, index, array){
 				assignmentPromises.push(getAssignmentsUser(Number(req.params.id), element.group_id).then(function(assignments){
 					console.log(element, assignments);
+					if (!assignments || assignments.length==0){
+						assignments = [];
+					}
 					return formatGroupAssignments(element, assignments);
 				}, function(error){
 					return error;
@@ -2476,7 +2560,7 @@ app.post('/sendMessageToGroup', function(req,res){
 
 
 
-function sendMessageToGroup(topic, title, body, notification_type, group_name) {
+function sendMessageToGroup(topic, title, body, notification_type, group_name, assignmentData) {
   request({
     url: 'https://fcm.googleapis.com/fcm/send',
     method: 'POST',
@@ -2488,7 +2572,16 @@ function sendMessageToGroup(topic, title, body, notification_type, group_name) {
       { "data": {
       	"body": body,
         "title": title,
-        "group_name": group_name,
+		"group_name": group_name,
+		"assignment_id": assignmentData.ID,
+		"group_id": assignmentData.GROUP_ID,
+		"name":assignmentData.NAME,
+		"due_date":assignmentData.DUE_DATE,
+		"start_page":assignmentData.START_PAGE,
+		"end_page":assignmentData.END_PAGE,
+		"reading_time":assignmentData.TIME_TO_COMPLETE,
+		"book_pdf":assignmentData.BOOK_PDF,
+		"notes":assignmentData.NOTES,
         "notification_type": notification_type
       },
         "to": "/topics/"+topic

@@ -309,7 +309,7 @@ export class EmployeesComponent implements OnInit {
                     else{
                         this.dataObj.books = bookMapping(books, data);
                     }
-                    
+
                     if (!this.dataObj.selectedBook){
                         this.selectedBook = books[0].ID;
                         this.dataObj.selectedBook = books[0];
@@ -528,9 +528,13 @@ export class EmployeesComponent implements OnInit {
             NOTES: this.assignmentForm.notes,
             LESSON_ID: this.assignmentForm.lesson_id,
             GROUP_ID: this.selectedGroup.ID,
+            GROUP_NAME: this.selectedGroup.NAME,
             DUE_DATE: this.assignmentForm.due_date,
             START_DATE: this.assignmentForm.start_date,
-            TIME_TO_COMPLETE: this.assignmentForm.time_to_complete
+            TIME_TO_COMPLETE: this.assignmentForm.time_to_complete,
+            START_PAGE: this.dataObj.selectedLesson.START_PAGE,
+            END_PAGE: this.dataObj.selectedLesson.END_PAGE,
+            BOOK_PDF: this.dataObj.selectedBook.PDF_FILE
         };
 
         if (this.assignmentForm.notes && this.assignmentForm.notes != "") {

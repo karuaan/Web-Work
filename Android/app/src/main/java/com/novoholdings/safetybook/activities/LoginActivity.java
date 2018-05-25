@@ -99,6 +99,9 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Stetho.initializeWithDefaults(this);
         downloadMessage = findViewById(R.id.downloadMessage);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("Loading please wait ..");
 
         int permissionCheck = ContextCompat.checkSelfPermission(
                 this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -113,9 +116,7 @@ public class LoginActivity extends AppCompatActivity {
             } else if (mAuth.getCurrentUser() == null) {
                 getLoginScreen();
             }else{
-                progressDialog = new ProgressDialog(this);
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                progressDialog.setMessage("Loading please wait ..");
+
                 getDetailsFromServer();
             }
 
@@ -248,7 +249,8 @@ public class LoginActivity extends AppCompatActivity {
         // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
         if (requestCode == RC_SIGN_IN) {
 
-            progressDialog.show();
+            if (progressDialog!=null)
+                progressDialog.show();
             //nextScreen();
 
             IdpResponse response = IdpResponse.fromResultIntent(data);
@@ -308,7 +310,8 @@ public class LoginActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                progressDialog.dismiss();
+                if (progressDialog!=null)
+                    progressDialog.dismiss();
                 Log.d(TAG, "onResponse: =============== ");
                 if(response!=null){
                     try {

@@ -283,7 +283,7 @@ public class AssignmentsDao {
         else
             query="SELECT * FROM "+TABLE_NAME;
 
-        query+=" ORDER BY date(due_date) ASC";
+        query+=" ORDER BY date(due_date) ASC, name ASC";
 
         ArrayList<AssignmentBean> arList = null;
         Cursor c;

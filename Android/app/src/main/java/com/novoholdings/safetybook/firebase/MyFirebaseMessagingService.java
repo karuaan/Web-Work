@@ -85,65 +85,50 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             int notificationId = Integer.parseInt(remoteMessage.getData().get("assignment_id"));
             String groupName = remoteMessage.getData().get("group_name");
 
-            JsonObjectRequest getComplete = new JsonObjectRequest(Request.Method.GET, AppProperties.DIR_SERVER_ROOT+"assignment/"+notificationId, null, new Response.Listener<JSONObject>() {
-                public void onResponse(JSONObject assignment) {
-                    boolean saved = true;
-                    try {
-                        if (assignment!=null){
-                            long assignId = assignment.getLong("assignment_id");
-                            long groupId = assignment.getLong("group_id");
-                            String assignmentName = assignment.getString("name");
-                            String dueDate = assignment.getString("due_date");
-                            int startPage = assignment.getInt("start_page");
-                            int endPage = assignment.getInt("end_page");
-                            int readingTime = assignment.getInt("reading_time");
-                            String bookUrl = assignment.getString("book_url");
+            long assignId = Long.parseLong(remoteMessage.getData().get("assignment_id"));
+            long groupId = Long.parseLong(remoteMessage.getData().get("group_id"));
+            String assignmentName = remoteMessage.getData().get("name");
+            String dueDate = remoteMessage.getData().get("due_date");
+            int startPage = Integer.parseInt(remoteMessage.getData().get("start_page"));
+            int endPage = Integer.parseInt(remoteMessage.getData().get("end_page"));
+            int readingTime = Integer.parseInt(remoteMessage.getData().get("reading_time"));
+            String bookUrl = remoteMessage.getData().get("book_pdf");
+            if (bookUrl.contains("public/")) {
+                bookUrl = bookUrl.replace("public/", "");
+            }
+            if (bookUrl.contains("\\")) {
+                bookUrl = bookUrl.replace('\\', '/');
+            }
 
-                            AssignmentsDao assignmentsDao = new AssignmentsDao(MyFirebaseMessagingService.this);
-                            assignmentsDao.insertData(assignId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, false, startPage, endPage, bookUrl);
+            AssignmentsDao assignmentsDao = new AssignmentsDao(MyFirebaseMessagingService.this);
+            assignmentsDao.insertData(assignId, assignmentName, groupId, AppProperties.YES, readingTime, dueDate, false, startPage, endPage, bookUrl);
 
-                            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), (int)assignId, (int)groupId);
+            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("body"), groupName, remoteMessage.getData().get("notes"), (int)assignId, (int)groupId);
 
-                            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-                            try {
-                                Date date = f.parse(remoteMessage.getData().get("due_date"));
-                                long millisecondsUntilDueDate = date.getTime() - Calendar.getInstance().getTimeInMillis();
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date date = f.parse(remoteMessage.getData().get("due_date"));
+                long millisecondsUntilDueDate = date.getTime() - Calendar.getInstance().getTimeInMillis();
 
-                                if (millisecondsUntilDueDate >= oneWeek){
-                                    scheduleNotification(oneWeek, notificationId, assignmentName, "Due in one week", groupName);
-                                }
-
-                                if (millisecondsUntilDueDate >= threeDays){
-                                    scheduleNotification(threeDays, notificationId, assignmentName, "Due in 3 days", groupName);
-                                }
-
-                                if (millisecondsUntilDueDate >= oneDay){
-                                    scheduleNotification(oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
-                                }
-
-                                if (millisecondsUntilDueDate >= oneDay){
-                                    scheduleNotification(oneHour, notificationId, assignmentName, "Due in one hour", groupName);
-                                }
-
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-
+                if (millisecondsUntilDueDate >= oneWeek){
+                    scheduleNotification(oneWeek, notificationId, assignmentName, "Due in one week", groupName);
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    error.printStackTrace();
-                }
-            });
 
-            RequestQueue.getInstance(MyFirebaseMessagingService.this).addToRequestQueue(getComplete);
+                if (millisecondsUntilDueDate >= threeDays){
+                    scheduleNotification(threeDays, notificationId, assignmentName, "Due in 3 days", groupName);
+                }
+
+                if (millisecondsUntilDueDate >= oneDay){
+                    scheduleNotification(oneDay, notificationId, assignmentName, "Due tomorrow", groupName);
+                }
+
+                if (millisecondsUntilDueDate >= oneDay){
+                    scheduleNotification(oneHour, notificationId, assignmentName, "Due in one hour", groupName);
+                }
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
 
         }
 
@@ -195,8 +180,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentIntent(pendingIntent);
 
         if (!AppProperties.isNull(notes)){
+            String expandedText = messageBody+"\n"+notes;
             notificationBuilder.setStyle(new NotificationCompat.BigTextStyle()
-                    .bigText(notes));
+                    .bigText(expandedText));
         }
 
         NotificationManager notificationManager =

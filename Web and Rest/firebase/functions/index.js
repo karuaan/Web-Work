@@ -61,7 +61,7 @@ function sendWelcomeEmail(email, displayName, userType) {
   // The user subscribed to the newsletter.
   mailOptions.subject = `Welcome to ${APP_NAME}!`;
 
-	mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. Please login using your email address at this address: https://safetytraining.libertyelevator.com/ and this temporary password: elevatorPass.`;
+	mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. Please login using your email address at this address: https://safetytraining.libertyelevator.com/ and this temporary password: elevatorpass.`;
   
   return mailTransport.sendMail(mailOptions).then(() => {
     return console.log('New welcome email sent to:', email);
