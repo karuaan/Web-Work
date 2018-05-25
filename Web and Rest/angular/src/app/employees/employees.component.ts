@@ -447,9 +447,11 @@ export class EmployeesComponent implements OnInit {
     }
 	
 	prepopulateAssignmentValues(): void{
+		var today = new Date();
+		var nextWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate()+7);
 		this.assignmentForm = {
-            start_date: (new Date()).toISOString().substring(0, 10),
-            due_date: (new Date((new Date()).getDate() + 7)).toISOString().substring(0, 10),
+            start_date: today.toISOString().substring(0, 10),
+            due_date: nextWeek.toISOString().substring(0, 10),
             minute: 10,
             second: 0,
             comment: null,
