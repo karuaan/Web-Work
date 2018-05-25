@@ -242,7 +242,7 @@
                                                            </button>
 																												 -->
 
-                      <button style="width: 10em" class="btn btn-sm btn-info" data-toggle="modal" (click)="selectLesson(lesson)" data-target="#newAssignment"
+                      <button style="width: 10em" class="btn btn-sm btn-info" data-toggle="modal" (click)="prepopulateAssignmentValues(); selectLesson(lesson)" data-target="#newAssignment"
                         *ngIf="!lesson.isAssignedByGroupId(selectedGroup.ID) && lesson.ID">
                         Add Assignment
                       </button>
