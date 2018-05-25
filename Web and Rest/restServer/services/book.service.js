@@ -2,10 +2,10 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
     const module_methods = {};
 
-    const bookExistsByName = (name) => {
+    const bookExistsByName = (name, group_id) => {
         return new Promise((_resolve, _reject) => {
-            const query = 'SELECT count(`ID`) as books_count FROM BOOKS WHERE BOOKS.NAME=?';
-            con.query(query,[name], (err, rows) => {
+            const query = 'SELECT count(`ID`) as books_count FROM BOOKS WHERE BOOKS.NAME=? AND BOOKS.GROUP_ID=?';
+            con.query(query,[name, group_id], (err, rows) => {
                 if (err){
                     _resolve({
                         count : 0
@@ -49,7 +49,7 @@ module.exports = (app,con,fs,hummus,Busboy,uuid, firebaseAdmin, transporter) => 
 
      const newBook = (book) => {
         return new Promise(async (resolve,reject) =>{
-            var bookCounts = await bookExistsByName(book.NAME);
+            var bookCounts = await bookExistsByName(book.NAME, book.GROUP_ID);
             if (bookCounts.count > 0) {
                 resolve({
                     status : false,
