@@ -144,7 +144,7 @@
                 </div>
 
 				<div [ngClass]="getAssignmentColor(assignment)">
-					<p class="due-title">{{assignment.percent_complete | defaultToZero | percent}} Percent Complete</p>
+					<p class="due-title">{{assignment.percent_complete | defaultToZero | percent}} PERCENT COMPLETE</p>
 				</div>
 
                 <div *ngIf="assignment.percent_complete == 1 && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')"
