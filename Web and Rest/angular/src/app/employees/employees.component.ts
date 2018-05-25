@@ -449,7 +449,7 @@ export class EmployeesComponent implements OnInit {
 	prepopulateAssignmentValues(): void{
 		this.assignmentForm = {
             start_date: (new Date()).toISOString().substring(0, 10),
-            due_date: (new Date(new Date().getDate() + 7)).toISOString().substring(0, 10),
+            due_date: (new Date((new Date()).getDate() + 7)).toISOString().substring(0, 10),
             minute: 10,
             second: 0,
             comment: null,
