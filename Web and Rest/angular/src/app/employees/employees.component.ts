@@ -1848,7 +1848,7 @@ export class EmployeesComponent implements OnInit {
     }
 	
 	getAssignmentColor(assignment) {
-		returnClassArray = ['due-holder', 'status'];
+		var returnClassArray = ['due-holder', 'status'];
 		if(assignment.percent_complete == 1){
 			returnClassArray.push('status-complete');
 		}
