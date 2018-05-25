@@ -143,15 +143,12 @@
                   <p class="due-value">{{assignment.START_DATE | date:'MM/dd/yyyy'}}</p>
                 </div>
 
-				<div [ngClass]="getAssignmentColor(assignment)">
-					<p class="due-title">{{assignment.percent_complete | defaultToZero | percent}} PERCENT COMPLETE</p>
-				</div>
 
                 <div *ngIf="assignment.percent_complete == 1 && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')"
                   class="due-holder status-complete status">
                   <p class="due-title">{{assignment.percent_complete | defaultToZero | percent}} Percent Complete</p>
                 </div>
-                <div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') <= (warningDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (currentDate | date:'MM/dd/yyyy') && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')"
+                <div *ngIf="assignment.percent_complete !== 1 && (assignment.DUE_DATE | date:'MM/dd/yyyy') >= (warningDate | date:'MM/dd/yyyy') && (assignment.DUE_DATE | date:'MM/dd/yyyy') > (currentDate | date:'MM/dd/yyyy') && (assignment.START_DATE | date:'MM/dd/yyyy') <= (currentDate | date:'MM/dd/yyyy')"
                   class="due-holder status-warning status">
                   <p class="due-title">{{assignment.percent_complete | defaultToZero | percent}} Percent Complete</p>
                 </div>
