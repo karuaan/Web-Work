@@ -392,11 +392,14 @@ public class AssignmentsActivity extends AppCompatActivity{
 
     public void startDownload(String url) {
 
-        if (url.contains("public/")){
+        if (url.contains("public/")) {
             url = url.replace("public/", "");
         }
-        if (!url.contains("safetytraining")){
-            url = AppProperties.DIR_SERVER_ROOT+url;
+        if (url.contains("\\")) {
+            url = url.replace('\\', '/');
+        }
+        if (url.contains("public")){
+            url = url.replaceAll("public", "");
         }
         Uri uri = Uri.parse(url);
         startButton.setEnabled(false);
@@ -501,7 +504,12 @@ public class AssignmentsActivity extends AppCompatActivity{
 
         assignment.setLastReadPosition(0);
 
-        int[] pagesToShow = new int[assignment.getPageCount()];
+        int[] pagesToShow;
+        if (assignment.getPageCount()>0)
+            pagesToShow = new int[assignment.getPageCount()];
+        else {
+            pagesToShow = new int[1];
+        }
         for (int i = assignment.getStartPage(); i <= assignment.getEndPage(); i++){
             pagesToShow[i-assignment.getStartPage()]= i-1;
         }

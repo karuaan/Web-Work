@@ -53,7 +53,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final long threeDays = 259200000;
     private static final long oneDay = 129600000;
     private static final long oneHour = 5400000;
-
+    private RemoteMessage remoteMessage;
 
     /**
      * Called when message is received.
@@ -79,6 +79,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
+            this.remoteMessage = remoteMessage;
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
             //{notification_type=expandable, body=Please complete your assignment, title=Safety Reader}
@@ -231,6 +232,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Intent notificationIntent = new Intent(MyFirebaseMessagingService.this, AssignmentReminder.class);
         notificationIntent.putExtra(AssignmentReminder.NOTIFICATION_ID, notificationId);
         notificationIntent.putExtra(AssignmentReminder.NOTIFICATION, notification);
+        notificationIntent.putExtra("remoteMessage", remoteMessage);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(MyFirebaseMessagingService.this, notificationId, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         long futureInMillis = SystemClock.elapsedRealtime() + delay;

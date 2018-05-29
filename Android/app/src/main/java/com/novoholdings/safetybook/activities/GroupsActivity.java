@@ -420,7 +420,10 @@ public class GroupsActivity extends AppCompatActivity {
                                         bookServerPath = bookServerPath.replace("public/", "");
                                     }
                                     if (bookServerPath.contains("\\")) {
-                                        bookServerPath = bookServerPath.replace("\\", "/");
+                                        bookServerPath = bookServerPath.replace('\\', '/');
+                                    }
+                                    if (bookServerPath.contains("public")){
+                                        bookServerPath = bookServerPath.replaceAll("public", "");
                                     }
 
                                     if (!assignmentsDao.checkRecExists(serverId)) {

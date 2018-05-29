@@ -360,6 +360,87 @@ function sendEmailReport(rows){
 	});
 }
 
+function updateTable(rows){
+	let availableQuery = "UPDATE ASSIGNMENTS SET AVAILABLE=1 WHERE";
+	rows.forEach(function(element, index, array){
+		if (index>0){
+			availableQuery+=" AND"
+		}
+		availableQuery+=" (ID="+mysql.escape(element.assignment_id)+" AND GROUP_ID="+mysql.escape(element.group_id)+")";
+	});
+	console.log(availableQuery);
+	con.query(availableQuery, function(err, result){
+		if (!err){
+			console.log(result);
+			rows.forEach(function(element, index, array){
+				//send notification
+				let title = element.assignment_name + " now available";
+				let minutes = Math.floor(element.reading_time / 60);
+				let seconds = element.reading_time - minutes * 60;
+				let readingTimeStr = "";
+				if (minutes > 0){
+					readingTimeStr += minutes + " minutes ";
+				}
+				if (seconds > 0){
+					readingTimeStr += seconds + " seconds";
+				}
+				let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
+				let notes;
+				let notificationType;
+				if (element.notes){
+					notes = body+"\n"+element.notes;
+					type = "expandable";
+				} //could be null
+				else{
+					notes = body;
+					type = "standard";
+				}
+				sendMessageToGroup("group"+element.group_id,title,body, type, element.group_name, element);
+			});
+		}
+		else{
+			console.log(err);
+		}
+	});
+
+}
+
+function sendAssignmentNotifications(){
+	let newAssignmentsQuery = "select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, "+
+	"ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_COMPLETE as reading_time, ASSIGNMENTS.NOTES as notes, "+
+	"LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page, "+
+	"USER_GROUPS.ID as group_id, USER_GROUPS.USER_ID as user_id, USER_GROUPS.NAME as group_name, "+
+	"BOOKS.PDF_FILE as book_pdf "+
+	"from ASSIGNMENTS INNER JOIN USER_GROUPS ON USER_GROUPS.ID = ASSIGNMENTS.GROUP_ID "+
+	"INNER JOIN LESSONS ON LESSONS.ID = ASSIGNMENTS.LESSON_ID "+
+	"INNER JOIN BOOKS ON BOOKS.ID = LESSONS.BOOK_ID "+
+	"WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID";
+	con.query(newAssignmentsQuery, function(err, assignments){
+		if (!err){
+			console.log(assignments);
+			if (assignments && assignments.length>0){
+				let insertStatement = "INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) ";
+				assignments.forEach(function(element, index, array){
+					let statusQuery= insertStatement+"(SELECT "+mysql.escape(element.group_id)+", USER_ID, "+mysql.escape(element.assignment_id)+", 0 "+
+					"FROM USER_GROUPS WHERE ID="+mysql.escape(element.group_id)+" AND USER_ID!=ADMIN_ID)";
+					con.query(statusQuery, function(err, result){
+						if (err){
+							console.log("Error at line 434:\n\n"+err);
+						}
+						else{
+							console.log(result);
+						}
+					});
+				});
+				updateTable(assignments);
+			}
+		}
+		else{
+			console.log(err);
+		}
+	})
+}
+
 app.get('/sendEmailReport', function(req, res){
 	emailReporting.overdue(function(err, result){
 		if (err){
@@ -372,86 +453,13 @@ app.get('/sendEmailReport', function(req, res){
 	});
 });
 
+app.get('/notify', function(req, res){
+	sendAssignmentNotifications();
+});
+
 //run every day to add status records for newly available assignments
 var makeAssignmentsAvailable = scheduler.scheduleJob('0 8 * * *', function(){
-	let newAssignmentsQuery = "select ASSIGNMENTS.ID as assignment_id, ASSIGNMENTS.NAME as assignment_name, "+
-	"ASSIGNMENTS.DUE_DATE as due_date, ASSIGNMENTS.TIME_TO_READ as reading_time, ASSIGNMENTS.NOTES as notes, "+
-	"LESSONS.START_PAGE as start_page, LESSONS.END_PAGE as end_page "+
-	"USER_GROUPS.ID as group_id, USER_GROUPS.USER_ID as user_id, USER_GROUPS.NAME as group_name, "+
-	"BOOKS.PDF_FILE as book_pdf "+
-	"from ASSIGNMENTS INNER JOIN USER_GROUPS ON USER_GROUPS.ID = ASSIGNMENTS.GROUP_ID "+
-	"INNER JOIN LESSONS ON LESSONS.ID = ASSIGNMENTS.LESSON_ID "+
-	"WHERE ASSIGNMENTS.START_DATE<=CURRENT_DATE() AND ASSIGNMENTS.AVAILABLE IS NULL GROUP BY ASSIGNMENTS.ID, GROUP_ID";
-	con.query(newAssignmentsQuery, function(err, assignments){
-		if (!err){
-			console.log(assignments);
-			if (assignmenst && assignments.length>0){
-				let statusQuery = "INSERT INTO STATUS (GROUP_ID, EMPLOYEE_ID, ASSIGNMENT_ID, IS_COMPLETE) VALUES ";
-				assignments.forEach(function(element, index, array){
-					if (index>0){
-						statusQuery+=", "
-					}
-					statusQuery+="(SELECT "+mysql.escape(element.group_id)+", USER_ID, "+mysql.escape(element.assignment_id)+", 0 "+
-					"FROM USER_GROUPS WHERE ID="+mysql.escape(element.group_id)+" AND IS_ADMIN=0)";
-				});
-				statusQuery+=";";
-				console.log(statusQuery);
-				con.query(statusQuery, function(err, result){
-					if (!err){
-						console.log(result);
-						let availableQuery = "UPDATE ASSIGNMENTS SET AVAILABLE=1 WHERE";
-						assignments.forEach(function(element, index, array){
-							if (index>0){
-								availableQuery+=" AND"
-							}
-							availableQuery+=" (ID="+mysql.escape(element.assignment_id)+" AND GROUP_ID="+mysql.escape(element.group_id)+")";
-						});
-						console.log(availableQuery);
-						con.query(availableQuery, function(err, result){
-							if (!err){
-								console.log(result);
-								assignments.forEach(function(element, index, array){
-									//send notification
-									let title = element.assignment_name + " now available";
-									let minutes = Math.floor(element.reading_time / 60);
-									let seconds = element.reading_time - minutes * 60;
-									let readingTimeStr = "";
-									if (minutes > 0){
-										readingTimeStr += minutes + " minutes ";
-									}
-									if (seconds > 0){
-										readingTimeStr += seconds + " seconds";
-									}
-									let body = "Due "+element.due_date+" \u2022 "+readingTimeStr;
-									let notes;
-									let notificationType;
-									if (element.notes){
-										notes = body+"\n"+element.notes;
-										type = "expandable";
-									} //could be null
-									else{
-										notes = body;
-										type = "standard";
-									}
-									sendMessageToGroup("group"+element.group_id,title,body, type, element.group_name, element);
-								});
-							}
-							else{
-								console.log(err);
-							}
-						});
-					}
-					else{
-						console.log(err);
-					}
-				});
-
-			}
-		}
-		else{
-			console.log(err);
-		}
-	})
+	sendAssignmentNotifications();
 });
 
 

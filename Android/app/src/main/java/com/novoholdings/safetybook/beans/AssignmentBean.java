@@ -95,7 +95,7 @@ public class AssignmentBean implements Parcelable {
     }
 
     public int getPageCount(){
-        return pageEnd - pageStart;
+        return pageEnd - pageStart + 1;
     }
 
     public float getLastReadPosition(){
