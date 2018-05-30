@@ -1582,7 +1582,7 @@ function removeUserFromGroup(user_id, group_id, callback){
 	})
 }
 
-app.delete('/userFromGroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+app.post('/userFromGroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	removeUserFromGroup(req.body.user_id, req.body.group_id, function(err, result){
 		if(err){
 			res.json(err)
@@ -1626,7 +1626,7 @@ app.delete('/assignmentById', /*admin_oidc.ensureAuthenticated(),*/ function(req
 	})
 });
 
-app.delete('groupById', function(req, res){
+app.post('groupById', function(req, res){
 	deleteGroupById(req.body.group_id, function(err, result){
 		if(err){
 			res.json(err);
