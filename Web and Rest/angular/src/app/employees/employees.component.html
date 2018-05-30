@@ -98,7 +98,7 @@
   <div class="row" id="mainContainer">
     <div class="col-xl-2">
       <div id="summaryContainer">
-        <h5 *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false">{{selectedGroup.NAME}}</h5>
+        <h5 *ngIf="selectedGroup !== undefined ? selectedGroup !== null : false">{{selectedGroup.NAME}}</h5><div (click)="removeGroup()"><img style="height: 1.5em;" src="assets/pngs/trash.png" style="margin: 0em 0em 1em 1em; height: 1.5em" /></div>
         <h5 *ngIf="selectedGroup !== undefined && employees.length == 1 ? selectedGroup !== null : false">{{employees.length}} Employee</h5>
         <h5 *ngIf="selectedGroup !== undefined && employees.length > 1 ? selectedGroup !== null : false">{{employees.length}} Employees</h5>
         <button *ngIf="selectedGroup && selectedGroup !== undefined" type="button" class="btn btn-info summary-button" data-toggle="modal"
@@ -341,7 +341,7 @@
             </thead>
             <tr style="width: 100%;" class="employee-row" *ngFor="let employee of employees" [class.table-success]="employee.IS_COMPLETE !== null ? employee.IS_COMPLETE.data[0] === 1 : false">
               <td style="width: 10%;" class="employee-delete">
-                <p>X</p>
+                <p (click)="populateConfirmRemoveEmployee(employee)" data-toggle="modal" data-target="#confirmRemoveUser">X</p>
               </td>
               <td style="width: 25%;">{{employee.FIRST_NAME | pending}}</td>
               <td style="width: 25%;">{{employee.LAST_NAME | pending}}</td>
@@ -383,6 +383,22 @@
     </div>
   </div>
 
+ <div class="modal fade" id="confirmRemoveUser" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Remove User</h5>
+		</div>
+		<div class="modal-body">
+			<p>Are you sure you want to remove {{confirmRemoveEmployee.EMAIL}}?</p>
+		</div>
+		<div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" (click)="removeUserFromGroup()">Remove</button>
+        </div>
+	</div>
+	</div>
+</div>
 
   <div class="modal fade" id="newAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

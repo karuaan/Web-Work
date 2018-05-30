@@ -22,6 +22,14 @@ export class EmployeesService {
   convertToEmployeeArray(){
 	  
   }
+  
+  removeEmployeeFromGroup(user_id, group_id){
+	  return this.http.delete(`${this.restURL}/userFromGroup`, {'user_id': user_id, 'group_id': group_id});
+  }
+  
+  deleteGroup(group_id){
+	  return this.http.delete(`${this.restURL}/groupById`, {'group_id': group_id});
+  }
 
   getUserData(user_id){
 	var response = this.http.get(`${this.restURL}/user/${user_id}`);

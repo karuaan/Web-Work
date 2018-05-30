@@ -47,6 +47,7 @@ export class EmployeesComponent implements OnInit {
     loginErrorMessage = "";
     admin_password = "";
     url = "";
+	confirmRemoveEmployee;
 
     newPassword = "";
     confirmPassword = "";
@@ -170,6 +171,7 @@ export class EmployeesComponent implements OnInit {
 		this.modalEmailsIncomplete = "";
         this.emailContents = "";
         this.lookAtAssignments = true;
+		this.confirmRemoveEmployee = {'EMAIL': '', 'ID' : -1};
 
         this.resetForm();
         this.reactiveFormGroup();
@@ -1885,6 +1887,29 @@ export class EmployeesComponent implements OnInit {
 			}
 		}
 		return returnClassArray;
+	}
+	
+	populateConfirmRemoveEmployee(employee){
+		this.confirmRemoveEmployee = employee;
+	}
+	
+	removeUserFromGroup(){
+		this.employeesService.removeEmployeeFromGroup(this.confirmRemoveEmployee.ID, this.selectedGroup.ID).subscribe((res) => {
+			this.toastrService.warning('User Removed', 'User was removed from group');
+		}, err => {
+			this.toastrService.warning('Server Error', 'User could not be deleted');
+			console.log(err)
+		})
+	}
+	
+	removeGroup(){
+		this.employeesService.deleteGroup(this.selectedGroup.ID).subscribe((res) => {
+			this.toastrService.warning('Group Removed', 'Group has been removed');
+			onAdminLogin(this.admin_id)
+		}, err => {
+			this.toastrService.warning('Server Error', 'Group could not be deleted');
+			console.log(err)
+		})
 	}
 
     ngOnInit() {

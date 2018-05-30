@@ -70,6 +70,10 @@ table-layout:fixed;
   max-width: 100%;
 }
 
+.login-container {
+  max-width: 50%;
+}
+
 #groupTabs {
   padding-top: 1em;
   border-bottom: solid black 0.1em;

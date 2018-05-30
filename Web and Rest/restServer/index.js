@@ -1560,8 +1560,52 @@ function deleteBookById(book_id, callback){
 	})
 }
 
+function deleteGroupById(group_id, callback){
+	con.query("DELETE FROM GROUPS WHERE ID=?", [group_id], function(err, res){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, res);
+		}
+	})
+}
+
+function removeUserFromGroup(user_id, group_id, callback){
+	con.query("DELETE FROM GROUPS WHERE ID=? AND USER_ID=?", [group_id, user_id], function(err, res){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, res);
+		}
+	})
+}
+
+app.delete('/userFromGroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+	removeUserFromGroup(req.body.user_id, req.body.group_id, function(err, result){
+		if(err){
+			res.json(err)
+		}
+		else{
+			if(!res.headersSent){res.json(result)}else{}
+		}
+	})
+});
+
 app.delete('/userById', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	deleteUserById(req.body.user_id, function(err, result){
+		if(err){
+			res.json(err)
+		}
+		else{
+			if(!res.headersSent){res.json(result)}else{}
+		}
+	})
+});
+
+app.delete('/userByEmail', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
+	deleteUserByEmail(req.body.user_email, function(err, result){
 		if(err){
 			res.json(err)
 		}
@@ -1581,6 +1625,17 @@ app.delete('/assignmentById', /*admin_oidc.ensureAuthenticated(),*/ function(req
 		}
 	})
 });
+
+app.delete('groupById', function(req, res){
+	deleteGroupById(req.body.group_id, function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			if(!res.headersSent){res.json(result)}else{}
+		}
+	})
+})
 
 app.post('/delete/lessons', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 
