@@ -1589,7 +1589,7 @@ app.post('/userFromGroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, r
 			res.json(err)
 		}
 		else{
-			console.log(res)
+			console.log(result)
 			if(!res.headersSent){res.json(result)}else{}
 		}
 	})
@@ -1635,7 +1635,7 @@ app.post('groupById', function(req, res){
 			console.log(err);
 		}
 		else{
-			console.log(res)
+			console.log(result)
 			if(!res.headersSent){res.json(result)}else{}
 		}
 	})

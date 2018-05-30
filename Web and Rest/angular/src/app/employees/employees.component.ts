@@ -1895,7 +1895,7 @@ export class EmployeesComponent implements OnInit {
 	
 	removeUserFromGroup(){
 		this.employeesService.removeEmployeeFromGroup(this.confirmRemoveEmployee.ID, this.selectedGroup.ID).subscribe((res) => {
-			this.toastrService.warning('User Removed', 'User was removed from group');
+			this.toastrService.success('User Removed', 'User was removed from group');
 		}, err => {
 			this.toastrService.warning('Server Error', 'User could not be deleted');
 			console.log(err)
@@ -1904,7 +1904,7 @@ export class EmployeesComponent implements OnInit {
 	
 	removeGroup(){
 		this.employeesService.deleteGroup(this.selectedGroup.ID).subscribe((res) => {
-			this.toastrService.warning('Group Removed', 'Group has been removed');
+			this.toastrService.success('Group Removed', 'Group has been removed');
 			this.onAdminLogin(this.admin_id)
 		}, err => {
 			this.toastrService.warning('Server Error', 'Group could not be deleted');
