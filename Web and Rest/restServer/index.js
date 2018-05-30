@@ -1561,7 +1561,7 @@ function deleteBookById(book_id, callback){
 }
 
 function deleteGroupById(group_id, callback){
-	con.query("DELETE FROM GROUPS WHERE ID=?", [group_id], function(err, res){
+	con.query("DELETE FROM USER_GROUPS WHERE ID=?", [group_id], function(err, res){
 		if(err){
 			callback(err, null);
 		}
@@ -1572,7 +1572,7 @@ function deleteGroupById(group_id, callback){
 }
 
 function removeUserFromGroup(user_id, group_id, callback){
-	con.query("DELETE FROM GROUPS WHERE ID=? AND USER_ID=?", [group_id, user_id], function(err, res){
+	con.query("DELETE FROM USER_GROUPS WHERE ID=? AND USER_ID=?", [group_id, user_id], function(err, res){
 		if(err){
 			callback(err, null);
 		}
