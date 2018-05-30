@@ -1585,9 +1585,11 @@ function removeUserFromGroup(user_id, group_id, callback){
 app.post('/userFromGroup', /*admin_oidc.ensureAuthenticated(),*/ function(req, res){
 	removeUserFromGroup(req.body.user_id, req.body.group_id, function(err, result){
 		if(err){
+			console.log(err);
 			res.json(err)
 		}
 		else{
+			console.log(res)
 			if(!res.headersSent){res.json(result)}else{}
 		}
 	})
@@ -1630,8 +1632,10 @@ app.post('groupById', function(req, res){
 	deleteGroupById(req.body.group_id, function(err, result){
 		if(err){
 			res.json(err);
+			console.log(err);
 		}
 		else{
+			console.log(res)
 			if(!res.headersSent){res.json(result)}else{}
 		}
 	})
