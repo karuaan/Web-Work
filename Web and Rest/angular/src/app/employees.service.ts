@@ -24,12 +24,12 @@ export class EmployeesService {
   }
   
   removeEmployeeFromGroup(user_id, group_id): Observable<any>{
-	  var response = this.http.post<any>(`${this.restURL}/userFromGroup`, {'user_id': user_id, 'group_id': group_id});
+	  var response = this.http.post<any>(`${this.restURL}/removeUserFromGroup`, {'user_id': user_id, 'group_id': group_id});
 	  return response;
   }
   
   deleteGroup(group_id): Observable <any>{
-	  var response = this.http.post<any>(`${this.restURL}/groupById`, {'group_id': group_id});
+	  var response = this.http.post<any>(`${this.restURL}/deleteGroupById`, {'group_id': group_id});
 	  return response;
   }
 
