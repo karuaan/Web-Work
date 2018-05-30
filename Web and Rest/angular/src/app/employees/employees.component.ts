@@ -1898,7 +1898,7 @@ export class EmployeesComponent implements OnInit {
 			this.toastrService.success('User Removed', 'User was removed from group');
 			//this.employees
 			for(var i = 0; i < this.employees.length; i += 1){
-				if(this.employees.ID == this.confirmRemoveEmployee.ID){
+				if(this.employees[i].ID == this.confirmRemoveEmployee.ID){
 					this.employees.splice(i, 1);
 				}
 			}
