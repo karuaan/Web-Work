@@ -1905,7 +1905,7 @@ export class EmployeesComponent implements OnInit {
 	removeGroup(){
 		this.employeesService.deleteGroup(this.selectedGroup.ID).subscribe((res) => {
 			this.toastrService.warning('Group Removed', 'Group has been removed');
-			onAdminLogin(this.admin_id)
+			this.onAdminLogin(this.admin_id)
 		}, err => {
 			this.toastrService.warning('Server Error', 'Group could not be deleted');
 			console.log(err)
