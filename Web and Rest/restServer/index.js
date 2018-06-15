@@ -2758,7 +2758,13 @@ app.post('/getUserByEmail', function(req, res){
 
 function generateReport(callback){
 	
-	con.query("SELECT * FROM ASSIGNMENTS", function(err, rows){
+	con.query("SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, USER_GROUPS.NAME as group_name, USER_GROUPS.ID as group_id, USERS.EMAIL as email, USERS.ID as user_id, STATUS.IS_COMPLETE as is_complete " +
+			"FROM USER_GROUPS " +
+				"JOIN USERS ON USER_GROUPS.USER_ID = USERS.ID " +
+				"JOIN STATUS ON STATUS.EMPLOYEE_ID = USERS.ID " + 
+				"JOIN ASSIGNMENTS ON ASSIGNMENTS.ID = STATUS.ASSIGNMENT_ID " + 
+			"ORDER BY group_id, user_id, assignment_id", 
+			function(err, rows){
 		if(err){
 			callback(err, null);
 		}
