@@ -2758,7 +2758,16 @@ app.post('/getUserByEmail', function(req, res){
 
 function generateReport(callback){
 	
-	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
+	con.query("SELECT * FROM ASSIGNMENTS", function(err, rows){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, rows);
+		}
+	})
+	
+/* 	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
 		
 		var workbook = new xl.Workbook();
 		var worksheets = [];
@@ -2783,7 +2792,7 @@ function generateReport(callback){
 			})
 			//callback(null, rows);
 		}
-	});
+	}); */
 }
 
 app.get('/testExcelReport', function(req, res){
