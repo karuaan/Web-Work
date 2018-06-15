@@ -2788,7 +2788,7 @@ function generateReport(callback){
 				worksheets.push(workbook.addWorksheet(rows[group].NAME));
 				groupIDs.push(rows[group].ID);
 			}
-			con.query("SELECT EMAIL, USERS.ID FROM (USERS JOIN USER_GROUPS ON USER_GROUPS.USER_ID=USERS.ID) WHERE USER_GROUPS.ID=?", groupIDs, function(err2, rows2){
+			con.query("SELECT EMAIL, USERS.ID FROM (USERS JOIN USER_GROUPS ON USER_GROUPS.USER_ID=USERS.ID)", function(err2, rows2){
 				if(err2){
 					callback(err2, null);
 				}
