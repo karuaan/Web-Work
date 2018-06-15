@@ -2774,33 +2774,32 @@ function generateReport(callback){
 	})
 	*/
 	///*
- 	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
-		
 		var workbook = new xl.Workbook();
 		var worksheets = [];
-		var groupIDs = [];
-		
-		if(err){
-			callback(err, null);
-		}
-		else{
-			for(group in rows){
-				worksheets.push(workbook.addWorksheet(rows[group].NAME));
-				groupIDs.push(rows[group].ID);
+		var seenGroups = {};
+		var seenAssignments = {};
+
+		con.query("SELECT EMAIL, USER_GROUPS.NAME, USERS.ID as user_id, USER_GROUPS.ID as group_id FROM (USERS JOIN USER_GROUPS ON USER_GROUPS.USER_ID=USERS.ID) ORDER BY group_id, user_id", function(err, rows){
+			if(err){
+				callback(err, null);
 			}
-			con.query("SELECT EMAIL, USERS.ID as user_id, USER_GROUPS.ID as group_id FROM (USERS JOIN USER_GROUPS ON USER_GROUPS.USER_ID=USERS.ID) ORDER BY group_id, user_id", function(err2, rows2){
-				if(err2){
-					callback(err2, null);
+			else{
+				for(group in rows){
+					if(seenGroups[rows[group].group_id] !== undefined){
+						
+					}
+					else{
+						seenGroups[rows[group].group_id] = rows[group].NAME;
+						worksheets.push(workbook.addWorksheet(rows[group].NAME));
+					}
 				}
-				else{
-					console.log(rows2);
-					//callback(null, rows);
-				}
-			})
+				console.log(rows);
+				callback(null, rows);
+			}
+		});
 			//callback(null, rows);
-		}
-	}); //*/
-}
+} //*/
+
 
 app.get('/testExcelReport', function(req, res){
 	generateReport(function(err, result){
