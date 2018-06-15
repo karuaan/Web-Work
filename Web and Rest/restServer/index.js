@@ -2757,7 +2757,7 @@ app.post('/getUserByEmail', function(req, res){
 });
 
 function generateReport(callback){
-	
+	/*
 	con.query("SELECT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, USER_GROUPS.NAME as group_name, USER_GROUPS.ID as group_id, USERS.EMAIL as email, USERS.ID as user_id, STATUS.IS_COMPLETE as is_complete " +
 			"FROM USER_GROUPS " +
 				"JOIN USERS ON USER_GROUPS.USER_ID = USERS.ID " +
@@ -2772,8 +2772,9 @@ function generateReport(callback){
 			callback(null, rows);
 		}
 	})
-	
-/* 	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
+	*/
+	///*
+ 	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
 		
 		var workbook = new xl.Workbook();
 		var worksheets = [];
@@ -2798,7 +2799,7 @@ function generateReport(callback){
 			})
 			//callback(null, rows);
 		}
-	}); */
+	}); //*/
 }
 
 app.get('/testExcelReport', function(req, res){
