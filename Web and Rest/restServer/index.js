@@ -2762,6 +2762,7 @@ function generateReport(callback){
 		
 		var workbook = new xl.Workbook();
 		var worksheets = [];
+		var groupIDs = [];
 		
 		if(err){
 			callback(err, null);
@@ -2769,17 +2770,18 @@ function generateReport(callback){
 		else{
 			for(group in rows){
 				worksheets.push(workbook.addWorksheet(rows[group].NAME));
-				con.query("SELECT USER_EMAIL, ID FROM (USERS JOIN USER_GROUPS ON USER_GROUPS.USER_ID=USERS.ID) WHERE USER_GROUPS.ID=?", [rows[group].ID], function(err2, rows2){
-					if(err2){
-						callback(err2, null);
-					}
-					else{
-						console.log(rows2);
-						//callback(null, rows);
-					}
-				})
+				groupIDs.push(rows[group].ID);
 			}
-			callback(null, rows);
+			con.query("SELECT USER_EMAIL, ID FROM (USERS JOIN USER_GROUPS ON USER_GROUPS.USER_ID=USERS.ID) WHERE USER_GROUPS.ID=?", [groupIDs], function(err2, rows2){
+				if(err2){
+					callback(err2, null);
+				}
+				else{
+					console.log(rows2);
+					//callback(null, rows);
+				}
+			})
+			//callback(null, rows);
 		}
 	});
 }
