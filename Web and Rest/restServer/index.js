@@ -2763,6 +2763,9 @@ function generateReport(callback){
 			callback(err, null);
 		}
 		else{
+			for(group in rows){
+				console.log(group);
+			}
 			callback(null, rows);
 		}
 	});
@@ -2777,7 +2780,7 @@ app.get('/testExcelReport', function(req, res){
 			res.json(result);
 		}
 	})
-})
+});
 
 function updateUserNamesByEmail(email, first_name, last_name, phone_number, callback){
 	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + ", PHONE_NUMBER=" + mysql.escape(phone_number) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
