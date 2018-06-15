@@ -2760,7 +2760,7 @@ function generateReport(callback){
 	
 	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
 		
-		var workbook = new xl.workbook();
+		var workbook = new xl.Workbook();
 		var worksheets = [];
 		
 		if(err){
