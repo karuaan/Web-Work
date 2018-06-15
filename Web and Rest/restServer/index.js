@@ -2759,12 +2759,25 @@ app.post('/getUserByEmail', function(req, res){
 function generateReport(callback){
 	
 	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
+		
+		var workbook = new.xl.workbook();
+		var worksheets = [];
+		
 		if(err){
 			callback(err, null);
 		}
 		else{
 			for(group in rows){
-				console.log(group);
+				worksheets.push(workbook.addWorksheet(rows[group].NAME));
+				con.query("SELECT USER_EMAIL, ID FROM (USERS JOIN USER_GROUPS ON USER_GROUPS.USER_ID=USERS.ID) WHERE USER_GROUPS.ID=?", [rows[group].ID], function(err2, rows2){
+					if(err2){
+						callback(err, null);
+					}
+					else{
+						console.log(rows);
+						//callback(null, rows);
+					}
+				})
 			}
 			callback(null, rows);
 		}
