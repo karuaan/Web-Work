@@ -13,6 +13,7 @@ const splitCA = require('split-ca');
 const firebaseAdmin = require("firebase-admin");
 const serviceAccount = require("./firebase_key.json");
 const emailReporting = require("./emailOverdueQuery");
+const xl = require("excel4node");
 
 var validator = require('express-validator');
 var scheduler = require('node-schedule');
@@ -2754,6 +2755,29 @@ app.post('/getUserByEmail', function(req, res){
 		}
 	})
 });
+
+function generateReport(callback){
+	
+	con.query("SELECT DISTINCT ID, NAME FROM USER_GROUPS", function(err, rows){
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, rows);
+		}
+	});
+}
+
+app.get('/testExcelReport', function(req, res){
+	generateReport(function(err, result){
+		if(err){
+			res.json(err);
+		}
+		else{
+			res.json(result);
+		}
+	})
+})
 
 function updateUserNamesByEmail(email, first_name, last_name, phone_number, callback){
 	con.query("UPDATE USERS SET FIRST_NAME=" + mysql.escape(first_name) + ", LAST_NAME=" + mysql.escape(last_name) + ", PHONE_NUMBER=" + mysql.escape(phone_number) + " WHERE USERS.EMAIL=" + mysql.escape(email), function(err, rows){
