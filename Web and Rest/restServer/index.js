@@ -2758,6 +2758,14 @@ app.post('/getUserByEmail', function(req, res){
 
 function generateReport(callback){
 	///*
+	
+	var workbook = new xl.Workbook();
+	var worksheets = {};
+	var employeeInGroupIndex = {};
+	var assignmentInGroupIndex = {}:
+	var columnPointer = 2;
+	var rowPointer = 2;
+	
 	con.query("SELECT DISTINCT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, USER_GROUPS.NAME as group_name, USER_GROUPS.ID as group_id, USERS.EMAIL as email, USERS.ID as user_id, STATUS.IS_COMPLETE as is_complete " +
 			"FROM USER_GROUPS " +
 				"LEFT JOIN USERS ON USER_GROUPS.USER_ID = USERS.ID " +
@@ -2769,6 +2777,17 @@ function generateReport(callback){
 			callback(err, null);
 		}
 		else{
+			for(index in rows){
+				if(worksheets[rows[index].group_id] === undefined){
+					worksheets[rows[index].group_id] = workbook.addWorksheet(rows[index].group_name);
+				}
+				if(employeeInGroupIndex[{rows[index].group_id : rows[index].user_id}] === undefined){
+					employeeInGroupIndex[{rows[index].group_id : rows[index].user_id}] = rowPointer;
+					rowPointer += 1;
+				}
+				console.log({rows[index].group_id : rows[index].user_id});
+				console.log(employeeInGroupIndex[{rows[index].group_id : rows[index].user_id}]);
+			}
 			callback(null, rows);
 		}
 	});
