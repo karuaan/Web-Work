@@ -2762,7 +2762,7 @@ function generateReport(callback){
 	var workbook = new xl.Workbook();
 	var worksheets = {};
 	var employeeInGroupIndex = {};
-	var assignmentInGroupIndex = {}:
+	var assignmentInGroupIndex = {}
 	var columnPointer = 2;
 	var rowPointer = 2;
 	
