@@ -2781,12 +2781,12 @@ function generateReport(callback){
 				if(worksheets[rows[index].group_id] === undefined){
 					worksheets[rows[index].group_id] = workbook.addWorksheet(rows[index].group_name);
 				}
-				if(employeeInGroupIndex[ { rows[index].group_id : rows[index].user_id } ] === undefined){
+				/* if(employeeInGroupIndex[ { rows[index].group_id : rows[index].user_id } ] === undefined){
 					employeeInGroupIndex[ { rows[index].group_id : rows[index].user_id } ] = rowPointer;
 					rowPointer += 1;
 				}
 				console.log({rows[index].group_id : rows[index].user_id});
-				console.log(employeeInGroupIndex[{rows[index].group_id : rows[index].user_id}]);
+				console.log(employeeInGroupIndex[{rows[index].group_id : rows[index].user_id}]); */
 			}
 			callback(null, rows);
 		}
