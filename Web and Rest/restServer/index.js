@@ -2771,7 +2771,8 @@ function generateReport(callback){
 		else{
 			callback(null, rows);
 		}
-	})
+	});
+}
 	//*/
 	/*
 		var workbook = new xl.Workbook();
