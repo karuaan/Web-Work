@@ -2777,18 +2777,21 @@ function generateReport(callback){
 				if(groups[rows[index].group_id] === undefined){
 					groups[rows[index].group_id] = {'workbookObj' : workbook.addWorksheet(rows[index].group_name), 'employees' : {}, 'assignments' : {}, 'columnInd' : 2, 'rowInd' : 2};
 				}
-				if(groups[rows[index].group_id].employees[rows[index].user_id] === undefined){
+				if(groups[rows[index].group_id].employees[rows[index].user_id] === undefined && rows[index].user_id !== null){
 					groups[rows[index].group_id].employees[rows[index].user_id] = groups[rows[index].group_id].columnInd;
-					groups[rows[index].group_id].workbookObj.cell(groups[rows[index].columnInd], 1).string(groups[rows[index].group_id].email);
+					groups[rows[index].group_id].workbookObj.cell(groups[rows[index].group_id].columnInd, 1).string(rows[index].email);
 					groups[rows[index].group_id].columnInd += 1;
 				}
 
-				if(groups[rows[index].group_id].assignments[rows[index].assignment_id] === undefined){
+				if(groups[rows[index].group_id].assignments[rows[index].assignment_id] === undefined && rows[index].assignment_id !== null){
 					groups[rows[index].group_id].assignments[rows[index].assignment_id] = groups[rows[index].group_id].rowInd;
-					groups[rows[index].group_id].workbookObj.cell(1, groups[rows[index].rowInd]).string(groups[rows[index].group_id].assignment_name);
+					groups[rows[index].group_id].workbookObj.cell(1, groups[rows[index].group_id].rowInd).string(rows[index].assignment_name);
 					groups[rows[index].group_id].rowInd += 1;
 				}
-				groups[rows[index].group_id].workbookObj.cell(groups[rows[index].group_id].employees[rows[index].user_id], groups[rows[index].group_id].assignments[rows[index].assignment_id]).number(rows[index].is_complete.data[0]);
+				if(groups[rows[index].group_id].assignments[rows[index].assignment_id] !== undefined && groups[rows[index].group_id].employees[rows[index].user_id] !== undefined){
+				console.log(rows[index].is_complete[0]);
+				groups[rows[index].group_id].workbookObj.cell(groups[rows[index].group_id].employees[rows[index].user_id], groups[rows[index].group_id].assignments[rows[index].assignment_id]).number(rows[index].is_complete[0]);
+				}
 				/* if(employeeInGroupIndex[ { rows[index].group_id : rows[index].user_id } ] === undefined){
 					employeeInGroupIndex[ { rows[index].group_id : rows[index].user_id } ] = rowPointer;
 					rowPointer += 1;
@@ -2797,6 +2800,7 @@ function generateReport(callback){
 				console.log(employeeInGroupIndex[{rows[index].group_id : rows[index].user_id}]); */
 			}
 			console.log(groups);
+			workbook.write('TestBook.xlsx');
 			callback(null, rows);
 		}
 	});
