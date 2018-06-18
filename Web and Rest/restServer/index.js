@@ -2760,11 +2760,7 @@ function generateReport(callback){
 	///*
 	
 	var workbook = new xl.Workbook();
-	var worksheets = {};
-	var employeeInGroupIndex = {};
-	var assignmentInGroupIndex = {}
-	var columnPointer = 2;
-	var rowPointer = 2;
+	var groups = {};
 	
 	con.query("SELECT DISTINCT ASSIGNMENTS.NAME as assignment_name, ASSIGNMENTS.ID as assignment_id, USER_GROUPS.NAME as group_name, USER_GROUPS.ID as group_id, USERS.EMAIL as email, USERS.ID as user_id, STATUS.IS_COMPLETE as is_complete " +
 			"FROM USER_GROUPS " +
@@ -2778,9 +2774,21 @@ function generateReport(callback){
 		}
 		else{
 			for(index in rows){
-				if(worksheets[rows[index].group_id] === undefined){
-					worksheets[rows[index].group_id] = workbook.addWorksheet(rows[index].group_name);
+				if(groups[rows[index].group_id] === undefined){
+					groups[rows[index].group_id] = {'workbookObj' : workbook.addWorksheet(rows[index].group_name), 'employees' : {}, 'assignments' : {}, 'columnInd' : 2, 'rowInd' : 2};
 				}
+				if(groups[rows[index].group_id].employees[rows[index].user_id] === undefined){
+					groups[rows[index].group_id].employees[rows[index].user_id] = groups[rows[index].group_id].columnInd;
+					groups[rows[index].group_id].workbookObj.cell(groups[rows[index].columnInd], 1).string(groups[rows[index].group_id].email);
+					groups[rows[index].group_id].columnInd += 1;
+				}
+
+				if(groups[rows[index].group_id].assignments[rows[index].assignment_id] === undefined){
+					groups[rows[index].group_id].assignments[rows[index].assignment_id] = groups[rows[index].group_id].rowInd;
+					groups[rows[index].group_id].workbookObj.cell(1, groups[rows[index].rowInd]).string(groups[rows[index].group_id].assignment_name);
+					groups[rows[index].group_id].rowInd += 1;
+				}
+				groups[rows[index].group_id].workbookObj.cell(groups[rows[index].group_id].employees[rows[index].user_id], groups[rows[index].group_id].assignments[rows[index].assignment_id]).number(rows[index].is_complete.data[0]);
 				/* if(employeeInGroupIndex[ { rows[index].group_id : rows[index].user_id } ] === undefined){
 					employeeInGroupIndex[ { rows[index].group_id : rows[index].user_id } ] = rowPointer;
 					rowPointer += 1;
@@ -2788,6 +2796,7 @@ function generateReport(callback){
 				console.log({rows[index].group_id : rows[index].user_id});
 				console.log(employeeInGroupIndex[{rows[index].group_id : rows[index].user_id}]); */
 			}
+			console.log(groups);
 			callback(null, rows);
 		}
 	});
